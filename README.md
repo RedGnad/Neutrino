@@ -6,7 +6,6 @@
 
 Neutrino monitors Mantle xStocks (TSLAx, NVDAx, SPYx, ...) and yield-bearing assets (USDY, mETH), detects liquidity, basis, and market-hours risk, then reallocates or pauses exposure with every decision recorded on-chain via ERC-8004 agent identity.
 
-Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantleturingtesthackathon2026) — Phase 2 "AI Awakening" — track **AI x RWA**.
 
 ## Repo layout
 
