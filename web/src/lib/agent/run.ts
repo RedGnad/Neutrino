@@ -89,6 +89,7 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
   });
 
   const results: PerAssetResult[] = [];
+  let anyReferenceFetched = false;
 
   for (const symbol of MONITORED_ASSETS) {
     const meta = ASSET_REGISTRY[symbol];
@@ -96,6 +97,7 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     if (refClient && meta.reference) {
       try {
         referencePrice = await refClient.fetchPrice(meta.reference);
+        anyReferenceFetched = true;
       } catch {
         referencePrice = undefined;
       }
@@ -127,7 +129,9 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     marketOpen,
     inputs: {
       marketHoursLive: true,
-      referencePricesLive: Boolean(refClient),
+      // Only "live" if a real fetch actually succeeded — having a key set
+      // but the API down/unauthorized would otherwise mis-report.
+      referencePricesLive: anyReferenceFetched,
       xStockPricesLive: !xstocks.isStub(),
       onChainWriteLive: true,
     },
