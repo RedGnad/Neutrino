@@ -130,3 +130,60 @@ export function timeAgo(ts: number): string {
   const d = Math.floor(h / 24);
   return `${d}d ago`;
 }
+
+/** All assets the agent currently monitors. Source of truth for the dashboard. */
+export const TRACKED_ASSETS = [
+  { symbol: 'NVDAx', reference: 'NVDA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x0000000000000000000000000000000000000001' as Address },
+  { symbol: 'TSLAx', reference: 'TSLA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x0000000000000000000000000000000000000002' as Address },
+  { symbol: 'SPYx',  reference: 'SPY',  kind: 'tokenized_equity' as const, market: 'NYSE' as const,   address: '0x0000000000000000000000000000000000000003' as Address },
+  { symbol: 'USDY',  kind: 'yield_bearing' as const, address: '0x0000000000000000000000000000000000000004' as Address },
+  { symbol: 'mETH',  kind: 'yield_bearing' as const, address: '0x0000000000000000000000000000000000000005' as Address },
+] as const;
+
+export type TrackedAsset = (typeof TRACKED_ASSETS)[number];
+
+export function findTrackedAsset(symbol: string): TrackedAsset | undefined {
+  return TRACKED_ASSETS.find((a) => a.symbol === symbol);
+}
+
+/**
+ * Decisions for a single asset, most recent first.
+ * Reads all events then filters client-side — fine at our volume.
+ */
+export async function fetchDecisionsForAsset(asset: Address, limit = 20): Promise<OnChainDecision[]> {
+  const all = await fetchRecentDecisions(500);
+  return all.filter((d) => d.assetAddress.toLowerCase() === asset.toLowerCase()).slice(0, limit);
+}
+
+/**
+ * Latest decision per tracked asset. Useful for the market-map overview.
+ * Returns one entry per asset (or null if no decision yet for that asset).
+ */
+export async function fetchLatestPerAsset(): Promise<
+  Array<{ asset: TrackedAsset; latest: OnChainDecision | null }>
+> {
+  const all = await fetchRecentDecisions(500);
+  return TRACKED_ASSETS.map((asset) => {
+    const latest =
+      all.find((d) => d.assetAddress.toLowerCase() === asset.address.toLowerCase()) ?? null;
+    return { asset, latest };
+  });
+}
+
+/** Map an action label to a coarse status bucket for color/badge UI. */
+export function statusFor(action: ActionLabel | null, riskScore: number | null): {
+  label: string;
+  classes: string;
+} {
+  if (!action) return { label: 'No data', classes: 'bg-zinc-50 text-zinc-600 ring-zinc-200' };
+  if (action === 'PAUSE' || action === 'REQUIRE_HUMAN_CONFIRMATION') {
+    return { label: 'Paused', classes: 'bg-rose-50 text-rose-700 ring-rose-200' };
+  }
+  if (action === 'REDUCE' || action === 'MOVE_TO_STABLE_YIELD') {
+    return { label: 'Risk', classes: 'bg-orange-50 text-orange-700 ring-orange-200' };
+  }
+  if ((riskScore ?? 0) >= 300) {
+    return { label: 'Watch', classes: 'bg-amber-50 text-amber-700 ring-amber-200' };
+  }
+  return { label: 'Safe', classes: 'bg-emerald-50 text-emerald-700 ring-emerald-200' };
+}

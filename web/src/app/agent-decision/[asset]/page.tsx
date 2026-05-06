@@ -1,18 +1,30 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { MOCK_ASSETS, STATUS_STYLES } from '@/lib/mock-data';
+import {
+  EXPLORER_ADDR,
+  EXPLORER_BLOCK,
+  EXPLORER_TX,
+  LOGGER_ADDRESS,
+  fetchDecisionsForAsset,
+  findTrackedAsset,
+  statusFor,
+  timeAgo,
+} from '@/lib/onchain';
+
+export const revalidate = 10;
 
 interface Props {
   params: Promise<{ asset: string }>;
 }
 
 export default async function AgentDecisionPage({ params }: Props) {
-  const { asset } = await params;
-  const row = MOCK_ASSETS.find((r) => r.symbol === asset);
-  if (!row) notFound();
+  const { asset: symbol } = await params;
+  const asset = findTrackedAsset(symbol);
+  if (!asset) notFound();
 
-  const status = STATUS_STYLES[row.status];
-  const breakdown = mockBreakdown(row.riskScore);
+  const decisions = LOGGER_ADDRESS ? await fetchDecisionsForAsset(asset.address, 20).catch(() => []) : [];
+  const latest = decisions[0] ?? null;
+  const status = statusFor(latest?.action ?? null, latest?.riskScore ?? null);
 
   return (
     <div className="space-y-8">
@@ -21,9 +33,9 @@ export default async function AgentDecisionPage({ params }: Props) {
           ← Back to market map
         </Link>
         <div className="mt-3 flex items-baseline gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{row.symbol}</h1>
-          {row.reference ? (
-            <span className="text-sm text-zinc-500">references {row.reference}</span>
+          <h1 className="text-2xl font-semibold tracking-tight">{asset.symbol}</h1>
+          {'reference' in asset && asset.reference ? (
+            <span className="text-sm text-zinc-500">references {asset.reference}</span>
           ) : null}
           <span
             className={`ml-auto inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${status.classes}`}
@@ -34,77 +46,147 @@ export default async function AgentDecisionPage({ params }: Props) {
       </div>
 
       <section className="grid gap-4 sm:grid-cols-3">
-        <Stat label="On-chain price" value={`$${row.onChainPrice.toFixed(2)}`} />
+        <Stat label="Kind" value={asset.kind === 'tokenized_equity' ? 'Tokenized equity' : 'Yield-bearing'} />
+        <Stat label="Market" value={'market' in asset ? asset.market : 'on-chain'} />
         <Stat
-          label="Reference price"
-          value={row.referencePrice ? `$${row.referencePrice.toFixed(2)}` : '—'}
-        />
-        <Stat
-          label={row.market === 'none' ? 'Market' : `${row.market} session`}
-          value={row.market === 'none' ? 'on-chain only' : row.marketOpen ? 'open' : 'closed'}
-        />
-        <Stat label="Spread" value={`${row.spreadBps} bps`} />
-        <Stat label="24h volume" value={`$${formatUsd(row.volume24hUsd)}`} />
-        <Stat
-          label="APY"
-          value={row.apy !== undefined ? `${(row.apy * 100).toFixed(2)}%` : '—'}
+          label="Token address"
+          value={`${asset.address.slice(0, 8)}…${asset.address.slice(-4)}`}
+          mono
         />
       </section>
 
-      <section className="rounded-lg border border-zinc-200 bg-white p-6">
-        <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Decision</p>
-        <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{row.action}</p>
-        <p className="mt-1 text-sm text-zinc-600">
-          Risk score <span className="font-medium text-zinc-900">{row.riskScore} / 1000</span>
-        </p>
-        <p className="mt-4 text-sm leading-relaxed text-zinc-700">{row.reason}</p>
-      </section>
-
-      <section className="rounded-lg border border-zinc-200 bg-white p-6">
-        <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Risk breakdown</p>
-        <div className="mt-4 space-y-3">
-          {breakdown.map((b) => (
-            <div key={b.label} className="space-y-1">
-              <div className="flex items-baseline justify-between text-sm">
-                <span className="text-zinc-700">{b.label}</span>
-                <span className="font-medium tabular-nums text-zinc-900">{b.value}</span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-zinc-100">
-                <div
-                  className="h-full bg-zinc-900"
-                  style={{ width: `${(b.value / 250) * 100}%` }}
-                />
-              </div>
+      {latest ? (
+        <section className="rounded-lg border border-zinc-200 bg-white p-6">
+          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+            Latest on-chain decision
+          </p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{latest.action}</p>
+          <p className="mt-1 text-sm text-zinc-600">
+            Risk score{' '}
+            <span className="font-medium text-zinc-900">{latest.riskScore} / 1000</span> · written{' '}
+            {timeAgo(latest.timestamp)} in{' '}
+            <a
+              href={`${EXPLORER_BLOCK}/${latest.blockNumber}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-700 underline-offset-2 hover:underline"
+            >
+              block {latest.blockNumber.toString()}
+            </a>
+          </p>
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-zinc-500">Reason hash (off-chain JSON)</dt>
+              <dd className="mt-1 font-mono text-xs text-zinc-700">{latest.reasonHash}</dd>
             </div>
-          ))}
-        </div>
-      </section>
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-zinc-500">Policy hash</dt>
+              <dd className="mt-1 font-mono text-xs text-zinc-700">{latest.policyHash}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-zinc-500">Caller</dt>
+              <dd className="mt-1 font-mono text-xs text-zinc-700">
+                <a
+                  href={`${EXPLORER_ADDR}/${latest.caller}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-700 underline-offset-2 hover:underline"
+                >
+                  {latest.caller.slice(0, 10)}…{latest.caller.slice(-6)}
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-zinc-500">Tx</dt>
+              <dd className="mt-1 font-mono text-xs">
+                <a
+                  href={`${EXPLORER_TX}/${latest.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-700 underline-offset-2 hover:underline"
+                >
+                  {latest.txHash.slice(0, 16)}…
+                </a>
+              </dd>
+            </div>
+          </dl>
+        </section>
+      ) : (
+        <Empty
+          title="No on-chain decision for this asset yet"
+          body="Run the agent (`pnpm --dir agent start`) to generate the first decision."
+        />
+      )}
+
+      {decisions.length > 1 ? (
+        <section className="rounded-lg border border-zinc-200 bg-white">
+          <div className="border-b border-zinc-200 px-6 py-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+              Decision history ({decisions.length})
+            </p>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-zinc-500">
+              <tr>
+                <th className="px-4 py-3 text-left font-medium">When</th>
+                <th className="px-4 py-3 text-left font-medium">Action</th>
+                <th className="px-4 py-3 text-right font-medium">Risk</th>
+                <th className="px-4 py-3 text-right font-medium">Block</th>
+                <th className="px-4 py-3 text-left font-medium">Tx</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {decisions.map((d) => (
+                <tr key={d.txHash} className="hover:bg-zinc-50">
+                  <td className="px-4 py-3 text-zinc-600">{timeAgo(d.timestamp)}</td>
+                  <td className="px-4 py-3 font-medium text-zinc-700">{d.action}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    {d.riskScore}
+                    <span className="text-zinc-400">/1000</span>
+                  </td>
+                  <td className="px-4 py-3 text-right tabular-nums text-zinc-500">
+                    {d.blockNumber.toString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <a
+                      href={`${EXPLORER_TX}/${d.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-xs text-emerald-700 underline-offset-2 hover:underline"
+                    >
+                      {d.txHash.slice(0, 10)}…
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      ) : null}
+
+      <p className="text-xs text-zinc-500">
+        Off-chain explanations: the JSON behind <code className="rounded bg-zinc-100 px-1 py-0.5">reasonHash</code>{' '}
+        contains the full risk breakdown and LLM-narrated rationale. It will be pinned to IPFS in
+        the next iteration so any third party can verify the hash.
+      </p>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-4">
       <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold tabular-nums text-zinc-950">{value}</p>
+      <p className={`mt-1 text-lg font-semibold text-zinc-950 ${mono ? 'font-mono text-sm' : ''}`}>{value}</p>
     </div>
   );
 }
 
-function mockBreakdown(total: number) {
-  const f = total / 1000;
-  return [
-    { label: 'Market hours', value: Math.round(250 * Math.min(1, f * 1.4)) },
-    { label: 'Spread', value: Math.round(200 * Math.min(1, f * 1.0)) },
-    { label: 'Liquidity', value: Math.round(200 * Math.min(1, f * 0.9)) },
-    { label: 'Basis', value: Math.round(200 * Math.min(1, f * 0.6)) },
-    { label: 'Volatility', value: Math.round(150 * Math.min(1, f * 0.7)) },
-  ];
-}
-
-function formatUsd(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}k`;
-  return n.toFixed(0);
+function Empty({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center">
+      <p className="text-sm font-medium text-zinc-900">{title}</p>
+      <p className="mt-1 text-sm text-zinc-600">{body}</p>
+    </div>
+  );
 }
