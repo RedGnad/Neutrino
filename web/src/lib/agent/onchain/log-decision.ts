@@ -1,3 +1,4 @@
+// Mirrored from /agent/src/onchain/log-decision.ts.
 import {
   type Address,
   createPublicClient,
@@ -9,8 +10,8 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { mantleSepoliaTestnet, mantle } from 'viem/chains';
-import type { Decision } from '../types.ts';
-import { ACTION_TO_ENUM } from '../types.ts';
+import type { Decision } from '../types';
+import { ACTION_TO_ENUM } from '../types';
 
 const LOGGER_ABI = [
   {
@@ -52,6 +53,11 @@ export function createOnChainLogger(cfg: LoggerConfig): OnChainLogger {
   const wallet: WalletClient = createWalletClient({ account, chain, transport });
   const pub: PublicClient = createPublicClient({ chain, transport });
 
+  // Local nonce counter, lazily initialized. Mantle Sepolia's public RPC
+  // lags between fast sequential writes, so refetching per-call races. Seed
+  // once, increment in process. We reset on submission errors but NOT on
+  // receipt-poll timeouts — once a tx is in the mempool the nonce is spent,
+  // even if our receipt poll gives up before inclusion.
   let nonce: number | null = null;
 
   async function submit(args: readonly unknown[]): Promise<Hex> {
@@ -67,6 +73,7 @@ export function createOnChainLogger(cfg: LoggerConfig): OnChainLogger {
           address: cfg.loggerAddress,
           abi: LOGGER_ABI,
           functionName: 'logDecision',
+          // viem-typed args
           args: args as Parameters<typeof wallet.writeContract>[0]['args'],
           account,
           chain,
@@ -76,6 +83,7 @@ export function createOnChainLogger(cfg: LoggerConfig): OnChainLogger {
         const msg = (e as Error).message ?? '';
         const isNonceTooLow = /nonce too low|Nonce provided/i.test(msg);
         if (isNonceTooLow && attempt < 3) {
+          // Re-sync with the chain and retry.
           attempt += 1;
           nonce = await pub.getTransactionCount({
             address: account.address,
@@ -83,6 +91,8 @@ export function createOnChainLogger(cfg: LoggerConfig): OnChainLogger {
           });
           continue;
         }
+        // Permanent submission failure: reset the counter so the next call
+        // re-fetches a clean nonce, then propagate.
         nonce = null;
         throw e;
       }
@@ -100,6 +110,9 @@ export function createOnChainLogger(cfg: LoggerConfig): OnChainLogger {
         decision.policyHash,
       ]);
 
+      // Best-effort receipt wait; if it times out, the tx is still in the
+      // mempool and the next call's nonce stays correct. We surface
+      // blockNumber=0n on timeout so the caller can decide what to render.
       try {
         const receipt = await pub.waitForTransactionReceipt({ hash: txHash, timeout: 90_000 });
         return { txHash, blockNumber: receipt.blockNumber };
