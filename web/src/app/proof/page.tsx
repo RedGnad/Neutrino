@@ -3,6 +3,7 @@ import {
   EXPLORER_ADDR,
   EXPLORER_TX,
   LOGGER_ADDRESS,
+  NETWORK_LABEL,
   fetchRecentDecisions,
   resolveAsset,
   timeAgo,
@@ -19,8 +20,8 @@ export default async function ProofPage() {
         <h1 className="text-2xl font-semibold tracking-tight">On-chain proof</h1>
         <p className="mt-1 text-sm text-zinc-600">
           Every decision Neutrino takes is logged via{' '}
-          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">RWADecisionLogger</code> on
-          Mantle Sepolia. Rows below are read live from the chain.
+          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">RWADecisionLogger</code> on{' '}
+          {NETWORK_LABEL}. Rows below are read live from the chain.
         </p>
       </div>
 

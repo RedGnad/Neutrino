@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {
   EXPLORER_TX,
   LOGGER_ADDRESS,
+  NETWORK_LABEL,
   TRACKED_ASSETS,
   fetchLatestPerAsset,
   statusFor,
@@ -21,8 +22,8 @@ export default async function MarketMapPage() {
         <h1 className="text-2xl font-semibold tracking-tight">RWA market map</h1>
         <p className="mt-1 text-sm text-zinc-600">
           Latest on-chain decision per asset. Read live from{' '}
-          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">RWADecisionLogger</code>{' '}
-          (Mantle Sepolia). Click an asset to see its full history.
+          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">RWADecisionLogger</code> on{' '}
+          {NETWORK_LABEL}. Click an asset to see its full history.
         </p>
       </div>
 
@@ -34,7 +35,7 @@ export default async function MarketMapPage() {
       ) : rows === null ? (
         <Empty
           title="Could not read on-chain decisions"
-          body="The Mantle Sepolia RPC returned an error. Try again in a moment."
+          body={`The ${NETWORK_LABEL} RPC returned an error. Try again in a moment.`}
         />
       ) : (
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">

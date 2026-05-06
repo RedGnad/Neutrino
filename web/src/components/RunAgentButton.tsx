@@ -14,23 +14,41 @@ interface PerAssetResult {
   error?: string;
 }
 
+interface ExecutionResult {
+  action: 'allocate' | 'move-to-stable-yield';
+  txHash: string;
+  approveTxHash?: string;
+  description: string;
+  blockNumber: string;
+}
+
 interface RunResult {
   startedAt: number;
   durationMs: number;
   marketOpen: boolean;
+  network: 'mantle' | 'mantle_sepolia';
   inputs: {
     marketHoursLive: boolean;
     referencePricesLive: boolean;
     xStockPricesLive: boolean;
     onChainWriteLive: boolean;
+    onChainExecutionLive: boolean;
     llmReasoningLive: boolean;
   };
   narrationModel?: string;
   policyName: string;
   results: PerAssetResult[];
+  execution?: ExecutionResult;
+  executionError?: string;
 }
 
-const EXPLORER_TX = 'https://sepolia.mantlescan.xyz/tx';
+/**
+ * Explorer base resolved from the network the result targets so the link
+ * always lands on the correct chain (mainnet vs Sepolia).
+ */
+function explorerTxBase(network: 'mantle' | 'mantle_sepolia' | undefined): string {
+  return network === 'mantle' ? 'https://mantlescan.xyz/tx' : 'https://sepolia.mantlescan.xyz/tx';
+}
 
 export function RunAgentButton() {
   const router = useRouter();
@@ -90,6 +108,8 @@ export function RunAgentButton() {
 
 function ResultPanel({ result }: { result: RunResult }) {
   const written = result.results.filter((r) => r.txHash).length;
+  const explorerTx = explorerTxBase(result.network);
+  const networkLabel = result.network === 'mantle' ? 'Mantle Mainnet' : 'Mantle Sepolia';
   return (
     <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-5">
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
@@ -97,7 +117,7 @@ function ResultPanel({ result }: { result: RunResult }) {
           {written}/{result.results.length} decisions written on-chain
         </p>
         <p className="text-zinc-600">
-          {(result.durationMs / 1000).toFixed(1)}s · policy{' '}
+          {(result.durationMs / 1000).toFixed(1)}s · {networkLabel} · policy{' '}
           <span className="font-medium text-zinc-900">{result.policyName}</span> · US market{' '}
           <span className="font-medium text-zinc-900">
             {result.marketOpen ? 'open' : 'closed'}
@@ -120,7 +140,7 @@ function ResultPanel({ result }: { result: RunResult }) {
               <span className="flex-1 truncate">
                 {r.txHash ? (
                   <a
-                    href={`${EXPLORER_TX}/${r.txHash}`}
+                    href={`${explorerTx}/${r.txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-xs text-emerald-700 underline-offset-2 hover:underline"
@@ -149,6 +169,30 @@ function ResultPanel({ result }: { result: RunResult }) {
         ))}
       </ul>
 
+      {result.execution ? (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50/40 px-4 py-3 text-sm">
+          <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">Execution</p>
+          <p className="mt-1 text-zinc-900">{result.execution.description}</p>
+          <p className="mt-1 text-xs text-zinc-600">
+            block {result.execution.blockNumber} ·{' '}
+            <a
+              href={`${explorerTx}/${result.execution.txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-emerald-700 underline-offset-2 hover:underline"
+            >
+              {result.execution.txHash.slice(0, 18)}…
+            </a>
+          </p>
+        </div>
+      ) : null}
+
+      {result.executionError ? (
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+          Execution skipped: {result.executionError}
+        </div>
+      ) : null}
+
       <p className="text-xs text-zinc-500">
         New events will appear in <a href="/proof" className="text-emerald-700 underline-offset-2 hover:underline">/proof</a> and{' '}
         <a href="/market-map" className="text-emerald-700 underline-offset-2 hover:underline">/market-map</a>.
@@ -169,6 +213,7 @@ function PipelineFlags({ inputs }: { inputs: RunResult['inputs'] }) {
     { label: 'xStock prices (Fluxion)', live: inputs.xStockPricesLive },
     { label: 'LLM reasoning', live: inputs.llmReasoningLive },
     { label: 'On-chain write', live: inputs.onChainWriteLive },
+    { label: 'On-chain execution', live: inputs.onChainExecutionLive },
   ];
   return (
     <div className="flex flex-wrap gap-2">

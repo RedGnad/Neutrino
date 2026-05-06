@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { RunAgentButton } from '@/components/RunAgentButton';
+import { NETWORK_LABEL } from '@/lib/onchain';
 
 export default function Home() {
   return (
@@ -39,7 +40,8 @@ export default function Home() {
         <h2 className="mt-1 text-lg font-semibold text-zinc-950">Run the agent on-chain</h2>
         <p className="mt-1 mb-4 max-w-2xl text-sm text-zinc-600">
           Trigger one full decision cycle. The agent scores all five tracked assets, picks an
-          action under the active policy, and writes each decision to <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs">RWADecisionLogger</code> on Mantle Sepolia. Pipeline freshness flags appear with the result so you can see exactly which inputs were live.
+          action under the active policy, and writes each decision to{' '}
+          <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs">RWADecisionLogger</code> on {NETWORK_LABEL}. Pipeline freshness flags appear with the result so you can see exactly which inputs were live.
         </p>
         <RunAgentButton />
       </section>
