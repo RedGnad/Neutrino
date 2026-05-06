@@ -6,8 +6,17 @@ import {RWAAgent} from "../src/RWAAgent.sol";
 import {RWADecisionLogger} from "../src/RWADecisionLogger.sol";
 
 /// @notice Deploys RWAAgent + RWADecisionLogger and mints a genesis agent NFT.
-/// Usage:
-///   forge script script/Deploy.s.sol --rpc-url mantle_sepolia --broadcast
+///
+/// Usage (Sepolia):
+///     set -a && source ../.env && set +a && \
+///     forge script script/Deploy.s.sol --rpc-url mantle_sepolia --broadcast
+///
+/// Usage (mainnet — Phase 2):
+///     set -a && source ../.env && set +a && \
+///     forge script script/Deploy.s.sol --rpc-url mantle --broadcast
+///
+/// After broadcast, copy the printed RWAAgent / RWADecisionLogger addresses
+/// into web/.env.local and the corresponding Vercel env vars, then redeploy.
 contract Deploy is Script {
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");

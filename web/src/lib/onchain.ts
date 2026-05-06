@@ -1,16 +1,38 @@
 import { createPublicClient, http, type Address, type Hex, parseAbiItem } from 'viem';
-import { mantleSepoliaTestnet } from 'viem/chains';
+import { mantle, mantleSepoliaTestnet } from 'viem/chains';
 
-const RPC_URL = process.env.MANTLE_SEPOLIA_RPC ?? 'https://rpc.sepolia.mantle.xyz';
+/**
+ * Network selection for live reads. The web mirrors whatever NEUTRINO_NETWORK
+ * the API route writes to so /proof and /market-map see the same chain.
+ */
+const NEUTRINO_NETWORK = (process.env.NEUTRINO_NETWORK ?? 'mantle_sepolia') as
+  | 'mantle'
+  | 'mantle_sepolia';
+
+const RPC_URL =
+  process.env.MANTLE_RPC ??
+  (NEUTRINO_NETWORK === 'mantle'
+    ? process.env.MANTLE_MAINNET_RPC ?? 'https://rpc.mantle.xyz'
+    : process.env.MANTLE_SEPOLIA_RPC ?? 'https://rpc.sepolia.mantle.xyz');
+
+const CHAIN = NEUTRINO_NETWORK === 'mantle' ? mantle : mantleSepoliaTestnet;
 
 export const LOGGER_ADDRESS = (process.env.NEXT_PUBLIC_RWA_DECISION_LOGGER_ADDRESS ??
   '') as Address;
 
 export const AGENT_ADDRESS = (process.env.NEXT_PUBLIC_RWA_AGENT_ADDRESS ?? '') as Address;
 
-export const EXPLORER_TX = 'https://sepolia.mantlescan.xyz/tx';
-export const EXPLORER_ADDR = 'https://sepolia.mantlescan.xyz/address';
-export const EXPLORER_BLOCK = 'https://sepolia.mantlescan.xyz/block';
+export const EXPLORER_TX =
+  NEUTRINO_NETWORK === 'mantle' ? 'https://mantlescan.xyz/tx' : 'https://sepolia.mantlescan.xyz/tx';
+export const EXPLORER_ADDR =
+  NEUTRINO_NETWORK === 'mantle'
+    ? 'https://mantlescan.xyz/address'
+    : 'https://sepolia.mantlescan.xyz/address';
+export const EXPLORER_BLOCK =
+  NEUTRINO_NETWORK === 'mantle'
+    ? 'https://mantlescan.xyz/block'
+    : 'https://sepolia.mantlescan.xyz/block';
+export const NETWORK_LABEL = NEUTRINO_NETWORK === 'mantle' ? 'Mantle Mainnet' : 'Mantle Sepolia';
 
 export const ACTION_LABELS = [
   'ALLOCATE',
@@ -24,17 +46,30 @@ export const ACTION_LABELS = [
 export type ActionLabel = (typeof ACTION_LABELS)[number];
 
 /**
- * Asset address → display symbol map. The agent currently writes events using
- * placeholder addresses (0x…0001…0005) until the real Mantle xStock token
- * addresses are wired in. Update this map (and the agent's ASSET_REGISTRY)
- * once we have the canonical Fluxion token addresses.
+ * Asset address → display symbol map. Phase 2 mainnet:
+ *   - Stable / yield assets (USDY, USDC, USDT0, mUSD) use real Mantle mainnet
+ *     ERC-20 addresses, so /agent-decision and /market-map link to real
+ *     Mantlescan token pages.
+ *   - Tokenized equities (NVDAx, TSLAx, SPYx, etc.) keep placeholder addresses
+ *     because individual xStock contract addresses on Mantle are not publicly
+ *     indexed (Backed product DB and Fluxion skill repo both omit them).
+ *     Replace once an address is recovered from Fluxion app or the Mantle team.
+ *
+ * All keys lower-cased so the resolver does case-insensitive lookup.
  */
 const ASSET_BY_ADDRESS: Record<string, { symbol: string; reference?: string }> = {
+  // --- Equities (placeholder until xStock addresses are public) ---
   '0x0000000000000000000000000000000000000001': { symbol: 'NVDAx', reference: 'NVDA' },
   '0x0000000000000000000000000000000000000002': { symbol: 'TSLAx', reference: 'TSLA' },
   '0x0000000000000000000000000000000000000003': { symbol: 'SPYx', reference: 'SPY' },
-  '0x0000000000000000000000000000000000000004': { symbol: 'USDY' },
+  // --- mETH placeholder (canonical Mantle mETH address worth confirming on first run) ---
   '0x0000000000000000000000000000000000000005': { symbol: 'mETH' },
+  // --- Real Mantle mainnet token addresses ---
+  '0x5be26527e817998a7206475496fde1e68957c5a6': { symbol: 'USDY' }, // Ondo USDY
+  '0xab575258d37eaa5c8956efabe71f4ee8f6397cf3': { symbol: 'mUSD' }, // Mantle native rebasing stable
+  '0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9': { symbol: 'USDC' },
+  '0x779ded0c9e1022225f8e0630b35a9b54be713736': { symbol: 'USDT0' },
+  '0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8': { symbol: 'WMNT' },
 };
 
 export function resolveAsset(address: Address): { symbol: string; reference?: string } {
@@ -47,7 +82,7 @@ export function resolveAsset(address: Address): { symbol: string; reference?: st
 }
 
 export const publicClient = createPublicClient({
-  chain: mantleSepoliaTestnet,
+  chain: CHAIN,
   transport: http(RPC_URL),
 });
 
@@ -131,12 +166,16 @@ export function timeAgo(ts: number): string {
   return `${d}d ago`;
 }
 
-/** All assets the agent currently monitors. Source of truth for the dashboard. */
+/**
+ * All assets the agent currently monitors. Source of truth for the dashboard.
+ * Stable / yield asset addresses are real Mantle mainnet ERC-20s; equity
+ * addresses are placeholders pending publicly-indexed xStock addresses.
+ */
 export const TRACKED_ASSETS = [
   { symbol: 'NVDAx', reference: 'NVDA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x0000000000000000000000000000000000000001' as Address },
   { symbol: 'TSLAx', reference: 'TSLA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x0000000000000000000000000000000000000002' as Address },
   { symbol: 'SPYx',  reference: 'SPY',  kind: 'tokenized_equity' as const, market: 'NYSE' as const,   address: '0x0000000000000000000000000000000000000003' as Address },
-  { symbol: 'USDY',  kind: 'yield_bearing' as const, address: '0x0000000000000000000000000000000000000004' as Address },
+  { symbol: 'USDY',  kind: 'yield_bearing' as const, address: '0x5bE26527e817998A7206475496fDE1E68957c5A6' as Address },
   { symbol: 'mETH',  kind: 'yield_bearing' as const, address: '0x0000000000000000000000000000000000000005' as Address },
 ] as const;
 

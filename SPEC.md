@@ -4,7 +4,27 @@
 
 **Pitch (one-liner):** Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade.
 
-**Long pitch:** Neutrino is an AI risk-allocation agent for Mantle RWAs. It monitors tokenized equities (xStocks) and yield-bearing assets, detects liquidity, basis and market-hours risk, then reallocates or pauses exposure with every decision recorded on-chain via ERC-8004 agent identity.
+**Long pitch:** Neutrino is an AI risk-allocation agent for Mantle RWAs. It monitors tokenized equities (xStocks) and yield-bearing assets (USDY, mETH), detects liquidity, basis and market-hours risk, then **executes** real on-chain reallocations on Fluxion + INIT Capital, with every decision and execution recorded on-chain.
+
+---
+
+## Status (2026-05-07) — Phase 2: mainnet pivot
+
+After deep ecosystem research (see "Phase 2 plan" section below), the project is pivoting from Mantle Sepolia (decision-log only) to **Mantle mainnet with a real execution layer**.
+
+**What changed and why:**
+- The original "swap on Fluxion Sepolia" plan in R3 is unbuildable: Fluxion + INIT + Ondo USDY only have documented mainnet deployments; their Sepolia counterparts are not in any official dev resource.
+- Aave V3 on Mantle is **not deployed** — the "$1B in 19 days" referenced earlier was Mantle global TVL growth, not Aave-specific. Removed from the pitch.
+- xStock individual ERC-20 addresses are **not publicly indexed** (Backed product database, Fluxion skill repo, Mantlescan public search all silent on `TSLAx`/`NVDAx`/etc. addresses on Mantle). Pivot the demo execution to **mETH / USDC / USDY / mUSD** which are all fully documented.
+- ERC-8004 is **auto-issued by the hackathon harness** (not a hard implementation requirement). Optional add: publish a static `agent-card.json` per the EIP for evaluator discoverability.
+
+**New execution layer:**
+- **ALLOCATE / REDUCE** → Fluxion V3 SwapRouter (`exactInputSingle` USDC ↔ mETH or USDC ↔ WMNT)
+- **MOVE_TO_STABLE_YIELD** → swap to USDC on Fluxion if needed, then supply INIT Capital USDY pool (real Ondo T-bill yield exposure)
+- **HOLD / PAUSE** → no-op, decision still logged
+- **REQUIRE_HUMAN_CONFIRMATION** → emit on-chain event, halt auto-execution
+
+**Demo loop becomes:** agent observes USDY APY + mETH spread → ALLOCATE swap on Fluxion → simulated volatility spike → MOVE_TO_STABLE_YIELD = real swap + INIT supply → tx hashes visible on Mantlescan.
 
 ---
 
@@ -22,7 +42,7 @@
 ## Pourquoi cette direction (data-driven)
 
 1. **Le track AI x RWA demande explicitement** des dynamic yield strategies + automated risk management pour des actifs comme USDY et mETH, avec on-chain logging des décisions et identité ERC-8004 des agents. Fit littéral, pas inventé.
-2. **Mantle pousse fort RWA / institutional liquidity** : Nansen positionne Mantle comme distribution layer pour TradFi/RWA ; intégration Aave a fait $1B en 19 jours.
+2. **Mantle pousse fort RWA / institutional liquidity** : Nansen positionne Mantle comme distribution layer pour TradFi/RWA ; Mantle TVL a passé $1B en 19 jours sur l'ensemble de l'écosystème (mETH + INIT Capital + xStocks). *Note: Aave V3 sur Mantle est encore en gouvernance, pas déployé.*
 3. **Mantle Global Hackathon 2025 confirme l'éditorial** : RWA/RealFi 22.21% > DeFi 21.79% > AI > Infra > GameFi parmi les 519 submissions.
 4. **xStocks = wedge frais et Mantle-native** : intégration avec Bybit + BackedFi + Flowdesk + Fluxion (avril 2026), actifs TSLAx, NVDAx, AAPLx, METAx, GOOGLx, MSTRx, HOODx, SPYx, QQQx, CRCLx.
 5. **Le risque est réel, pas narratif** : xStocks peuvent diverger du sous-jacent en cas de faible liquidité ; les halts TradFi cassent la référence.
@@ -40,7 +60,7 @@
 **2. Yield-bearing / RWA-like** — USDY, mETH, USDe / sUSDe (si intégrable), USDC / USDT0 (cash fallback)
 - Problème : éviter de confondre APY élevé et risque faible.
 
-**3. Mantle DeFi venues** — Fluxion (xStocks), Aave Mantle (si accessible), Agni / Merchant Moe, Byreal / RealClaw / Skills (selon exigences hackathon).
+**3. Mantle DeFi venues** — **Fluxion V3 SwapRouter** (mainnet, addresses publiques) + **INIT Capital** (mainnet, USDY pool natif). Skip Aave (not deployed), Lendle (winding down), Byreal (Solana-native, not Mantle).
 
 ### Boucle produit
 
@@ -102,13 +122,14 @@ Le moteur de règles décide. Le LLM (via AI Gateway) explique en langage nature
 
 | Couche | Choix |
 |---|---|
-| Frontend | Next.js + shadcn/ui + Tailwind. Design **institutionnel**, pas cyberpunk. |
-| Smart contracts | Solidity, Foundry. Mantle Sepolia → Mantle mainnet. |
-| Agent | Node.js (TypeScript) — fetch loop + risk engine + decision writer |
-| LLM | AI SDK via Vercel AI Gateway (provider-agnostic) — pour les explanations only |
-| Reference price feed | **Twelve Data** ou **Alpaca** (free tier, sign up J-1) |
-| xStocks data | Fluxion DEX (on-chain) + Mantle RPC |
-| Market hours | Static schedule + JSONfile (NYSE / NASDAQ holidays) |
+| Frontend | Next.js 16 + Tailwind v4. Design **institutionnel**, pas cyberpunk. |
+| Smart contracts | Solidity, Foundry. **Mantle mainnet** (Phase 2). |
+| Agent | Node.js (TypeScript) — fetch loop + risk engine + decision writer + execution layer |
+| LLM | AI SDK v6 + `@ai-sdk/anthropic` (Claude Haiku 4.5, prompt caching) |
+| Reference price feed | **Twelve Data** (free tier, live) |
+| Asset / pool prices | Fluxion V3 QuoterV2 + Mantle mainnet RPC |
+| Execution venue | Fluxion V3 SwapRouter + INIT Capital InitCore |
+| Market hours | Static NYSE/NASDAQ schedule, NY tz |
 
 ---
 
@@ -165,7 +186,7 @@ xStocks sont des collateralized tracker certificates Swiss DLT Act → la basis 
 
 ### R3 — MockRWAVault = red flag pour juges institutionnels
 Track AI x RWA jugée par BGA / Animoca / Hashed côté RWA. Mock vault = "ils n'ont pas réussi à intégrer".
-**Mitigation** : pas de vault. Swap réel sur **Fluxion Mantle Sepolia** : agent dit PAUSE → exit position → reçoit USDY → preuve on-chain.
+**Mitigation Phase 2** : pas de vault. **Vrai swap mainnet** sur Fluxion V3 SwapRouter (`0x5628a59dF0ECAC3f3171f877A94bEb26BA6DFAa0`) + **vrai supply** INIT Capital USDY pool (`0xf084813F1be067d980a0171F067f084f27B3F63A`) → preuve on-chain Mantlescan.
 
 ### R4 — Smart contract scope trop large
 4 contrats = 4× la surface de bugs.
@@ -277,6 +298,72 @@ Continue uniquement si :
 
 ---
 
+## Phase 2 plan — Execution layer (mainnet)
+
+### Mantle mainnet contract addresses (research-validated)
+
+**Fluxion V3** (from `Fluxion-Exchange/Fluxion-trade-skill` repo):
+| Contract | Address |
+|---|---|
+| SwapRouter (V3) | `0x5628a59dF0ECAC3f3171f877A94bEb26BA6DFAa0` |
+| Factory | `0xF883162Ed9c7E8EF604214c964c678E40c9B737C` |
+| QuoterV2 | `0x3E4eE18Ac7280813236a1EB850679Da5322E14CE` |
+| Quote API | `https://skillapi.fluxion.network/quote/exact-in` |
+
+**INIT Capital** (from `dev.init.capital/contract-addresses/mantle`):
+| Contract | Address |
+|---|---|
+| InitCore | `0x972BcB0284cca0152527c4f70f8F689852bCAFc5` |
+| PosManager | `0x0e7401707CD08c03CDb53DAEF3295DDFb68BBa92` |
+| Pool USDY (RWA) | `0xf084813F1be067d980a0171F067f084f27B3F63A` |
+| Pool USDC | `0x00A55649E597d463fD212fBE48a3B40f0E227d06` |
+| Pool USDe | `0x3282437C436eE6AA9861a6A46ab0822d82581b1c` |
+| Pool METH | `0x5071c003bB45e49110a905c1915EbdD2383A89dF` |
+
+**Mantle mainnet tokens**:
+| Symbol | Address |
+|---|---|
+| WMNT | `0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8` |
+| USDC | `0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9` |
+| USDT0 | `0x779Ded0c9e1022225f8E0630b35a9b54bE713736` |
+| USDY (Ondo) | `0x5bE26527e817998A7206475496fDE1E68957c5A6` |
+| mUSD (Mantle native, rebasing) | `0xab575258d37EaA5C8956EfABe71F4eE8F6397cF3` |
+
+### Decision → execution mapping
+
+| Agent action | On-chain execution |
+|---|---|
+| `ALLOCATE` | Fluxion `exactInputSingle(USDC, mETH, fee, ...)` (or USDC ↔ WMNT) |
+| `HOLD` | No-op. Log only. |
+| `REDUCE` | Fluxion swap inverse (partial unwind of the active position) |
+| `PAUSE` | No-op. Log + flag agent state. |
+| `MOVE_TO_STABLE_YIELD` | Swap to USDC if needed, then `InitCore.mintTo(USDY pool, recipient)` → real Ondo T-bill yield exposure |
+| `REQUIRE_HUMAN_CONFIRMATION` | Emit on-chain event, halt auto-execution |
+
+### Network choice
+
+**Full mainnet pivot.** Sepolia counterparts for Fluxion / INIT / Ondo USDY are not documented. Mainnet runs cost ~$0.60 in gas total + ~$2-3 USDC for demo swap amounts. Total demo budget: **~$3-5**, fits a $10 starter wallet.
+
+The user funds the existing burner address `0xdE7140BF0803257C493f26B588Dd68460f654860` on Mantle mainnet (~0.5 MNT + ~$3 USDC). Sepolia decisions become legacy/historical.
+
+### Phase 2 dev steps (~7h, 1 dev senior)
+
+1. Add Mantle mainnet RPC + chain config (`foundry.toml`, web env, agent env). — 30 min
+2. Redeploy `RWAAgent` + `RWADecisionLogger` to Mantle mainnet. — 5 min once funded
+3. Wire Fluxion V3 SwapRouter wrapper (Uniswap V3 ABI + QuoterV2 quote). — 1.5h
+4. Wire INIT Capital supplier (USDC pool / USDY pool). — 1.5h
+5. Extend `runAgentOnce` with optional execution layer (gated by `EXECUTE_ON_CHAIN=true`). — 1h
+6. UI: live "actions" panel with last 3 on-chain executions + Mantlescan links. — 1h
+7. Smoke test E2E with $1 USDC swap. — 30 min
+8. Polish + redeploy Vercel with mainnet env vars. — 30 min
+
+### Optional 30-min adds (post Phase 2)
+
+- Publish `agent-card.json` at `https://neutrino-ebon.vercel.app/agent-card.json` per ERC-8004 v1 schema (`name=Neutrino`, `services=[{type:"web", url}]`, `supportedTrust=["reputation"]`).
+- IPFS pin the off-chain reasonHash payloads (full breakdown + LLM prose) → `/agent-decision/[asset]` resolves the hash to the real explanation.
+
+---
+
 ## Sources
 
 - [Mantle Turing Test 2026 — DoraHacks](https://dorahacks.io/hackathon/mantleturingtesthackathon2026)
@@ -285,3 +372,10 @@ Continue uniquement si :
 - [Mantle xStocks press release — Bybit / BackedFi / Flowdesk / Fluxion](https://www.prnewswire.com/news-releases/mantle-becomes-one-of-the-first-ethereum-l2s-to-bring-tokenized-equities-to-on-chain-liquidity-with-xstocks-and-bybit-302739354.html)
 - [CV VC: AI Agents as Catalyst for Onchain Finance](https://www.cvvc.com/blogs/cv-vc-insights-ai-agents-as-the-catalyst-for-onchain-finance)
 - [Mantle Global Hackathon 2025 categories](https://chainwire.org/2026/02/02/mantle-global-hackathon-2025-over-2000-web3-builders-worldwide-innovate-in-the-next-wave-of-rwa-and-ai/)
+- [Fluxion-Exchange/Fluxion-trade-skill GitHub (router/factory/quoter addresses)](https://github.com/Fluxion-Exchange/Fluxion-trade-skill)
+- [Fluxion gitbook — V3 SwapRouter](https://fluxion-network.gitbook.io/fluxion-network/developer-resources/technical-overview-and-api/amm-v3-swaprouter.md)
+- [INIT Capital Mantle dev docs](https://dev.init.capital/contract-addresses/mantle)
+- [Ondo USDY addresses](https://docs.ondo.finance/addresses)
+- [Ondo USDY Mantle integration guide](https://docs.ondo.finance/developer-guides/mantle-integration-guidelines)
+- [ERC-8004 EIP](https://eips.ethereum.org/EIPS/eip-8004)
+- [Aave V3 on Mantle ARFC governance (still in proposal)](https://governance.aave.com/t/arfc-deploy-aave-v3-on-mantle/20542)
