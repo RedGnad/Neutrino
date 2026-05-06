@@ -8,6 +8,7 @@ interface PerAssetResult {
   action: string;
   riskScore: number;
   reason: string;
+  reasonFromLlm: boolean;
   txHash?: string;
   blockNumber?: string;
   error?: string;
@@ -22,7 +23,9 @@ interface RunResult {
     referencePricesLive: boolean;
     xStockPricesLive: boolean;
     onChainWriteLive: boolean;
+    llmReasoningLive: boolean;
   };
+  narrationModel?: string;
   policyName: string;
   results: PerAssetResult[];
 }
@@ -106,27 +109,42 @@ function ResultPanel({ result }: { result: RunResult }) {
 
       <ul className="divide-y divide-zinc-100">
         {result.results.map((r) => (
-          <li key={r.symbol} className="flex items-baseline gap-3 py-2 text-sm">
-            <span className="w-12 font-medium text-zinc-950">{r.symbol}</span>
-            <span className="w-44 font-medium text-zinc-700">{r.action}</span>
-            <span className="w-16 tabular-nums text-zinc-600">
-              {r.riskScore}
-              <span className="text-zinc-400">/1000</span>
-            </span>
-            <span className="flex-1">
-              {r.txHash ? (
-                <a
-                  href={`${EXPLORER_TX}/${r.txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-xs text-emerald-700 underline-offset-2 hover:underline"
-                >
-                  {r.txHash.slice(0, 16)}…
-                </a>
-              ) : (
-                <span className="text-xs text-rose-600">{r.error ?? 'no tx'}</span>
-              )}
-            </span>
+          <li key={r.symbol} className="space-y-1 py-3 text-sm">
+            <div className="flex items-baseline gap-3">
+              <span className="w-12 font-medium text-zinc-950">{r.symbol}</span>
+              <span className="w-44 font-medium text-zinc-700">{r.action}</span>
+              <span className="w-16 tabular-nums text-zinc-600">
+                {r.riskScore}
+                <span className="text-zinc-400">/1000</span>
+              </span>
+              <span className="flex-1 truncate">
+                {r.txHash ? (
+                  <a
+                    href={`${EXPLORER_TX}/${r.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs text-emerald-700 underline-offset-2 hover:underline"
+                  >
+                    {r.txHash.slice(0, 16)}…
+                  </a>
+                ) : (
+                  <span className="text-xs text-rose-600">{r.error ?? 'no tx'}</span>
+                )}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-2 pl-12 text-xs leading-relaxed text-zinc-600">
+              <span
+                className={`mt-0.5 inline-flex shrink-0 items-center rounded-sm px-1 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                  r.reasonFromLlm
+                    ? 'bg-violet-50 text-violet-700 ring-1 ring-violet-200'
+                    : 'bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200'
+                }`}
+                title={r.reasonFromLlm ? 'Narrated by LLM' : 'Deterministic fallback (LLM not configured or failed)'}
+              >
+                {r.reasonFromLlm ? 'LLM' : 'auto'}
+              </span>
+              <span className="italic">{r.reason}</span>
+            </div>
           </li>
         ))}
       </ul>
@@ -134,6 +152,11 @@ function ResultPanel({ result }: { result: RunResult }) {
       <p className="text-xs text-zinc-500">
         New events will appear in <a href="/proof" className="text-emerald-700 underline-offset-2 hover:underline">/proof</a> and{' '}
         <a href="/market-map" className="text-emerald-700 underline-offset-2 hover:underline">/market-map</a>.
+        {result.narrationModel ? (
+          <>
+            {' '}Narration model: <code className="rounded bg-zinc-100 px-1 py-0.5">{result.narrationModel}</code>.
+          </>
+        ) : null}
       </p>
     </div>
   );
@@ -144,6 +167,7 @@ function PipelineFlags({ inputs }: { inputs: RunResult['inputs'] }) {
     { label: 'Market hours', live: inputs.marketHoursLive },
     { label: 'Reference prices', live: inputs.referencePricesLive },
     { label: 'xStock prices (Fluxion)', live: inputs.xStockPricesLive },
+    { label: 'LLM reasoning', live: inputs.llmReasoningLive },
     { label: 'On-chain write', live: inputs.onChainWriteLive },
   ];
   return (

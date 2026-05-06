@@ -14,6 +14,7 @@ import { isUsMarketOpen } from './fetchers/market-hours';
 import { createMockXStockClient } from './fetchers/xstocks';
 import { createTwelveDataClient } from './fetchers/reference-price';
 import { createOnChainLogger } from './onchain/log-decision';
+import { narrateDecision, NARRATION_MODEL } from './llm/narrate';
 
 export const DEFAULT_POLICY: UserPolicy = {
   name: 'No after-hours risk',
@@ -48,6 +49,8 @@ export interface PerAssetResult {
   action: string;
   riskScore: number;
   reason: string;
+  /** True if `reason` came from the LLM, false if from the deterministic fallback. */
+  reasonFromLlm: boolean;
   txHash?: Hex;
   blockNumber?: string;
   error?: string;
@@ -63,7 +66,10 @@ export interface RunResult {
     referencePricesLive: boolean;
     xStockPricesLive: boolean;
     onChainWriteLive: boolean;
+    llmReasoningLive: boolean;
   };
+  /** Model id used for narration (only meaningful if llmReasoningLive). */
+  narrationModel?: string;
   policyName: string;
   results: PerAssetResult[];
 }
@@ -90,6 +96,7 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
 
   const results: PerAssetResult[] = [];
   let anyReferenceFetched = false;
+  let anyLlmNarration = false;
 
   for (const symbol of MONITORED_ASSETS) {
     const meta = ASSET_REGISTRY[symbol];
@@ -103,13 +110,32 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
       }
     }
     const snapshot = await xstocks.fetchSnapshot(symbol, marketOpen, referencePrice);
-    const decision = decide({ meta, snapshot, policy: DEFAULT_POLICY });
+
+    // Compute the deterministic decision first (action, breakdown, hashes), then
+    // ask the LLM for prose. The LLM never sees an opportunity to alter the action.
+    const baseDecision = decide({ meta, snapshot, policy: DEFAULT_POLICY });
+    const llmReason = await narrateDecision({
+      meta,
+      snapshot,
+      breakdown: baseDecision.breakdown,
+      action: baseDecision.action,
+      policy: DEFAULT_POLICY,
+    });
+    const reasonFromLlm = Boolean(llmReason);
+    if (reasonFromLlm) anyLlmNarration = true;
+
+    // Re-run decide with the LLM reason so the on-chain reasonHash covers the
+    // real prose: hash(JSON({breakdown, snapshot, reason})).
+    const decision = llmReason
+      ? decide({ meta, snapshot, policy: DEFAULT_POLICY, reason: llmReason })
+      : baseDecision;
 
     const result: PerAssetResult = {
       symbol,
       action: decision.action,
       riskScore: decision.riskScore,
       reason: decision.reason,
+      reasonFromLlm,
     };
 
     try {
@@ -134,7 +160,9 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
       referencePricesLive: anyReferenceFetched,
       xStockPricesLive: !xstocks.isStub(),
       onChainWriteLive: true,
+      llmReasoningLive: anyLlmNarration,
     },
+    narrationModel: anyLlmNarration ? NARRATION_MODEL : undefined,
     policyName: DEFAULT_POLICY.name,
     results,
   };
