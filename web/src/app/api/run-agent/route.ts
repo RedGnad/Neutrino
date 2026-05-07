@@ -31,7 +31,7 @@ function resolveExecution(
 
   const action =
     override?.action ??
-    ((process.env.EXECUTE_ACTION ?? 'move-to-stable-yield') as
+    ((process.env.EXECUTE_ACTION ?? 'allocate') as
       | 'allocate'
       | 'move-to-stable-yield');
 

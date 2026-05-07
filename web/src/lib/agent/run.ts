@@ -54,7 +54,7 @@ export const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
   TSLAx: { symbol: 'TSLAx', kind: 'tokenized_equity', reference: 'TSLA', address: '0x0000000000000000000000000000000000000002', market: 'NASDAQ' },
   SPYx:  { symbol: 'SPYx',  kind: 'tokenized_equity', reference: 'SPY',  address: '0x0000000000000000000000000000000000000003', market: 'NYSE' },
   USDY:  { symbol: 'USDY',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.USDY.address },
-  mETH:  { symbol: 'mETH',  kind: 'yield_bearing',                          address: '0x0000000000000000000000000000000000000005' },
+  mETH:  { symbol: 'mETH',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.mETH.address },
   AAPLx: { symbol: 'AAPLx', kind: 'tokenized_equity', reference: 'AAPL',  address: '0x0', market: 'NASDAQ' },
   METAx: { symbol: 'METAx', kind: 'tokenized_equity', reference: 'META',  address: '0x0', market: 'NASDAQ' },
   GOOGLx: { symbol: 'GOOGLx', kind: 'tokenized_equity', reference: 'GOOGL', address: '0x0', market: 'NASDAQ' },
@@ -118,6 +118,11 @@ export interface PerAssetResult {
   error?: string;
 }
 
+/** Tri-state for the pipeline freshness flags so "stub" only ever means
+ * "this signal SHOULD be live but isn't" — `n/a` covers the case where the
+ * signal isn't relevant to the active scenario. */
+export type FlagState = 'live' | 'stub' | 'n/a';
+
 export interface RunResult {
   startedAt: number;
   durationMs: number;
@@ -125,12 +130,12 @@ export interface RunResult {
   network: 'mantle' | 'mantle_sepolia';
   scenario: Scenario;
   inputs: {
-    marketHoursLive: true;
-    referencePricesLive: boolean;
-    xStockPricesLive: boolean;
-    onChainWriteLive: boolean;
-    onChainExecutionLive: boolean;
-    llmReasoningLive: boolean;
+    marketHours: FlagState;
+    referencePrices: FlagState;
+    xStockPrices: FlagState;
+    onChainWrite: FlagState;
+    onChainExecution: FlagState;
+    llmReasoning: FlagState;
   };
   narrationModel?: string;
   policyName: string;
@@ -272,8 +277,19 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     executionError = 'Execution requested but network is not mainnet — skipped.';
   }
 
-  // Source-state aggregation reflects the actual outcomes, not just config.
-  const xStockMonitored = monitored.some((s) => ASSET_REGISTRY[s].kind === 'tokenized_equity');
+  // Tri-state aggregation. "stub" only ever means "this signal SHOULD have
+  // been live but the source we wired didn't deliver"; "n/a" means the
+  // signal isn't applicable to the assets in the active scenario.
+  const equityCount = monitored.filter((s) => ASSET_REGISTRY[s].kind === 'tokenized_equity').length;
+  const referencePrices: FlagState =
+    equityCount === 0 ? 'n/a' : anyReferenceFetched ? 'live' : 'stub';
+  const xStockPrices: FlagState =
+    equityCount === 0 ? 'n/a' : xstocks.isStub() ? 'stub' : 'live';
+  const onChainExecution: FlagState = !cfg.execution
+    ? 'n/a'
+    : execution
+      ? 'live'
+      : 'stub';
 
   return {
     startedAt,
@@ -282,12 +298,12 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     network: cfg.network,
     scenario,
     inputs: {
-      marketHoursLive: true,
-      referencePricesLive: anyReferenceFetched,
-      xStockPricesLive: xStockMonitored ? !xstocks.isStub() : true, // n/a → don't penalise the flag
-      onChainWriteLive: true,
-      onChainExecutionLive: Boolean(execution),
-      llmReasoningLive: anyLlmNarration,
+      marketHours: 'live',
+      referencePrices,
+      xStockPrices,
+      onChainWrite: 'live',
+      onChainExecution,
+      llmReasoning: anyLlmNarration ? 'live' : 'stub',
     },
     narrationModel: anyLlmNarration ? NARRATION_MODEL : undefined,
     policyName: DEFAULT_POLICY.name,
@@ -305,13 +321,15 @@ async function runExecution(cfg: RunConfig): Promise<ExecutionResult> {
   const pub = createPublicClient({ chain: mantle, transport });
 
   if (exec.action === 'allocate') {
-    // ALLOCATE — Fluxion swap. Defaults to USDC → WMNT (deepest AMM
-    // liquidity). Future: route to mETH once the pool is confirmed.
+    // ALLOCATE — Fluxion USDC → mETH swap. mETH is Mantle's native liquid-
+    // staked ETH. Pool confirmed at fee tier 3000 (0.3%):
+    // 0xEEbc5E596d6C788Bcaa5324f44a8F648b746e041. Aligned with the RWA
+    // narrative (Mantle-native LST) far better than a generic USDC → WMNT.
     const result = await swapExactInputSingle(
       { pub, wallet, signer: account.address },
       {
         tokenIn: MAINNET_TOKENS.USDC.address,
-        tokenOut: MAINNET_TOKENS.WMNT.address,
+        tokenOut: MAINNET_TOKENS.mETH.address,
         amountIn: exec.amountUsdcBaseUnits,
         slippageBps: exec.slippageBps,
       },
@@ -321,7 +339,7 @@ async function runExecution(cfg: RunConfig): Promise<ExecutionResult> {
       txHash: result.txHash,
       approveTxHash: result.approveTxHash,
       blockNumber: result.blockNumber.toString(),
-      description: `Swapped ${formatUsdc(exec.amountUsdcBaseUnits)} USDC → WMNT on Fluxion V3 (fee ${result.fee / 100} bps).`,
+      description: `Swapped ${formatUsdc(exec.amountUsdcBaseUnits)} USDC → mETH on Fluxion V3 (Mantle-native LST, fee ${result.fee / 100} bps).`,
     };
   }
 

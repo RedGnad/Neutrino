@@ -7,21 +7,27 @@ import {
   fetchRecentDecisions,
   resolveAsset,
   timeAgo,
-} from '@/lib/onchain';
+} from "@/lib/onchain";
 
 export const revalidate = 10;
 
 export default async function ProofPage() {
-  const decisions = LOGGER_ADDRESS ? await fetchRecentDecisions(50).catch(() => []) : [];
+  const decisions = LOGGER_ADDRESS
+    ? await fetchRecentDecisions(50).catch(() => [])
+    : [];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">On-chain proof</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          On-chain proof
+        </h1>
         <p className="mt-1 text-sm text-zinc-600">
-          Every decision Neutrino takes is logged via{' '}
-          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">RWADecisionLogger</code> on{' '}
-          {NETWORK_LABEL}. Rows below are read live from the chain.
+          Every decision Neutrino takes is logged via{" "}
+          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">
+            RWADecisionLogger
+          </code>{" "}
+          on {NETWORK_LABEL}. Rows below are read live from the chain.
         </p>
       </div>
 
@@ -49,6 +55,7 @@ export default async function ProofPage() {
                 <th className="px-4 py-3 text-right font-medium">Block</th>
                 <th className="px-4 py-3 text-left font-medium">Reason hash</th>
                 <th className="px-4 py-3 text-left font-medium">Tx</th>
+                <th className="px-4 py-3 text-left font-medium">Verify</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -60,12 +67,18 @@ export default async function ProofPage() {
                       {timeAgo(d.timestamp)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-medium text-zinc-950">{asset.symbol}</span>
+                      <span className="font-medium text-zinc-950">
+                        {asset.symbol}
+                      </span>
                       {asset.reference ? (
-                        <span className="ml-2 text-xs text-zinc-500">↔ {asset.reference}</span>
+                        <span className="ml-2 text-xs text-zinc-500">
+                          ↔ {asset.reference}
+                        </span>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3 font-medium text-zinc-700">{d.action}</td>
+                    <td className="px-4 py-3 font-medium text-zinc-700">
+                      {d.action}
+                    </td>
                     <td className="px-4 py-3 text-right tabular-nums">
                       {d.riskScore}
                       <span className="text-zinc-400">/1000</span>
@@ -88,6 +101,14 @@ export default async function ProofPage() {
                         {d.txHash.slice(0, 10)}…
                       </a>
                     </td>
+                    <td className="px-4 py-3">
+                      <a
+                        href={`/agent-decision/${asset.symbol}`}
+                        className="text-xs font-medium text-emerald-700 underline-offset-2 hover:underline"
+                      >
+                        Receipt →
+                      </a>
+                    </td>
                   </tr>
                 );
               })}
@@ -98,9 +119,29 @@ export default async function ProofPage() {
 
       <p className="text-xs text-zinc-500">
         {decisions.length > 0
-          ? `Showing ${decisions.length} most recent decision${decisions.length === 1 ? '' : 's'} from RWADecisionLogger.`
+          ? `Showing ${decisions.length} most recent decision${decisions.length === 1 ? "" : "s"} from RWADecisionLogger.`
           : null}
       </p>
+
+      <section className="rounded-lg border border-zinc-200 bg-white p-5">
+        <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">
+          What a judge can verify
+        </p>
+        <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+          <ProofItem
+            title="Event exists"
+            body="DecisionLogged is read from Mantle, with tx, block, caller, action and risk score."
+          />
+          <ProofItem
+            title="Hash is binding"
+            body="Open a receipt after running the agent to re-hash the cached canonical JSON locally."
+          />
+          <ProofItem
+            title="Sources are explicit"
+            body="The payload marks market hours, reference prices, xStock quote and on-chain write as live, stub, simulated or n/a."
+          />
+        </div>
+      </section>
     </div>
   );
 }
@@ -111,7 +152,9 @@ function ContractCards() {
       {LOGGER_ADDRESS ? (
         <ContractCard label="RWADecisionLogger" address={LOGGER_ADDRESS} />
       ) : null}
-      {AGENT_ADDRESS ? <ContractCard label="RWAAgent (ERC-8004)" address={AGENT_ADDRESS} /> : null}
+      {AGENT_ADDRESS ? (
+        <ContractCard label="RWAAgent (ERC-8004)" address={AGENT_ADDRESS} />
+      ) : null}
     </div>
   );
 }
@@ -124,12 +167,23 @@ function ContractCard({ label, address }: { label: string; address: string }) {
       rel="noopener noreferrer"
       className="rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
     >
-      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+        {label}
+      </p>
       <p className="mt-1 font-mono text-sm text-zinc-900">
         {address.slice(0, 10)}…{address.slice(-8)}
       </p>
       <p className="mt-1 text-xs text-emerald-700">View on Mantlescan ↗</p>
     </a>
+  );
+}
+
+function ProofItem({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4">
+      <p className="font-medium text-zinc-950">{title}</p>
+      <p className="mt-1 text-zinc-600">{body}</p>
+    </div>
   );
 }
 

@@ -57,6 +57,8 @@ export const MAINNET_TOKENS = {
   USDY: { address: '0x5bE26527e817998A7206475496fDE1E68957c5A6' as Address, decimals: 18, symbol: 'USDY' },
   /** mUSD is rebasing — balances change without explicit transfers. */
   mUSD: { address: '0xab575258d37EaA5C8956EfABe71F4eE8F6397cF3' as Address, decimals: 18, symbol: 'mUSD' },
+  /** Mantle native liquid-staked ETH. Has a USDC/mETH pool on Fluxion at fee tier 3000. */
+  mETH: { address: '0xcDA86A272531e8640cD7F1a92c01839911B90bb0' as Address, decimals: 18, symbol: 'mETH' },
 } as const;
 
 export type MainnetTokenSymbol = keyof typeof MAINNET_TOKENS;

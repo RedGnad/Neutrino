@@ -70,6 +70,7 @@ const ASSET_BY_ADDRESS: Record<string, { symbol: string; reference?: string }> =
   '0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9': { symbol: 'USDC' },
   '0x779ded0c9e1022225f8e0630b35a9b54be713736': { symbol: 'USDT0' },
   '0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8': { symbol: 'WMNT' },
+  '0xcda86a272531e8640cd7f1a92c01839911b90bb0': { symbol: 'mETH' },
 };
 
 export function resolveAsset(address: Address): { symbol: string; reference?: string } {

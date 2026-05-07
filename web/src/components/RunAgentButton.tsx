@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useState } from "react";
 
-type Scenario = 'default' | 'risky-xstocks' | 'safe-yield';
+type Scenario = "default" | "risky-xstocks" | "safe-yield";
 
-type SourceState = 'live' | 'stub' | 'simulated' | 'n/a';
+type SourceState = "live" | "stub" | "simulated" | "n/a";
+type FlagState = "live" | "stub" | "n/a";
 
 interface PerAssetResult {
   symbol: string;
@@ -28,7 +29,7 @@ interface PerAssetResult {
 }
 
 interface ExecutionResult {
-  action: 'allocate' | 'move-to-stable-yield';
+  action: "allocate" | "move-to-stable-yield";
   txHash: string;
   approveTxHash?: string;
   description: string;
@@ -39,15 +40,15 @@ interface RunResult {
   startedAt: number;
   durationMs: number;
   marketOpen: boolean;
-  network: 'mantle' | 'mantle_sepolia';
+  network: "mantle" | "mantle_sepolia";
   scenario: Scenario;
   inputs: {
-    marketHoursLive: boolean;
-    referencePricesLive: boolean;
-    xStockPricesLive: boolean;
-    onChainWriteLive: boolean;
-    onChainExecutionLive: boolean;
-    llmReasoningLive: boolean;
+    marketHours: FlagState;
+    referencePrices: FlagState;
+    xStockPrices: FlagState;
+    onChainWrite: FlagState;
+    onChainExecution: FlagState;
+    llmReasoning: FlagState;
   };
   narrationModel?: string;
   policyName: string;
@@ -56,7 +57,7 @@ interface RunResult {
   executionError?: string;
 }
 
-const STORAGE_PREFIX = 'neutrino:decision:';
+const STORAGE_PREFIX = "neutrino:decision:";
 
 interface RunAgentButtonProps {
   /** Scenario to send to /api/run-agent. Default = 'default' (all 5 assets). */
@@ -66,7 +67,7 @@ interface RunAgentButtonProps {
   /** Visible label on the button. */
   label: string;
   /** Visual variant. */
-  variant?: 'primary' | 'secondary' | 'execute';
+  variant?: "primary" | "secondary" | "execute";
   /** Optional one-line subtitle under the button explaining what happens. */
   hint?: string;
 }
@@ -75,49 +76,53 @@ export function RunAgentButton({
   scenario,
   executeOnChain,
   label,
-  variant = 'primary',
+  variant = "primary",
   hint,
 }: RunAgentButtonProps) {
   const router = useRouter();
   const [state, setState] = useState<
-    | { kind: 'idle' }
-    | { kind: 'running' }
-    | { kind: 'done'; result: RunResult }
-    | { kind: 'error'; message: string }
-  >({ kind: 'idle' });
+    | { kind: "idle" }
+    | { kind: "running" }
+    | { kind: "done"; result: RunResult }
+    | { kind: "error"; message: string }
+  >({ kind: "idle" });
 
   async function run() {
-    setState({ kind: 'running' });
+    setState({ kind: "running" });
     try {
-      const res = await fetch('/api/run-agent', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
+      const res = await fetch("/api/run-agent", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          scenario: scenario ?? 'default',
+          scenario: scenario ?? "default",
           execute: executeOnChain ?? false,
+          executeAction: executeOnChain ? "allocate" : undefined,
         }),
       });
       const json = await res.json();
       if (!res.ok) {
-        setState({ kind: 'error', message: json.error ?? `HTTP ${res.status}` });
+        setState({
+          kind: "error",
+          message: json.error ?? `HTTP ${res.status}`,
+        });
         return;
       }
       const result = json as RunResult;
       cacheCanonicalJsons(result);
-      setState({ kind: 'done', result });
+      setState({ kind: "done", result });
       router.refresh();
     } catch (e) {
-      setState({ kind: 'error', message: (e as Error).message });
+      setState({ kind: "error", message: (e as Error).message });
     }
   }
 
-  const running = state.kind === 'running';
+  const running = state.kind === "running";
   const buttonClass =
-    variant === 'execute'
-      ? 'bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-emerald-300'
-      : variant === 'secondary'
-      ? 'bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-50 disabled:bg-zinc-50 disabled:text-zinc-400'
-      : 'bg-zinc-950 hover:bg-zinc-800 text-white disabled:bg-zinc-300';
+    variant === "execute"
+      ? "bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-emerald-300"
+      : variant === "secondary"
+        ? "bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-50 disabled:bg-zinc-50 disabled:text-zinc-400"
+        : "bg-zinc-950 hover:bg-zinc-800 text-white disabled:bg-zinc-300";
 
   return (
     <div className="space-y-3">
@@ -137,25 +142,28 @@ export function RunAgentButton({
       </button>
       {hint ? <p className="text-xs text-zinc-500">{hint}</p> : null}
 
-      {state.kind === 'error' ? (
+      {state.kind === "error" ? (
         <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
           {state.message}
         </p>
       ) : null}
 
-      {state.kind === 'done' ? <ResultPanel result={state.result} /> : null}
+      {state.kind === "done" ? <ResultPanel result={state.result} /> : null}
     </div>
   );
 }
 
 function cacheCanonicalJsons(result: RunResult) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   for (const r of result.results) {
     if (!r.txHash || !r.canonicalJson) continue;
     try {
       window.localStorage.setItem(
         `${STORAGE_PREFIX}${r.txHash.toLowerCase()}`,
-        JSON.stringify({ canonicalJson: r.canonicalJson, cachedAt: Date.now() }),
+        JSON.stringify({
+          canonicalJson: r.canonicalJson,
+          cachedAt: Date.now(),
+        }),
       );
     } catch {
       // localStorage full or disabled — ignore, verifier will show fallback.
@@ -166,8 +174,11 @@ function cacheCanonicalJsons(result: RunResult) {
 function ResultPanel({ result }: { result: RunResult }) {
   const written = result.results.filter((r) => r.txHash).length;
   const explorerTx =
-    result.network === 'mantle' ? 'https://mantlescan.xyz/tx' : 'https://sepolia.mantlescan.xyz/tx';
-  const networkLabel = result.network === 'mantle' ? 'Mantle Mainnet' : 'Mantle Sepolia';
+    result.network === "mantle"
+      ? "https://mantlescan.xyz/tx"
+      : "https://sepolia.mantlescan.xyz/tx";
+  const networkLabel =
+    result.network === "mantle" ? "Mantle Mainnet" : "Mantle Sepolia";
   const firstWritten = result.results.find((r) => r.txHash);
 
   return (
@@ -177,9 +188,12 @@ function ResultPanel({ result }: { result: RunResult }) {
           {written}/{result.results.length} decisions written on-chain
         </p>
         <p className="text-zinc-600">
-          {(result.durationMs / 1000).toFixed(1)}s · {networkLabel} · scenario{' '}
-          <span className="font-medium text-zinc-900">{result.scenario}</span> · US market{' '}
-          <span className="font-medium text-zinc-900">{result.marketOpen ? 'open' : 'closed'}</span>
+          {(result.durationMs / 1000).toFixed(1)}s · {networkLabel} · scenario{" "}
+          <span className="font-medium text-zinc-900">{result.scenario}</span> ·
+          US market{" "}
+          <span className="font-medium text-zinc-900">
+            {result.marketOpen ? "open" : "closed"}
+          </span>
         </p>
       </div>
 
@@ -206,7 +220,9 @@ function ResultPanel({ result }: { result: RunResult }) {
                     {r.txHash.slice(0, 16)}…
                   </a>
                 ) : (
-                  <span className="text-xs text-rose-600">{r.error ?? 'no tx'}</span>
+                  <span className="text-xs text-rose-600">
+                    {r.error ?? "no tx"}
+                  </span>
                 )}
               </span>
             </div>
@@ -214,16 +230,16 @@ function ResultPanel({ result }: { result: RunResult }) {
               <span
                 className={`mt-0.5 inline-flex shrink-0 items-center rounded-sm px-1 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
                   r.reasonFromLlm
-                    ? 'bg-violet-50 text-violet-700 ring-1 ring-violet-200'
-                    : 'bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200'
+                    ? "bg-violet-50 text-violet-700 ring-1 ring-violet-200"
+                    : "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200"
                 }`}
                 title={
                   r.reasonFromLlm
-                    ? 'Narrated by Claude Haiku 4.5'
-                    : 'Deterministic fallback (LLM unavailable)'
+                    ? "Narrated by Claude Haiku 4.5"
+                    : "Deterministic fallback (LLM unavailable)"
                 }
               >
-                {r.reasonFromLlm ? 'LLM' : 'auto'}
+                {r.reasonFromLlm ? "LLM" : "auto"}
               </span>
               <span className="italic">{r.reason}</span>
             </div>
@@ -239,7 +255,7 @@ function ResultPanel({ result }: { result: RunResult }) {
           </p>
           <p className="mt-1 text-zinc-900">{result.execution.description}</p>
           <p className="mt-1 text-xs text-zinc-600">
-            block {result.execution.blockNumber} ·{' '}
+            block {result.execution.blockNumber} ·{" "}
             <a
               href={`${explorerTx}/${result.execution.txHash}`}
               target="_blank"
@@ -275,7 +291,10 @@ function ResultPanel({ result }: { result: RunResult }) {
         ) : null}
         {result.narrationModel ? (
           <span className="ml-auto">
-            Narration: <code className="rounded bg-zinc-100 px-1 py-0.5">{result.narrationModel}</code>
+            Narration:{" "}
+            <code className="rounded bg-zinc-100 px-1 py-0.5">
+              {result.narrationModel}
+            </code>
           </span>
         ) : null}
       </div>
@@ -283,42 +302,38 @@ function ResultPanel({ result }: { result: RunResult }) {
   );
 }
 
-function PipelineFlags({ inputs }: { inputs: RunResult['inputs'] }) {
+function PipelineFlags({ inputs }: { inputs: RunResult["inputs"] }) {
   const flags = [
-    { label: 'Market hours', live: inputs.marketHoursLive },
-    { label: 'Reference prices', live: inputs.referencePricesLive },
-    { label: 'xStock prices (Fluxion)', live: inputs.xStockPricesLive },
-    { label: 'LLM reasoning', live: inputs.llmReasoningLive },
-    { label: 'On-chain write', live: inputs.onChainWriteLive },
-    { label: 'On-chain execution', live: inputs.onChainExecutionLive },
+    { label: "Market hours", state: inputs.marketHours },
+    { label: "Reference prices", state: inputs.referencePrices },
+    { label: "xStock prices (Fluxion)", state: inputs.xStockPrices },
+    { label: "LLM reasoning", state: inputs.llmReasoning },
+    { label: "On-chain write", state: inputs.onChainWrite },
+    { label: "On-chain execution", state: inputs.onChainExecution },
   ];
   return (
     <div className="flex flex-wrap gap-2">
       {flags.map((f) => (
         <span
           key={f.label}
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${
-            f.live
-              ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
-              : 'bg-amber-50 text-amber-800 ring-amber-200'
-          }`}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${stateClasses(f.state)}`}
         >
           <span
-            className={f.live ? 'h-1.5 w-1.5 rounded-full bg-emerald-500' : 'h-1.5 w-1.5 rounded-full bg-amber-500'}
+            className={`h-1.5 w-1.5 rounded-full ${stateDotClass(f.state)}`}
           />
-          {f.label}: {f.live ? 'live' : 'stub'}
+          {f.label}: {f.state}
         </span>
       ))}
     </div>
   );
 }
 
-function SourceBadges({ sources }: { sources: PerAssetResult['sources'] }) {
+function SourceBadges({ sources }: { sources: PerAssetResult["sources"] }) {
   const entries = [
-    { label: 'market hours', state: sources.marketHours },
-    { label: 'reference', state: sources.referencePrice },
-    { label: 'xStock', state: sources.xStockPrice },
-    { label: 'on-chain', state: sources.onChainWrite },
+    { label: "market hours", state: sources.marketHours },
+    { label: "reference", state: sources.referencePrice },
+    { label: "xStock", state: sources.xStockPrice },
+    { label: "on-chain", state: sources.onChainWrite },
   ];
   return (
     <div className="flex flex-wrap gap-1.5 pl-12 text-[10px]">
@@ -337,23 +352,49 @@ function SourceBadges({ sources }: { sources: PerAssetResult['sources'] }) {
 
 function stateClasses(s: SourceState): string {
   switch (s) {
-    case 'live':
-      return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
-    case 'stub':
-      return 'bg-amber-50 text-amber-700 ring-amber-200';
-    case 'simulated':
-      return 'bg-violet-50 text-violet-700 ring-violet-200';
-    case 'n/a':
+    case "live":
+      return "bg-emerald-50 text-emerald-700 ring-emerald-200";
+    case "stub":
+      return "bg-amber-50 text-amber-700 ring-amber-200";
+    case "simulated":
+      return "bg-violet-50 text-violet-700 ring-violet-200";
+    case "n/a":
     default:
-      return 'bg-zinc-100 text-zinc-500 ring-zinc-200';
+      return "bg-zinc-100 text-zinc-500 ring-zinc-200";
+  }
+}
+
+function stateDotClass(s: SourceState): string {
+  switch (s) {
+    case "live":
+      return "bg-emerald-500";
+    case "stub":
+      return "bg-amber-500";
+    case "simulated":
+      return "bg-violet-500";
+    case "n/a":
+    default:
+      return "bg-zinc-400";
   }
 }
 
 function Spinner() {
   return (
     <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
-      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="3"
+        opacity="0.25"
+      />
+      <path
+        d="M12 2a10 10 0 0 1 10 10"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }

@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import { RunAgentButton } from '@/components/RunAgentButton';
-import { NETWORK_LABEL } from '@/lib/onchain';
+import Link from "next/link";
+import { RunAgentButton } from "@/components/RunAgentButton";
+import { NETWORK_LABEL } from "@/lib/onchain";
 
 export default function Home() {
   return (
@@ -16,11 +16,17 @@ export default function Home() {
             Their underlying markets don&apos;t.
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-zinc-600">
-            Neutrino is the risk-judgment layer for autonomous agents on Mantle. It evaluates
-            tokenized equity exposure for market-hours, liquidity and basis risk, then writes a
-            verifiable decision receipt on-chain and routes capital toward documented Mantle yield
-            rails when execution is appropriate. The deterministic engine decides; the LLM only
-            explains.
+            Neutrino is the risk-judgment layer for autonomous agents on Mantle.
+            It evaluates tokenized equity exposure for market-hours, liquidity
+            and basis risk, then writes a verifiable decision receipt on-chain
+            and routes capital toward documented Mantle yield rails when
+            execution is appropriate. The deterministic engine decides; the LLM
+            only explains.
+          </p>
+          <p className="mt-3 max-w-2xl text-sm font-medium text-zinc-700">
+            We do not present an “AI trading bot”. Neutrino computes risk from
+            explicit signals, applies policy limits, and records the decision
+            trail before capital moves.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -42,19 +48,47 @@ export default function Home() {
       <section className="space-y-6 rounded-xl border border-zinc-200 bg-white p-6 sm:p-8">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">
-            Judge demo · pick a scenario
+            Judge demo · proof-first path
           </p>
           <h2 className="mt-1 text-xl font-semibold tracking-tight text-zinc-950">
-            Run the agent on {NETWORK_LABEL}
+            Run, inspect, verify
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-600">
-            Each scenario walks the full pipeline: fetch a market snapshot, score risk
-            deterministically, narrate via Claude Haiku 4.5, and write one canonical decision
-            receipt per asset to <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs">RWADecisionLogger</code>.
-            The on-chain <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs">reasonHash</code>{' '}
-            equals <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs">keccak256</code> of the
-            full audit JSON — re-hash it locally on any decision page to confirm.
+            Each scenario walks the full pipeline: fetch a market snapshot,
+            score risk deterministically, narrate via Claude Haiku 4.5, and
+            write one canonical decision receipt per asset to{" "}
+            <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs">
+              RWADecisionLogger
+            </code>
+            . The on-chain{" "}
+            <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs">
+              reasonHash
+            </code>{" "}
+            equals{" "}
+            <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs">
+              keccak256
+            </code>{" "}
+            of the full audit JSON — re-hash it locally on any decision page to
+            confirm.
           </p>
+        </div>
+
+        <div className="grid gap-3 text-sm sm:grid-cols-3">
+          <JudgeStep
+            number="1"
+            title="Risky xStock decision"
+            body="Shows market-hours, liquidity and basis controls for tokenized equities. xStock quotes are labelled stub until public addresses are available."
+          />
+          <JudgeStep
+            number="2"
+            title="Safe RWA/yield decision"
+            body="Shows USDY and mETH routing without TradFi market-hours exposure. Non-applicable signals render as n/a, not hidden failures."
+          />
+          <JudgeStep
+            number="3"
+            title="Receipt verification"
+            body="Open /proof or an asset receipt, inspect the on-chain event, then re-hash the canonical JSON."
+          />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -67,8 +101,9 @@ export default function Home() {
                 xStocks during after-hours
               </p>
               <p className="mt-1 text-xs text-zinc-600">
-                Agent evaluates NVDAx / TSLAx / SPYx. Market-hours, liquidity and basis penalties
-                push the action toward PAUSE under the active policy.
+                Agent evaluates NVDAx / TSLAx / SPYx. Market-hours, liquidity
+                and basis penalties push the action toward PAUSE under the
+                active policy.
               </p>
             </div>
             <RunAgentButton
@@ -88,8 +123,8 @@ export default function Home() {
                 On-chain RWA / yield rails
               </p>
               <p className="mt-1 text-xs text-zinc-600">
-                Agent evaluates USDY (Ondo T-bills) and mETH. No market-hours risk; the engine
-                routes toward ALLOCATE.
+                Agent evaluates USDY (Ondo T-bills) and mETH. No market-hours
+                risk; the engine routes toward ALLOCATE.
               </p>
             </div>
             <RunAgentButton
@@ -106,19 +141,20 @@ export default function Home() {
                 Execute on Mantle mainnet
               </p>
               <p className="mt-1 text-sm font-medium text-zinc-900">
-                Real INIT Capital supply
+                Real Fluxion mETH swap
               </p>
               <p className="mt-1 text-xs text-zinc-600">
-                Runs the safe scenario and supplies 1 USDC to{' '}
+                Runs the safe scenario and swaps 1 USDC to{" "}
                 <a
-                  href="https://dev.init.capital/contract-addresses/mantle"
+                  href="https://fluxion-network.gitbook.io/fluxion-network/developer-resources/technical-overview-and-api/amm-v3-swaprouter.md"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-emerald-700 underline-offset-2 hover:underline"
                 >
-                  INIT Capital
-                </a>{' '}
-                — a real RWA-yield rail, not a WMNT swap. Returns the real Mantlescan tx hash.
+                  mETH on Fluxion V3
+                </a>{" "}
+                — a real Mantle-native LST route. Returns the real Mantlescan tx
+                hash.
               </p>
             </div>
             <RunAgentButton
@@ -126,7 +162,7 @@ export default function Home() {
               executeOnChain
               label="Run + execute on Mantle"
               variant="execute"
-              hint="Decisions + 1 USDC supply · uses ~1 USDC + gas"
+              hint="Decisions + 1 USDC→mETH swap · uses ~1 USDC + gas"
             />
           </div>
         </div>
@@ -149,21 +185,77 @@ export default function Home() {
 
       <section className="rounded-xl border border-zinc-200 bg-white p-6">
         <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">
+          Live / stub / n/a — visible by design
+        </p>
+        <h2 className="mt-1 text-lg font-semibold tracking-tight text-zinc-950">
+          No hidden mocks, no fake xStock execution
+        </h2>
+        <div className="mt-4 grid gap-3 text-sm sm:grid-cols-4">
+          <SourceLegend
+            label="Market hours"
+            state="LIVE"
+            body="NYSE/NASDAQ schedule evaluated at run time."
+            tone="live"
+          />
+          <SourceLegend
+            label="Reference price"
+            state="LIVE"
+            body="Twelve Data for equity references when API quota is available."
+            tone="live"
+          />
+          <SourceLegend
+            label="xStock quote"
+            state="STUB"
+            body="Flagged until Mantle xStock token addresses are public."
+            tone="stub"
+          />
+          <SourceLegend
+            label="Execution"
+            state="LIVE / N/A"
+            body="Receipts are live; swaps only run when the judge clicks execute."
+            tone="neutral"
+          />
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-zinc-200 bg-white p-6">
+        <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">
           Why this matters for Mantle
         </p>
         <h2 className="mt-1 text-lg font-semibold tracking-tight text-zinc-950">
           Risk judgment for the new xStocks / RWA execution stack
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-600">
-          Mantle is closing the xStocks execution gap with the recent{' '}
-          <strong>Atomic RFQ launch</strong> (Mantle / Bybit / Fluxion) and a growing set of
-          institutional-style RWA rails (USDY from Ondo, mUSD, INIT Capital pools). As more
-          autonomous agents touch this capital, the scarce layer is no longer execution — it&apos;s
-          trustworthy autonomous judgment. Neutrino is that layer: the agent that decides{' '}
-          <em>when</em> the rails are safe to use, records the rationale on Mantle, and only then
-          allows execution.
+          Mantle is closing the xStocks execution gap with the recent{" "}
+          <strong>Atomic RFQ launch</strong> (Mantle / Bybit / Fluxion) and a
+          growing set of institutional-style RWA rails (USDY from Ondo, mUSD,
+          INIT Capital pools). As more autonomous agents touch this capital, the
+          scarce layer is no longer execution — it&apos;s trustworthy autonomous
+          judgment. Neutrino is that layer: the agent that decides <em>when</em>{" "}
+          the rails are safe to use, records the rationale on Mantle, and only
+          then allows execution.
         </p>
       </section>
+    </div>
+  );
+}
+
+function JudgeStep({
+  number,
+  title,
+  body,
+}: {
+  number: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+        Step {number}
+      </p>
+      <h3 className="mt-1 font-semibold text-zinc-950">{title}</h3>
+      <p className="mt-1 text-zinc-600">{body}</p>
     </div>
   );
 }
@@ -173,6 +265,39 @@ function PrincipleCard({ title, body }: { title: string; body: string }) {
     <div className="rounded-lg border border-zinc-200 bg-white p-5">
       <h3 className="text-sm font-semibold text-zinc-950">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-zinc-600">{body}</p>
+    </div>
+  );
+}
+
+function SourceLegend({
+  label,
+  state,
+  body,
+  tone,
+}: {
+  label: string;
+  state: string;
+  body: string;
+  tone: "live" | "stub" | "neutral";
+}) {
+  const classes =
+    tone === "live"
+      ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+      : tone === "stub"
+        ? "bg-amber-50 text-amber-800 ring-amber-200"
+        : "bg-zinc-100 text-zinc-600 ring-zinc-200";
+
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-medium text-zinc-950">{label}</p>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset ${classes}`}
+        >
+          {state}
+        </span>
+      </div>
+      <p className="mt-2 text-zinc-600">{body}</p>
     </div>
   );
 }
