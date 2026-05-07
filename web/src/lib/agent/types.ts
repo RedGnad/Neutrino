@@ -79,12 +79,25 @@ export interface UserPolicy {
   fallbackYieldAsset: AssetSymbol;
 }
 
-export interface Decision {
+/**
+ * Output of the deterministic rules engine, BEFORE the canonical hash is
+ * computed. `run.ts` then wraps this into a CanonicalDecision (see
+ * decision/canonical.ts) and derives the on-chain hashes from that.
+ */
+export interface DecisionPlan {
   asset: AssetSymbol;
   action: Action;
   riskScore: number;
   breakdown: RiskBreakdown;
   reason: string;
+}
+
+/**
+ * Decision shape used at the contract boundary — carries the hashes that
+ * RWADecisionLogger.logDecision expects. Built from a DecisionPlan + the
+ * canonical builder.
+ */
+export interface Decision extends DecisionPlan {
   reasonHash: `0x${string}`;
   policyHash: `0x${string}`;
 }

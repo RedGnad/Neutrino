@@ -1,7 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useState } from 'react';
+
+type Scenario = 'default' | 'risky-xstocks' | 'safe-yield';
+
+type SourceState = 'live' | 'stub' | 'simulated' | 'n/a';
 
 interface PerAssetResult {
   symbol: string;
@@ -9,6 +14,14 @@ interface PerAssetResult {
   riskScore: number;
   reason: string;
   reasonFromLlm: boolean;
+  canonicalJson: string;
+  canonicalHash: string;
+  sources: {
+    marketHours: SourceState;
+    referencePrice: SourceState;
+    xStockPrice: SourceState;
+    onChainWrite: SourceState;
+  };
   txHash?: string;
   blockNumber?: string;
   error?: string;
@@ -27,6 +40,7 @@ interface RunResult {
   durationMs: number;
   marketOpen: boolean;
   network: 'mantle' | 'mantle_sepolia';
+  scenario: Scenario;
   inputs: {
     marketHoursLive: boolean;
     referencePricesLive: boolean;
@@ -42,34 +56,55 @@ interface RunResult {
   executionError?: string;
 }
 
-/**
- * Explorer base resolved from the network the result targets so the link
- * always lands on the correct chain (mainnet vs Sepolia).
- */
-function explorerTxBase(network: 'mantle' | 'mantle_sepolia' | undefined): string {
-  return network === 'mantle' ? 'https://mantlescan.xyz/tx' : 'https://sepolia.mantlescan.xyz/tx';
+const STORAGE_PREFIX = 'neutrino:decision:';
+
+interface RunAgentButtonProps {
+  /** Scenario to send to /api/run-agent. Default = 'default' (all 5 assets). */
+  scenario?: Scenario;
+  /** Force on-chain execution after the decision loop (mainnet only). */
+  executeOnChain?: boolean;
+  /** Visible label on the button. */
+  label: string;
+  /** Visual variant. */
+  variant?: 'primary' | 'secondary' | 'execute';
+  /** Optional one-line subtitle under the button explaining what happens. */
+  hint?: string;
 }
 
-export function RunAgentButton() {
+export function RunAgentButton({
+  scenario,
+  executeOnChain,
+  label,
+  variant = 'primary',
+  hint,
+}: RunAgentButtonProps) {
   const router = useRouter();
   const [state, setState] = useState<
     | { kind: 'idle' }
-    | { kind: 'running'; startedAt: number }
+    | { kind: 'running' }
     | { kind: 'done'; result: RunResult }
     | { kind: 'error'; message: string }
   >({ kind: 'idle' });
 
   async function run() {
-    setState({ kind: 'running', startedAt: Date.now() });
+    setState({ kind: 'running' });
     try {
-      const res = await fetch('/api/run-agent', { method: 'POST' });
+      const res = await fetch('/api/run-agent', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          scenario: scenario ?? 'default',
+          execute: executeOnChain ?? false,
+        }),
+      });
       const json = await res.json();
       if (!res.ok) {
         setState({ kind: 'error', message: json.error ?? `HTTP ${res.status}` });
         return;
       }
-      setState({ kind: 'done', result: json as RunResult });
-      // Refresh the RSC pages so /proof and /market-map pick up the new events.
+      const result = json as RunResult;
+      cacheCanonicalJsons(result);
+      setState({ kind: 'done', result });
       router.refresh();
     } catch (e) {
       setState({ kind: 'error', message: (e as Error).message });
@@ -77,23 +112,30 @@ export function RunAgentButton() {
   }
 
   const running = state.kind === 'running';
+  const buttonClass =
+    variant === 'execute'
+      ? 'bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-emerald-300'
+      : variant === 'secondary'
+      ? 'bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-50 disabled:bg-zinc-50 disabled:text-zinc-400'
+      : 'bg-zinc-950 hover:bg-zinc-800 text-white disabled:bg-zinc-300';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <button
         type="button"
         onClick={run}
         disabled={running}
-        className="inline-flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+        className={`inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-medium shadow-sm transition-colors disabled:cursor-not-allowed ${buttonClass}`}
       >
         {running ? (
           <>
             <Spinner /> Running on-chain…
           </>
         ) : (
-          <>▶ Run agent now</>
+          <>{label}</>
         )}
       </button>
+      {hint ? <p className="text-xs text-zinc-500">{hint}</p> : null}
 
       {state.kind === 'error' ? (
         <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
@@ -106,10 +148,28 @@ export function RunAgentButton() {
   );
 }
 
+function cacheCanonicalJsons(result: RunResult) {
+  if (typeof window === 'undefined') return;
+  for (const r of result.results) {
+    if (!r.txHash || !r.canonicalJson) continue;
+    try {
+      window.localStorage.setItem(
+        `${STORAGE_PREFIX}${r.txHash.toLowerCase()}`,
+        JSON.stringify({ canonicalJson: r.canonicalJson, cachedAt: Date.now() }),
+      );
+    } catch {
+      // localStorage full or disabled — ignore, verifier will show fallback.
+    }
+  }
+}
+
 function ResultPanel({ result }: { result: RunResult }) {
   const written = result.results.filter((r) => r.txHash).length;
-  const explorerTx = explorerTxBase(result.network);
+  const explorerTx =
+    result.network === 'mantle' ? 'https://mantlescan.xyz/tx' : 'https://sepolia.mantlescan.xyz/tx';
   const networkLabel = result.network === 'mantle' ? 'Mantle Mainnet' : 'Mantle Sepolia';
+  const firstWritten = result.results.find((r) => r.txHash);
+
   return (
     <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-5">
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
@@ -117,11 +177,9 @@ function ResultPanel({ result }: { result: RunResult }) {
           {written}/{result.results.length} decisions written on-chain
         </p>
         <p className="text-zinc-600">
-          {(result.durationMs / 1000).toFixed(1)}s · {networkLabel} · policy{' '}
-          <span className="font-medium text-zinc-900">{result.policyName}</span> · US market{' '}
-          <span className="font-medium text-zinc-900">
-            {result.marketOpen ? 'open' : 'closed'}
-          </span>
+          {(result.durationMs / 1000).toFixed(1)}s · {networkLabel} · scenario{' '}
+          <span className="font-medium text-zinc-900">{result.scenario}</span> · US market{' '}
+          <span className="font-medium text-zinc-900">{result.marketOpen ? 'open' : 'closed'}</span>
         </p>
       </div>
 
@@ -129,7 +187,7 @@ function ResultPanel({ result }: { result: RunResult }) {
 
       <ul className="divide-y divide-zinc-100">
         {result.results.map((r) => (
-          <li key={r.symbol} className="space-y-1 py-3 text-sm">
+          <li key={r.symbol} className="space-y-1.5 py-3 text-sm">
             <div className="flex items-baseline gap-3">
               <span className="w-12 font-medium text-zinc-950">{r.symbol}</span>
               <span className="w-44 font-medium text-zinc-700">{r.action}</span>
@@ -159,19 +217,26 @@ function ResultPanel({ result }: { result: RunResult }) {
                     ? 'bg-violet-50 text-violet-700 ring-1 ring-violet-200'
                     : 'bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200'
                 }`}
-                title={r.reasonFromLlm ? 'Narrated by LLM' : 'Deterministic fallback (LLM not configured or failed)'}
+                title={
+                  r.reasonFromLlm
+                    ? 'Narrated by Claude Haiku 4.5'
+                    : 'Deterministic fallback (LLM unavailable)'
+                }
               >
                 {r.reasonFromLlm ? 'LLM' : 'auto'}
               </span>
               <span className="italic">{r.reason}</span>
             </div>
+            <SourceBadges sources={r.sources} />
           </li>
         ))}
       </ul>
 
       {result.execution ? (
         <div className="rounded-md border border-emerald-200 bg-emerald-50/40 px-4 py-3 text-sm">
-          <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">Execution</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">
+            On-chain execution
+          </p>
           <p className="mt-1 text-zinc-900">{result.execution.description}</p>
           <p className="mt-1 text-xs text-zinc-600">
             block {result.execution.blockNumber} ·{' '}
@@ -193,15 +258,27 @@ function ResultPanel({ result }: { result: RunResult }) {
         </div>
       ) : null}
 
-      <p className="text-xs text-zinc-500">
-        New events will appear in <a href="/proof" className="text-emerald-700 underline-offset-2 hover:underline">/proof</a> and{' '}
-        <a href="/market-map" className="text-emerald-700 underline-offset-2 hover:underline">/market-map</a>.
-        {result.narrationModel ? (
-          <>
-            {' '}Narration model: <code className="rounded bg-zinc-100 px-1 py-0.5">{result.narrationModel}</code>.
-          </>
+      <div className="flex flex-wrap items-center gap-3 border-t border-zinc-100 pt-4 text-xs text-zinc-500">
+        <Link
+          href="/proof"
+          className="font-medium text-emerald-700 underline-offset-2 hover:underline"
+        >
+          View all on-chain receipts →
+        </Link>
+        {firstWritten ? (
+          <Link
+            href={`/agent-decision/${firstWritten.symbol}`}
+            className="font-medium text-emerald-700 underline-offset-2 hover:underline"
+          >
+            Verify {firstWritten.symbol} receipt →
+          </Link>
         ) : null}
-      </p>
+        {result.narrationModel ? (
+          <span className="ml-auto">
+            Narration: <code className="rounded bg-zinc-100 px-1 py-0.5">{result.narrationModel}</code>
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -226,7 +303,9 @@ function PipelineFlags({ inputs }: { inputs: RunResult['inputs'] }) {
               : 'bg-amber-50 text-amber-800 ring-amber-200'
           }`}
         >
-          <span className={f.live ? 'h-1.5 w-1.5 rounded-full bg-emerald-500' : 'h-1.5 w-1.5 rounded-full bg-amber-500'} />
+          <span
+            className={f.live ? 'h-1.5 w-1.5 rounded-full bg-emerald-500' : 'h-1.5 w-1.5 rounded-full bg-amber-500'}
+          />
           {f.label}: {f.live ? 'live' : 'stub'}
         </span>
       ))}
@@ -234,16 +313,47 @@ function PipelineFlags({ inputs }: { inputs: RunResult['inputs'] }) {
   );
 }
 
+function SourceBadges({ sources }: { sources: PerAssetResult['sources'] }) {
+  const entries = [
+    { label: 'market hours', state: sources.marketHours },
+    { label: 'reference', state: sources.referencePrice },
+    { label: 'xStock', state: sources.xStockPrice },
+    { label: 'on-chain', state: sources.onChainWrite },
+  ];
+  return (
+    <div className="flex flex-wrap gap-1.5 pl-12 text-[10px]">
+      {entries.map((e) => (
+        <span
+          key={e.label}
+          className={`inline-flex items-center gap-1 rounded-sm px-1 py-0.5 font-medium uppercase tracking-wider ring-1 ring-inset ${stateClasses(e.state)}`}
+          title={`${e.label}: ${e.state}`}
+        >
+          {e.label}: {e.state}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function stateClasses(s: SourceState): string {
+  switch (s) {
+    case 'live':
+      return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
+    case 'stub':
+      return 'bg-amber-50 text-amber-700 ring-amber-200';
+    case 'simulated':
+      return 'bg-violet-50 text-violet-700 ring-violet-200';
+    case 'n/a':
+    default:
+      return 'bg-zinc-100 text-zinc-500 ring-zinc-200';
+  }
+}
+
 function Spinner() {
   return (
     <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
-      <path
-        d="M12 2a10 10 0 0 1 10 10"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
+      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 }

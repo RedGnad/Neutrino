@@ -10,6 +10,7 @@ import {
   statusFor,
   timeAgo,
 } from '@/lib/onchain';
+import { DecisionVerifier } from '@/components/DecisionVerifier';
 
 export const revalidate = 10;
 
@@ -164,10 +165,16 @@ export default async function AgentDecisionPage({ params }: Props) {
         </section>
       ) : null}
 
+      {latest ? (
+        <DecisionVerifier txHash={latest.txHash} reasonHash={latest.reasonHash} />
+      ) : null}
+
       <p className="text-xs text-zinc-500">
-        Off-chain explanations: the JSON behind <code className="rounded bg-zinc-100 px-1 py-0.5">reasonHash</code>{' '}
-        contains the full risk breakdown and LLM-narrated rationale. It will be pinned to IPFS in
-        the next iteration so any third party can verify the hash.
+        Decision receipts cover schema <code className="rounded bg-zinc-100 px-1 py-0.5">neutrino.decision.v1</code>:
+        agent identity, asset metadata, market snapshot, source-freshness flags, risk breakdown,
+        policy, action, score, narration metadata. The on-chain reasonHash equals{' '}
+        <code className="rounded bg-zinc-100 px-1 py-0.5">keccak256</code> of that JSON. IPFS pinning
+        comes next — for now payloads are cached per-browser when you trigger a run.
       </p>
     </div>
   );

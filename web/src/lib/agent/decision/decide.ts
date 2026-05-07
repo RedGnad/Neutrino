@@ -1,22 +1,23 @@
-// Mirrored from /agent/src/decision/decide.ts.
-import type { Action, AssetMetadata, Decision, MarketSnapshot, UserPolicy } from '../types';
+// Deterministic rules engine. Picks an action, computes a risk breakdown, and
+// produces a fallback reason string. Does NOT compute the on-chain hash —
+// that is the canonical builder's job (see canonical.ts) so the hash covers
+// the full audit payload, not just the bits this function sees.
+import type { Action, AssetMetadata, DecisionPlan, MarketSnapshot, UserPolicy } from '../types';
 import { computeRiskScore, type BasisStats } from '../scoring/risk-score';
-import { keccak256, stringToBytes } from 'viem';
 
 export interface DecideInput {
   meta: AssetMetadata;
   snapshot: MarketSnapshot;
   policy: UserPolicy;
   basisStats?: BasisStats;
+  /** Optional LLM-narrated reason. Falls back to a deterministic one liner. */
   reason?: string;
 }
 
-export function decide({ meta, snapshot, policy, basisStats, reason }: DecideInput): Decision {
+export function decide({ meta, snapshot, policy, basisStats, reason }: DecideInput): DecisionPlan {
   const breakdown = computeRiskScore({ meta, snapshot, basisStats });
   const action = pickAction(meta, snapshot, policy, breakdown.total);
-
   const explanation = reason ?? buildFallbackReason(meta, snapshot, breakdown.total, action);
-  const reasonPayload = JSON.stringify({ breakdown, snapshot, reason: explanation });
 
   return {
     asset: meta.symbol,
@@ -24,8 +25,6 @@ export function decide({ meta, snapshot, policy, basisStats, reason }: DecideInp
     riskScore: breakdown.total,
     breakdown,
     reason: explanation,
-    reasonHash: keccak256(stringToBytes(reasonPayload)),
-    policyHash: keccak256(stringToBytes(JSON.stringify(policy))),
   };
 }
 

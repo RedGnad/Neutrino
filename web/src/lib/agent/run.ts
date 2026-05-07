@@ -1,10 +1,17 @@
 /**
  * Single-shot agent runner used by the /api/run-agent route.
  *
- * Honest by construction: returns flags telling the UI what was *actually*
- * live in the pipeline (market hours / reference prices / xStock prices /
- * LLM reasoning / on-chain write / on-chain execution). Each flag flips
- * to true only when the underlying source actually delivered.
+ * Honest by construction. Each decision flows through:
+ *   1. fetch market snapshot (live where possible, stub clearly flagged)
+ *   2. deterministic rules engine → DecisionPlan
+ *   3. optional LLM narration → reason text (LLM never alters the action)
+ *   4. canonical decision builder → JSON payload + reasonHash + policyHash
+ *      (the hash on-chain covers the FULL audit JSON, not a subset)
+ *   5. on-chain log via RWADecisionLogger
+ *   6. (opt-in, mainnet) one Fluxion swap or INIT Capital supply
+ *
+ * The full canonical JSON for every decision is returned in PerAssetResult so
+ * the frontend can cache it and let a judge re-hash to verify.
  */
 
 import {
@@ -15,9 +22,15 @@ import {
   http,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { mantle, mantleSepoliaTestnet } from 'viem/chains';
-import type { AssetMetadata, AssetSymbol, UserPolicy } from './types';
+import { mantle } from 'viem/chains';
+import type { AssetMetadata, AssetSymbol, Decision, UserPolicy } from './types';
 import { decide } from './decision/decide';
+import {
+  buildCanonicalDecision,
+  type CanonicalDecision,
+  type DecisionSources,
+  type SourceState,
+} from './decision/canonical';
 import { isUsMarketOpen } from './fetchers/market-hours';
 import { createMockXStockClient } from './fetchers/xstocks';
 import { createTwelveDataClient } from './fetchers/reference-price';
@@ -35,11 +48,8 @@ export const DEFAULT_POLICY: UserPolicy = {
 };
 
 export const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
-  // Phase 2 — addresses below align with what the agent now writes for the
-  // event topic. Equities still use placeholder addresses (xStock token
-  // addresses on Mantle are not publicly indexed; see SPEC R3 / research
-  // report). Stable / yield assets use the real Mantle mainnet addresses
-  // so /market-map and /agent-decision can link to Mantlescan token pages.
+  // xStocks: placeholder addresses until Mantle indexes them publicly. Kept
+  // 0x...0001..0003 so legacy events resolve cleanly via web/src/lib/onchain.ts.
   NVDAx: { symbol: 'NVDAx', kind: 'tokenized_equity', reference: 'NVDA', address: '0x0000000000000000000000000000000000000001', market: 'NASDAQ' },
   TSLAx: { symbol: 'TSLAx', kind: 'tokenized_equity', reference: 'TSLA', address: '0x0000000000000000000000000000000000000002', market: 'NASDAQ' },
   SPYx:  { symbol: 'SPYx',  kind: 'tokenized_equity', reference: 'SPY',  address: '0x0000000000000000000000000000000000000003', market: 'NYSE' },
@@ -58,18 +68,28 @@ export const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
   USDT0: { symbol: 'USDT0', kind: 'stable',         address: MAINNET_TOKENS.USDT0.address },
 };
 
-export const MONITORED_ASSETS: AssetSymbol[] = ['NVDAx', 'TSLAx', 'SPYx', 'USDY', 'mETH'];
+/**
+ * Two named scenarios surface the contrast a judge needs in 30 seconds.
+ *  - `risky-xstocks`: only the equities, where market-hours and basis risk dominate.
+ *  - `safe-yield`: only the on-chain yield/stable assets, where the agent is comfortable.
+ *  - `default`: the full mixed set (5 assets) — what the dashboard reads.
+ */
+export type Scenario = 'default' | 'risky-xstocks' | 'safe-yield';
+
+const SCENARIO_ASSETS: Record<Scenario, AssetSymbol[]> = {
+  default: ['NVDAx', 'TSLAx', 'SPYx', 'USDY', 'mETH'],
+  'risky-xstocks': ['NVDAx', 'TSLAx', 'SPYx'],
+  'safe-yield': ['USDY', 'mETH'],
+};
+
+export const MONITORED_ASSETS: AssetSymbol[] = SCENARIO_ASSETS.default;
 
 export type ExecutionAction = 'allocate' | 'move-to-stable-yield';
 
 export interface ExecutionConfig {
-  /** Action to execute on-chain after the decision loop. */
   action: ExecutionAction;
-  /** Amount of USDC (the input token) in base units. 1 USDC = 1_000_000. */
   amountUsdcBaseUnits: bigint;
-  /** Slippage tolerance for swaps, in bps. Default 50. */
   slippageBps?: number;
-  /** INIT supply mode override; only meaningful for `move-to-stable-yield`. */
   initSupplyMode?: InitSupplyMode;
 }
 
@@ -87,6 +107,12 @@ export interface PerAssetResult {
   riskScore: number;
   reason: string;
   reasonFromLlm: boolean;
+  /** Canonical JSON payload of the decision (byte-stable). reasonHash on-chain = keccak256(stringToBytes(canonicalJson)). */
+  canonicalJson: string;
+  /** keccak256 hash of canonicalJson — same value emitted as reasonHash by RWADecisionLogger. */
+  canonicalHash: Hex;
+  /** Per-asset source flags echoed in the canonical payload. */
+  sources: DecisionSources;
   txHash?: Hex;
   blockNumber?: string;
   error?: string;
@@ -96,9 +122,8 @@ export interface RunResult {
   startedAt: number;
   durationMs: number;
   marketOpen: boolean;
-  /** Network the on-chain writes target. */
   network: 'mantle' | 'mantle_sepolia';
-  /** Honest flags about the pipeline inputs. */
+  scenario: Scenario;
   inputs: {
     marketHoursLive: true;
     referencePricesLive: boolean;
@@ -110,22 +135,20 @@ export interface RunResult {
   narrationModel?: string;
   policyName: string;
   results: PerAssetResult[];
-  /** On-chain execution result (only present when ExecutionConfig was passed). */
   execution?: ExecutionResult;
-  /** Plain-English error if execution was attempted but failed. */
   executionError?: string;
 }
 
 export interface RunConfig {
-  /** Network for log writes. Set to 'mantle' for Phase 2 mainnet, 'mantle_sepolia' for legacy. */
   network: 'mantle' | 'mantle_sepolia';
   rpcUrl: string;
   privateKey: Hex;
   loggerAddress: Address;
   agentId: bigint;
   twelveDataApiKey?: string;
-  /** When set, the runner executes one Fluxion swap or INIT supply after the decision loop. */
   execution?: ExecutionConfig;
+  /** Which subset of assets to monitor for this run. Default = all 5. */
+  scenario?: Scenario;
 }
 
 export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
@@ -140,16 +163,21 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     loggerAddress: cfg.loggerAddress,
   });
 
+  const scenario = cfg.scenario ?? 'default';
+  const monitored = SCENARIO_ASSETS[scenario];
+
   const results: PerAssetResult[] = [];
   let anyReferenceFetched = false;
   let anyLlmNarration = false;
 
-  for (const symbol of MONITORED_ASSETS) {
+  for (const symbol of monitored) {
     const meta = ASSET_REGISTRY[symbol];
     let referencePrice: number | undefined;
+    let referenceFetched = false;
     if (refClient && meta.reference) {
       try {
         referencePrice = await refClient.fetchPrice(meta.reference);
+        referenceFetched = true;
         anyReferenceFetched = true;
       } catch {
         referencePrice = undefined;
@@ -157,27 +185,66 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     }
     const snapshot = await xstocks.fetchSnapshot(symbol, marketOpen, referencePrice);
 
-    const baseDecision = decide({ meta, snapshot, policy: DEFAULT_POLICY });
+    // Deterministic plan first, LLM narration on top, then re-decide so the
+    // canonical reason matches what the LLM produced.
+    const basePlan = decide({ meta, snapshot, policy: DEFAULT_POLICY });
     const llmReason = await narrateDecision({
       meta,
       snapshot,
-      breakdown: baseDecision.breakdown,
-      action: baseDecision.action,
+      breakdown: basePlan.breakdown,
+      action: basePlan.action,
       policy: DEFAULT_POLICY,
     });
     const reasonFromLlm = Boolean(llmReason);
     if (reasonFromLlm) anyLlmNarration = true;
 
-    const decision = llmReason
+    const plan = llmReason
       ? decide({ meta, snapshot, policy: DEFAULT_POLICY, reason: llmReason })
-      : baseDecision;
+      : basePlan;
+
+    const sources: DecisionSources = {
+      marketHours: 'live',
+      referencePrice: !meta.reference ? 'n/a' : referenceFetched ? 'live' : 'stub',
+      xStockPrice: meta.kind === 'tokenized_equity'
+        ? (xstocks.isStub() ? 'stub' : 'live')
+        : 'n/a',
+      onChainWrite: 'live',
+    };
+
+    const canonical = buildCanonicalDecision({
+      agentId: cfg.agentId,
+      meta,
+      snapshot,
+      breakdown: plan.breakdown,
+      policy: DEFAULT_POLICY,
+      action: plan.action,
+      riskScore: plan.riskScore,
+      reason: plan.reason,
+      sources,
+      narrationModel: reasonFromLlm ? NARRATION_MODEL : null,
+      narrationFromLlm: reasonFromLlm,
+      timestamp: Date.now(),
+    });
+
+    const decision: Decision = {
+      asset: plan.asset,
+      action: plan.action,
+      riskScore: plan.riskScore,
+      breakdown: plan.breakdown,
+      reason: plan.reason,
+      reasonHash: canonical.hash,
+      policyHash: canonical.policyHash,
+    };
 
     const result: PerAssetResult = {
       symbol,
-      action: decision.action,
-      riskScore: decision.riskScore,
-      reason: decision.reason,
+      action: plan.action,
+      riskScore: plan.riskScore,
+      reason: plan.reason,
       reasonFromLlm,
+      canonicalJson: canonical.json,
+      canonicalHash: canonical.hash,
+      sources,
     };
 
     try {
@@ -191,7 +258,7 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     results.push(result);
   }
 
-  // Phase 2 — on-chain execution (mainnet only, opt-in via cfg.execution).
+  // Phase 2 — on-chain execution, opt-in via cfg.execution and only on mainnet.
   let execution: ExecutionResult | undefined;
   let executionError: string | undefined;
 
@@ -205,15 +272,19 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     executionError = 'Execution requested but network is not mainnet — skipped.';
   }
 
+  // Source-state aggregation reflects the actual outcomes, not just config.
+  const xStockMonitored = monitored.some((s) => ASSET_REGISTRY[s].kind === 'tokenized_equity');
+
   return {
     startedAt,
     durationMs: Date.now() - startedAt,
     marketOpen,
     network: cfg.network,
+    scenario,
     inputs: {
       marketHoursLive: true,
       referencePricesLive: anyReferenceFetched,
-      xStockPricesLive: !xstocks.isStub(),
+      xStockPricesLive: xStockMonitored ? !xstocks.isStub() : true, // n/a → don't penalise the flag
       onChainWriteLive: true,
       onChainExecutionLive: Boolean(execution),
       llmReasoningLive: anyLlmNarration,
@@ -226,12 +297,6 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
   };
 }
 
-/**
- * Builds a viem wallet/public client pair for Mantle mainnet and dispatches
- * either a Fluxion swap (ALLOCATE) or an INIT Capital supply (MOVE_TO_STABLE_YIELD).
- *
- * Throws on any error (caught by the caller and surfaced into RunResult.executionError).
- */
 async function runExecution(cfg: RunConfig): Promise<ExecutionResult> {
   const exec = cfg.execution!;
   const account = privateKeyToAccount(cfg.privateKey);
@@ -240,9 +305,8 @@ async function runExecution(cfg: RunConfig): Promise<ExecutionResult> {
   const pub = createPublicClient({ chain: mantle, transport });
 
   if (exec.action === 'allocate') {
-    // ALLOCATE: swap USDC → WMNT (deepest AMM liquidity guaranteed) so the
-    // demo doesn't get stuck on a missing pool. Switch to mETH later once
-    // a pool is confirmed via findPoolFee.
+    // ALLOCATE — Fluxion swap. Defaults to USDC → WMNT (deepest AMM
+    // liquidity). Future: route to mETH once the pool is confirmed.
     const result = await swapExactInputSingle(
       { pub, wallet, signer: account.address },
       {
@@ -261,10 +325,10 @@ async function runExecution(cfg: RunConfig): Promise<ExecutionResult> {
     };
   }
 
-  // MOVE_TO_STABLE_YIELD: supply USDC directly to INIT's USDC pool. Future
-  // refinement: swap USDC → USDY first, then supply to USDY pool for the
-  // real Ondo T-bill yield. USDY pool requires an existing USDY balance,
-  // which we don't have at run start.
+  // MOVE_TO_STABLE_YIELD — supply USDC to INIT's USDC pool. Real Mantle RWA
+  // rail. The USDY pool requires an existing USDY balance which we don't
+  // yet hold; the USDC pool is the closest documented stable-yield rail
+  // accessible from a USDC-funded runner.
   const result = await supplyToInit(
     { pub, wallet, signer: account.address },
     {
@@ -281,7 +345,7 @@ async function runExecution(cfg: RunConfig): Promise<ExecutionResult> {
       ? result.approveOrTransferTxHash
       : undefined,
     blockNumber: result.blockNumber.toString(),
-    description: `Supplied ${formatUsdc(exec.amountUsdcBaseUnits)} USDC to INIT Capital USDC pool (RWA-yield rail).`,
+    description: `Supplied ${formatUsdc(exec.amountUsdcBaseUnits)} USDC to INIT Capital USDC pool (Mantle RWA-yield rail).`,
   };
 }
 
@@ -290,3 +354,7 @@ function formatUsdc(baseUnits: bigint): string {
   const frac = (baseUnits % 1_000_000n).toString().padStart(6, '0').replace(/0+$/, '') || '0';
   return frac === '0' ? `${whole}` : `${whole}.${frac}`;
 }
+
+// Re-export so the API route can pass them through to the canonical layer
+// when needed without importing canonical.ts directly.
+export type { CanonicalDecision, DecisionSources, SourceState };

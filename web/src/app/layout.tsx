@@ -3,9 +3,9 @@ import Link from 'next/link';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Neutrino — Market-aware AI risk-allocation for Mantle RWAs',
+  title: 'Neutrino — Risk judgment layer for Mantle xStocks / RWA',
   description:
-    "Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade.",
+    "Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the risk judgment layer that decides when execution is safe and writes a verifiable receipt on Mantle.",
 };
 
 const NAV = [

@@ -1,20 +1,15 @@
 import type { Address, Hex } from 'viem';
-import { NextResponse } from 'next/server';
-import { runAgentOnce, type ExecutionConfig } from '@/lib/agent/run';
+import { NextResponse, type NextRequest } from 'next/server';
+import { runAgentOnce, type ExecutionConfig, type Scenario } from '@/lib/agent/run';
 
 // Streaming-friendly Node runtime; default in Next.js 16, but be explicit.
 export const runtime = 'nodejs';
 // Force fresh execution every time (no static caching of POST results).
 export const dynamic = 'force-dynamic';
+// Each run can take up to ~120s (5 reference fetches + 5 LLM calls + 5 on-chain
+// writes + optional swap). Bump the function timeout accordingly.
+export const maxDuration = 180;
 
-/**
- * Resolve the active network for log writes. Two env knobs:
- *   - NEUTRINO_NETWORK: 'mantle' (mainnet) or 'mantle_sepolia' (legacy). Default 'mantle_sepolia'.
- *   - MANTLE_RPC: explicit override; otherwise use MANTLE_SEPOLIA_RPC or MANTLE_MAINNET_RPC.
- *
- * The on-chain decision logger address is the same env var (NEXT_PUBLIC_RWA_DECISION_LOGGER_ADDRESS)
- * regardless of network — set it to whichever deployment matches NEUTRINO_NETWORK.
- */
 function resolveNetwork(): { network: 'mantle' | 'mantle_sepolia'; rpcUrl: string | undefined } {
   const declared = (process.env.NEUTRINO_NETWORK ?? 'mantle_sepolia') as 'mantle' | 'mantle_sepolia';
   const network = declared === 'mantle' ? 'mantle' : 'mantle_sepolia';
@@ -25,19 +20,21 @@ function resolveNetwork(): { network: 'mantle' | 'mantle_sepolia'; rpcUrl: strin
   return { network, rpcUrl };
 }
 
-/**
- * Pull the optional on-chain execution config from env. Execution is opt-in:
- * if EXECUTE_ON_CHAIN is not "true" we skip it entirely.
- */
-function resolveExecution(network: 'mantle' | 'mantle_sepolia'): ExecutionConfig | undefined {
-  if (process.env.EXECUTE_ON_CHAIN !== 'true') return undefined;
-  if (network !== 'mantle') return undefined; // execution requires mainnet
+function resolveExecution(
+  network: 'mantle' | 'mantle_sepolia',
+  override?: { enabled: boolean; action?: 'allocate' | 'move-to-stable-yield' },
+): ExecutionConfig | undefined {
+  const enabledByEnv = process.env.EXECUTE_ON_CHAIN === 'true';
+  const enabled = override?.enabled ?? enabledByEnv;
+  if (!enabled) return undefined;
+  if (network !== 'mantle') return undefined;
 
-  const action = (process.env.EXECUTE_ACTION ?? 'move-to-stable-yield') as
-    | 'allocate'
-    | 'move-to-stable-yield';
+  const action =
+    override?.action ??
+    ((process.env.EXECUTE_ACTION ?? 'move-to-stable-yield') as
+      | 'allocate'
+      | 'move-to-stable-yield');
 
-  // Default to 1 USDC for demo runs — keeps cost trivial. 1 USDC = 1_000_000 base units.
   const amountRaw = process.env.EXECUTE_AMOUNT_USDC_BASE_UNITS ?? '1000000';
   const amountUsdcBaseUnits = BigInt(amountRaw);
 
@@ -48,7 +45,27 @@ function resolveExecution(network: 'mantle' | 'mantle_sepolia'): ExecutionConfig
   return { action, amountUsdcBaseUnits, slippageBps };
 }
 
-export async function POST() {
+interface RequestBody {
+  scenario?: Scenario;
+  /** If true, force on-chain execution for this run regardless of EXECUTE_ON_CHAIN env. */
+  execute?: boolean;
+  /** Override the default execution action when `execute` is true. */
+  executeAction?: 'allocate' | 'move-to-stable-yield';
+}
+
+async function readBody(request: NextRequest): Promise<RequestBody> {
+  try {
+    const raw = await request.text();
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as RequestBody;
+    return parsed ?? {};
+  } catch {
+    return {};
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const body = await readBody(request);
   const { network, rpcUrl } = resolveNetwork();
   const privateKey = process.env.AGENT_RUNNER_PRIVATE_KEY as Hex | undefined;
   const loggerAddress = process.env.NEXT_PUBLIC_RWA_DECISION_LOGGER_ADDRESS as Address | undefined;
@@ -72,7 +89,11 @@ export async function POST() {
       loggerAddress,
       agentId: BigInt(agentIdRaw),
       twelveDataApiKey: process.env.TWELVE_DATA_API_KEY || undefined,
-      execution: resolveExecution(network),
+      execution: resolveExecution(network, {
+        enabled: body.execute ?? (process.env.EXECUTE_ON_CHAIN === 'true'),
+        action: body.executeAction,
+      }),
+      scenario: body.scenario,
     });
     return NextResponse.json(result);
   } catch (e) {
