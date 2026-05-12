@@ -62,7 +62,7 @@ const ASSET_BY_ADDRESS: Record<string, { symbol: string; reference?: string }> =
   '0x0000000000000000000000000000000000000001': { symbol: 'NVDAx', reference: 'NVDA' },
   '0x0000000000000000000000000000000000000002': { symbol: 'TSLAx', reference: 'TSLA' },
   '0x0000000000000000000000000000000000000003': { symbol: 'SPYx', reference: 'SPY' },
-  // --- mETH placeholder (canonical Mantle mETH address worth confirming on first run) ---
+  // --- Legacy placeholder kept so older demo receipts still resolve ---
   '0x0000000000000000000000000000000000000005': { symbol: 'mETH' },
   // --- Real Mantle mainnet token addresses ---
   '0x5be26527e817998a7206475496fde1e68957c5a6': { symbol: 'USDY' }, // Ondo USDY
@@ -178,7 +178,7 @@ export const TRACKED_ASSETS = [
   { symbol: 'TSLAx', reference: 'TSLA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x0000000000000000000000000000000000000002' as Address },
   { symbol: 'SPYx',  reference: 'SPY',  kind: 'tokenized_equity' as const, market: 'NYSE' as const,   address: '0x0000000000000000000000000000000000000003' as Address },
   { symbol: 'USDY',  kind: 'yield_bearing' as const, address: '0x5bE26527e817998A7206475496fDE1E68957c5A6' as Address },
-  { symbol: 'mETH',  kind: 'yield_bearing' as const, address: '0x0000000000000000000000000000000000000005' as Address },
+  { symbol: 'mETH',  kind: 'yield_bearing' as const, address: '0xcDA86A272531e8640cD7F1a92c01839911B90bb0' as Address },
 ] as const;
 
 export type TrackedAsset = (typeof TRACKED_ASSETS)[number];

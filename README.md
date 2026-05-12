@@ -12,7 +12,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 
 ## Live demo
 
-- **Production**: https://neutrino-ebon.vercel.app *(redeploy after Vercel domain rebind)*
+- **Production**: pending Vercel redeploy / domain rebind. Do not submit a Vercel URL until it returns `200 OK`.
 - **Source**: https://github.com/RedGnad/Neutrino
 - **Mantle Mainnet contracts** *(both addresses identical to Sepolia thanks to CREATE determinism)*:
   - `RWAAgent` (ERC-8004 identity NFT): [`0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96`](https://mantlescan.xyz/address/0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96)
@@ -32,17 +32,17 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 ## What ships today
 
 - **Real on-chain decisions** on Mantle mainnet. Every run writes one `DecisionLogged` event per asset with a `reasonHash` that covers the full canonical audit JSON.
-- **Verifiable receipts** — the `/agent-decision/[asset]` page reads the on-chain reason hash and lets you re-compute `keccak256` on the cached audit JSON to confirm a match.
+- **Verifiable local receipts** — after a run, the `/agent-decision/[asset]` page reads the on-chain reason hash and lets you re-compute `keccak256` on the audit JSON cached by that browser to confirm a match.
 - **Live freshness flags** in every result panel: market hours, reference prices (Twelve Data), xStock prices (Fluxion), LLM reasoning (Claude Haiku 4.5), on-chain write, on-chain execution. Stub vs live is shown, never hidden.
 - **Two judge-ready scenarios** on the home page:
   - *Risky xStocks* (NVDAx / TSLAx / SPYx) — typically PAUSE outside market hours.
   - *Safe yield* (USDY / mETH) — typically ALLOCATE.
-- **Optional real Fluxion / INIT execution** behind an opt-in flag; defaults to receipts-only so a demo never reverts on a missing pool.
+- **Optional real Fluxion execution** behind an opt-in button: the execution demo swaps USDC → mETH on Fluxion V3. Receipt-only runs remain the default for safe judging.
 
 ## What's stubbed (and labelled as such)
 
 - **xStock token addresses** on Mantle are not publicly indexed. The agent monitors xStocks via reference (Twelve Data) + market-hours awareness, but per-asset on-chain prices are stub until Mantle / Backed publishes the addresses.
-- **Fluxion swap routing** is currently USDC → WMNT (the deepest AMM pool we can guarantee). A USDC → mETH route is wired and will swap once the pool is confirmed via `findPoolFee`.
+- **xStock execution / RFQ** is not wired yet. The current live execution path is USDC → mETH on Fluxion V3; xStock risk is evaluated, not auto-traded.
 - **INIT Capital `mintTo` ABI** has not been visually verified on a contract page; the wrapper supports three call shapes (default, with-amount, transfer-then-mint) so a smoke test can flip without rewriting the call site.
 
 ## Reproduce in 5 minutes
@@ -67,7 +67,7 @@ pnpm install
 pnpm dev                        # → http://localhost:3000
 ```
 
-Click **Run risky xStock scenario** on the home page. Within ~30s you'll have 3 PAUSE decisions on Mantle mainnet, each with a clickable Mantlescan link and a verifiable `reasonHash`. Visit `/agent-decision/NVDAx` and click **Verify hash** to confirm the on-chain hash matches `keccak256` of the cached audit JSON.
+Click **Run risky xStock scenario** on the home page. Within ~30s you'll have 3 PAUSE decisions on Mantle mainnet, each with a clickable Mantlescan link. In the same browser, visit `/agent-decision/NVDAx` and click **Verify hash** to confirm the on-chain hash matches `keccak256` of the cached audit JSON.
 
 ## Repo layout
 
@@ -89,7 +89,7 @@ neutrino/
 - **Risk engine**: TypeScript, deterministic 5-component score (market hours, spread, liquidity, basis-vs-rolling-mean, volatility). LLM has zero influence on the action.
 - **LLM narration**: Claude Haiku 4.5 via `@ai-sdk/anthropic` with prompt caching. Capped at ~120 output tokens. Costs ≈ $0.005 per agent run.
 - **Reference prices**: Twelve Data (free tier, 8 req/min).
-- **Execution venues**: Fluxion V3 SwapRouter + INIT Capital InitCore (Mantle mainnet).
+- **Execution venues**: Fluxion V3 SwapRouter for the live USDC → mETH demo; INIT Capital InitCore wrapper kept as an experimental stable-yield rail.
 - **Frontend**: Next.js 16 (App Router, Tailwind v4) on Vercel.
 - **Verifier**: client-side `keccak256` via viem against the on-chain `reasonHash`.
 
