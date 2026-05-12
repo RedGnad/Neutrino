@@ -333,7 +333,7 @@ async function runExecution(cfg: RunConfig): Promise<ExecutionResult> {
     // 0xEEbc5E596d6C788Bcaa5324f44a8F648b746e041. Aligned with the RWA
     // narrative (Mantle-native LST) far better than a generic USDC → WMNT.
     const result = await swapExactInputSingle(
-      { pub, wallet, signer: account.address },
+      { pub, wallet, account },
       {
         tokenIn: MAINNET_TOKENS.USDC.address,
         tokenOut: MAINNET_TOKENS.mETH.address,

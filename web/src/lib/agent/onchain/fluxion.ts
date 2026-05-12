@@ -18,6 +18,7 @@ import {
   encodeFunctionData,
   parseAbiItem,
 } from 'viem';
+import type { Account } from 'viem/accounts';
 import { ERC20_ABI, FLUXION, MANTLE_MAINNET } from './mantle-mainnet';
 
 const FACTORY_ABI = [
@@ -125,7 +126,7 @@ async function waitForReceipt(
 export interface FluxionClients {
   pub: PublicClient;
   wallet: WalletClient;
-  signer: Address;
+  account: Account;
 }
 
 /** Try each fee tier until factory returns a non-zero pool address. */
@@ -209,7 +210,8 @@ export async function swapExactInputSingle(
   clients: FluxionClients,
   input: SwapInput,
 ): Promise<SwapResult> {
-  const { pub, wallet, signer } = clients;
+  const { pub, wallet, account } = clients;
+  const signer = account.address;
   const recipient = input.recipient ?? signer;
   const slippageBps = input.slippageBps ?? 50;
   const deadline = BigInt(Math.floor(Date.now() / 1000) + (input.deadlineSeconds ?? 1200));
@@ -250,7 +252,7 @@ export async function swapExactInputSingle(
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [FLUXION.swapRouter, input.amountIn],
-        account: signer,
+        account,
         chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
         nonce: await pub.getTransactionCount({ address: signer, blockTag: 'pending' }),
       });
@@ -283,7 +285,7 @@ export async function swapExactInputSingle(
           sqrtPriceLimitX96: 0n,
         },
       ],
-      account: signer,
+      account,
       chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
       nonce: await pub.getTransactionCount({ address: signer, blockTag: 'pending' }),
     });
