@@ -10,6 +10,22 @@ export const dynamic = 'force-dynamic';
 // writes + optional swap). Bump the function timeout accordingly.
 export const maxDuration = 180;
 
+let runQueue: Promise<void> = Promise.resolve();
+
+async function queueRun<T>(task: () => Promise<T>): Promise<T> {
+  const previous = runQueue;
+  let release!: () => void;
+  runQueue = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await previous.catch(() => {});
+  try {
+    return await task();
+  } finally {
+    release();
+  }
+}
+
 function resolveNetwork(): { network: 'mantle' | 'mantle_sepolia'; rpcUrl: string | undefined } {
   const declared = (process.env.NEUTRINO_NETWORK ?? 'mantle_sepolia') as 'mantle' | 'mantle_sepolia';
   const network = declared === 'mantle' ? 'mantle' : 'mantle_sepolia';
@@ -82,19 +98,21 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await runAgentOnce({
-      network,
-      rpcUrl,
-      privateKey,
-      loggerAddress,
-      agentId: BigInt(agentIdRaw),
-      twelveDataApiKey: process.env.TWELVE_DATA_API_KEY || undefined,
-      execution: resolveExecution(network, {
-        enabled: body.execute ?? (process.env.EXECUTE_ON_CHAIN === 'true'),
-        action: body.executeAction,
+    const result = await queueRun(() =>
+      runAgentOnce({
+        network,
+        rpcUrl,
+        privateKey,
+        loggerAddress,
+        agentId: BigInt(agentIdRaw),
+        twelveDataApiKey: process.env.TWELVE_DATA_API_KEY || undefined,
+        execution: resolveExecution(network, {
+          enabled: body.execute ?? (process.env.EXECUTE_ON_CHAIN === 'true'),
+          action: body.executeAction,
+        }),
+        scenario: body.scenario,
       }),
-      scenario: body.scenario,
-    });
+    );
     return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

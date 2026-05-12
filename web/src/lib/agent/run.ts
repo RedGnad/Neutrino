@@ -256,7 +256,11 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
       const { txHash, blockNumber } = await logger.log(cfg.agentId, meta.address, decision);
       result.txHash = txHash;
       result.blockNumber = blockNumber.toString();
+      if (blockNumber === 0n) {
+        result.sources = { ...sources, onChainWrite: 'stub' };
+      }
     } catch (e) {
+      result.sources = { ...sources, onChainWrite: 'stub' };
       result.error = (e as Error).message.split('\n')[0];
     }
 
@@ -285,6 +289,9 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     equityCount === 0 ? 'n/a' : anyReferenceFetched ? 'live' : 'stub';
   const xStockPrices: FlagState =
     equityCount === 0 ? 'n/a' : xstocks.isStub() ? 'stub' : 'live';
+  const onChainWrite: FlagState = results.every((r) => r.txHash && r.blockNumber !== '0')
+    ? 'live'
+    : 'stub';
   const onChainExecution: FlagState = !cfg.execution
     ? 'n/a'
     : execution
@@ -301,7 +308,7 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
       marketHours: 'live',
       referencePrices,
       xStockPrices,
-      onChainWrite: 'live',
+      onChainWrite,
       onChainExecution,
       llmReasoning: anyLlmNarration ? 'live' : 'stub',
     },

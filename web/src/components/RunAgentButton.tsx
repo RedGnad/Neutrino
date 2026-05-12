@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Scenario = "default" | "risky-xstocks" | "safe-yield";
 
@@ -58,6 +58,14 @@ interface RunResult {
 }
 
 const STORAGE_PREFIX = "neutrino:decision:";
+const RUN_LOCK_EVENT = "neutrino:run-lock";
+
+let activeRunId: string | null = null;
+
+function broadcastRunLock() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(RUN_LOCK_EVENT));
+}
 
 interface RunAgentButtonProps {
   /** Scenario to send to /api/run-agent. Default = 'default' (all 5 assets). */
@@ -86,8 +94,26 @@ export function RunAgentButton({
     | { kind: "done"; result: RunResult }
     | { kind: "error"; message: string }
   >({ kind: "idle" });
+  const [locked, setLocked] = useState(false);
+
+  useEffect(() => {
+    function syncLock() {
+      setLocked(Boolean(activeRunId));
+    }
+    window.addEventListener(RUN_LOCK_EVENT, syncLock);
+    syncLock();
+    return () => window.removeEventListener(RUN_LOCK_EVENT, syncLock);
+  }, []);
 
   async function run() {
+    if (activeRunId) {
+      setLocked(true);
+      return;
+    }
+    const runId = crypto.randomUUID();
+    activeRunId = runId;
+    setLocked(true);
+    broadcastRunLock();
     setState({ kind: "running" });
     try {
       const res = await fetch("/api/run-agent", {
@@ -113,10 +139,17 @@ export function RunAgentButton({
       router.refresh();
     } catch (e) {
       setState({ kind: "error", message: (e as Error).message });
+    } finally {
+      if (activeRunId === runId) {
+        activeRunId = null;
+        setLocked(false);
+        broadcastRunLock();
+      }
     }
   }
 
   const running = state.kind === "running";
+  const disabled = running || (locked && activeRunId !== null);
   const buttonClass =
     variant === "execute"
       ? "bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-emerald-300"
@@ -129,7 +162,7 @@ export function RunAgentButton({
       <button
         type="button"
         onClick={run}
-        disabled={running}
+        disabled={disabled}
         className={`inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-medium shadow-sm transition-colors disabled:cursor-not-allowed ${buttonClass}`}
       >
         {running ? (
@@ -140,6 +173,12 @@ export function RunAgentButton({
           <>{label}</>
         )}
       </button>
+      {locked && !running ? (
+        <p className="text-xs text-amber-700">
+          Another Neutrino run is already writing receipts. Wait for it to
+          finish.
+        </p>
+      ) : null}
       {hint ? <p className="text-xs text-zinc-500">{hint}</p> : null}
 
       {state.kind === "error" ? (
@@ -172,7 +211,9 @@ function cacheCanonicalJsons(result: RunResult) {
 }
 
 function ResultPanel({ result }: { result: RunResult }) {
-  const written = result.results.filter((r) => r.txHash).length;
+  const written = result.results.filter(
+    (r) => r.txHash && r.blockNumber !== "0",
+  ).length;
   const explorerTx =
     result.network === "mantle"
       ? "https://mantlescan.xyz/tx"
@@ -269,8 +310,13 @@ function ResultPanel({ result }: { result: RunResult }) {
       ) : null}
 
       {result.executionError ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-          Execution skipped: {result.executionError}
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="text-xs font-medium uppercase tracking-wider text-amber-700">
+            Execution did not settle
+          </p>
+          <p className="mt-1 text-xs leading-relaxed">
+            {result.executionError}
+          </p>
         </div>
       ) : null}
 

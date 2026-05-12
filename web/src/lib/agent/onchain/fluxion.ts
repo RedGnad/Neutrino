@@ -88,6 +88,11 @@ const SWAP_ROUTER_ABI = [
 
 const ZERO_ADDRESS: Address = '0x0000000000000000000000000000000000000000';
 
+function shortError(e: unknown): string {
+  const err = e as { shortMessage?: string; message?: string };
+  return err.shortMessage ?? err.message?.split('\n')[0] ?? 'unknown error';
+}
+
 export interface FluxionClients {
   pub: PublicClient;
   wallet: WalletClient;
@@ -101,12 +106,17 @@ export async function findPoolFee(
   tokenB: Address,
 ): Promise<number | null> {
   for (const fee of FLUXION.feeTiers) {
-    const pool = (await pub.readContract({
-      address: FLUXION.factory,
-      abi: FACTORY_ABI,
-      functionName: 'getPool',
-      args: [tokenA, tokenB, fee],
-    })) as Address;
+    let pool: Address;
+    try {
+      pool = (await pub.readContract({
+        address: FLUXION.factory,
+        abi: FACTORY_ABI,
+        functionName: 'getPool',
+        args: [tokenA, tokenB, fee],
+      })) as Address;
+    } catch (e) {
+      throw new Error(`Fluxion pool discovery failed at fee ${fee}: ${shortError(e)}`);
+    }
     if (pool !== ZERO_ADDRESS) return fee;
   }
   return null;
@@ -117,21 +127,25 @@ export async function quoteExactInputSingle(
   pub: PublicClient,
   params: { tokenIn: Address; tokenOut: Address; amountIn: bigint; fee: number },
 ): Promise<bigint> {
-  const { result } = await pub.simulateContract({
-    address: FLUXION.quoterV2,
-    abi: QUOTER_V2_ABI,
-    functionName: 'quoteExactInputSingle',
-    args: [
-      {
-        tokenIn: params.tokenIn,
-        tokenOut: params.tokenOut,
-        amountIn: params.amountIn,
-        fee: params.fee,
-        sqrtPriceLimitX96: 0n,
-      },
-    ],
-  });
-  return result[0];
+  try {
+    const { result } = await pub.simulateContract({
+      address: FLUXION.quoterV2,
+      abi: QUOTER_V2_ABI,
+      functionName: 'quoteExactInputSingle',
+      args: [
+        {
+          tokenIn: params.tokenIn,
+          tokenOut: params.tokenOut,
+          amountIn: params.amountIn,
+          fee: params.fee,
+          sqrtPriceLimitX96: 0n,
+        },
+      ],
+    });
+    return result[0];
+  } catch (e) {
+    throw new Error(`Fluxion quote failed: ${shortError(e)}`);
+  }
 }
 
 export interface SwapResult {
@@ -188,46 +202,65 @@ export async function swapExactInputSingle(
 
   // 3. Approve if necessary.
   let approveTxHash: Hex | undefined;
-  const allowance = (await pub.readContract({
-    address: input.tokenIn,
-    abi: ERC20_ABI,
-    functionName: 'allowance',
-    args: [signer, FLUXION.swapRouter],
-  })) as bigint;
-
-  if (allowance < input.amountIn) {
-    approveTxHash = await wallet.writeContract({
+  let allowance: bigint;
+  try {
+    allowance = (await pub.readContract({
       address: input.tokenIn,
       abi: ERC20_ABI,
-      functionName: 'approve',
-      args: [FLUXION.swapRouter, input.amountIn],
-      account: signer,
-      chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
-    });
-    await pub.waitForTransactionReceipt({ hash: approveTxHash, timeout: 90_000 });
+      functionName: 'allowance',
+      args: [signer, FLUXION.swapRouter],
+    })) as bigint;
+  } catch (e) {
+    throw new Error(`Fluxion allowance check failed: ${shortError(e)}`);
+  }
+
+  if (allowance < input.amountIn) {
+    try {
+      approveTxHash = await wallet.writeContract({
+        address: input.tokenIn,
+        abi: ERC20_ABI,
+        functionName: 'approve',
+        args: [FLUXION.swapRouter, input.amountIn],
+        account: signer,
+        chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
+      });
+      await pub.waitForTransactionReceipt({ hash: approveTxHash, timeout: 90_000 });
+    } catch (e) {
+      throw new Error(`Fluxion approve failed: ${shortError(e)}`);
+    }
   }
 
   // 4. Swap.
-  const txHash = await wallet.writeContract({
-    address: FLUXION.swapRouter,
-    abi: SWAP_ROUTER_ABI,
-    functionName: 'exactInputSingle',
-    args: [
-      {
-        tokenIn: input.tokenIn,
-        tokenOut: input.tokenOut,
-        fee,
-        recipient,
-        deadline,
-        amountIn: input.amountIn,
-        amountOutMinimum,
-        sqrtPriceLimitX96: 0n,
-      },
-    ],
-    account: signer,
-    chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
-  });
-  const receipt = await pub.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 });
+  let txHash: Hex;
+  try {
+    txHash = await wallet.writeContract({
+      address: FLUXION.swapRouter,
+      abi: SWAP_ROUTER_ABI,
+      functionName: 'exactInputSingle',
+      args: [
+        {
+          tokenIn: input.tokenIn,
+          tokenOut: input.tokenOut,
+          fee,
+          recipient,
+          deadline,
+          amountIn: input.amountIn,
+          amountOutMinimum,
+          sqrtPriceLimitX96: 0n,
+        },
+      ],
+      account: signer,
+      chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
+    });
+  } catch (e) {
+    throw new Error(`Fluxion swap failed: ${shortError(e)}`);
+  }
+  let receipt: { blockNumber: bigint };
+  try {
+    receipt = await pub.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 });
+  } catch (e) {
+    throw new Error(`Fluxion swap receipt wait failed for ${txHash}: ${shortError(e)}`);
+  }
 
   return {
     txHash,
