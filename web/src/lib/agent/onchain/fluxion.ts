@@ -93,6 +93,35 @@ function shortError(e: unknown): string {
   return err.shortMessage ?? err.message?.split('\n')[0] ?? 'unknown error';
 }
 
+function isRetryableRpcError(e: unknown): boolean {
+  return /Requested resource not found|resource not found|nonce too low|replacement transaction underpriced|already known|timed out|timeout/i.test(
+    shortError(e),
+  );
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForReceipt(
+  pub: PublicClient,
+  hash: Hex,
+  timeoutMs: number,
+): Promise<{ blockNumber: bigint }> {
+  const deadline = Date.now() + timeoutMs;
+  while (true) {
+    try {
+      return await pub.waitForTransactionReceipt({
+        hash,
+        timeout: Math.min(15_000, Math.max(1_000, deadline - Date.now())),
+      });
+    } catch (e) {
+      if (Date.now() >= deadline || !isRetryableRpcError(e)) throw e;
+      await sleep(1_500);
+    }
+  }
+}
+
 export interface FluxionClients {
   pub: PublicClient;
   wallet: WalletClient;
@@ -223,10 +252,15 @@ export async function swapExactInputSingle(
         args: [FLUXION.swapRouter, input.amountIn],
         account: signer,
         chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
+        nonce: await pub.getTransactionCount({ address: signer, blockTag: 'pending' }),
       });
-      await pub.waitForTransactionReceipt({ hash: approveTxHash, timeout: 90_000 });
     } catch (e) {
-      throw new Error(`Fluxion approve failed: ${shortError(e)}`);
+      throw new Error(`Fluxion approve submit failed: ${shortError(e)}`);
+    }
+    try {
+      await waitForReceipt(pub, approveTxHash, 90_000);
+    } catch (e) {
+      throw new Error(`Fluxion approve receipt wait failed for ${approveTxHash}: ${shortError(e)}`);
     }
   }
 
@@ -251,13 +285,14 @@ export async function swapExactInputSingle(
       ],
       account: signer,
       chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
+      nonce: await pub.getTransactionCount({ address: signer, blockTag: 'pending' }),
     });
   } catch (e) {
-    throw new Error(`Fluxion swap failed: ${shortError(e)}`);
+    throw new Error(`Fluxion swap submit failed: ${shortError(e)}`);
   }
   let receipt: { blockNumber: bigint };
   try {
-    receipt = await pub.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 });
+    receipt = await waitForReceipt(pub, txHash, 120_000);
   } catch (e) {
     throw new Error(`Fluxion swap receipt wait failed for ${txHash}: ${shortError(e)}`);
   }
