@@ -113,21 +113,23 @@ neutrino/
 - **Frontend**: Next.js 16 (App Router, Tailwind v4) on Vercel.
 - **Verifier**: client-side `keccak256` via viem against the on-chain `reasonHash`.
 
-## Decision receipt schema (`neutrino.decision.v1`)
+## Decision receipt schema (`neutrino.decision.v2`)
 
 ```json
 {
-  "schema": "neutrino.decision.v1",
+  "schema": "neutrino.decision.v2",
   "agentId": "1",
-  "asset": { "symbol": "NVDAx", "address": "0x...", "kind": "tokenized_equity", "reference": "NVDA", "market": "NASDAQ" },
+  "asset": { "symbol": "NVDAx", "address": "0xc845b2894dBddd03858fd2D643B4eF725fE0849d", "kind": "tokenized_equity", "reference": "NVDA", "market": "NASDAQ" },
   "timestamp": 1778066400000,
   "sources": {
     "marketHours": "live",
     "referencePrice": "live",
-    "xStockPrice": "stub",
+    "xStockPrice": "live",
+    "xStockStatus": "live",
     "onChainWrite": "live"
   },
-  "snapshot": { "onChainPrice": 207.65, "referencePrice": 207.01, "spreadBps": 90, "volume24hUsd": 320000, "apy": null, "volatility24h": 0.55, "marketOpen": false },
+  "snapshot": { "onChainPrice": 220.36, "referencePrice": 220.1, "spreadBps": 90, "volume24hUsd": 320000, "apy": null, "volatility24h": 0.55, "marketOpen": false },
+  "xstocks": { "indicativePriceUsd": 220.36, "priceSource": "xstocks-public-api", "marketTradingHalted": false, "atomicTradingHalted": false },
   "breakdown": { "marketHoursPenalty": 250, "spreadPenalty": 200, "liquidityPenalty": 60, "basisPenalty": 0, "volatilityPenalty": 50, "total": 560 },
   "policy": { "name": "No after-hours risk", "blockAfterHoursEquity": true, "maxRiskForAllocate": 350, "fallbackYieldAsset": "USDY" },
   "action": "PAUSE",
@@ -137,7 +139,7 @@ neutrino/
 }
 ```
 
-`reasonHash` on-chain = `keccak256(JSON.stringify(payload))`. The serialization is byte-stable: same hash whether you re-compute it client-side, server-side, or with `cast keccak`.
+`snapshot.onChainPrice` is the live xStocks indicative quote; `snapshot.spreadBps` / `volume24hUsd` are modelled (the public API does not expose order-book depth). `sources` flags each signal `live` / `stub` / `n/a`. `reasonHash` on-chain = `keccak256(JSON.stringify(payload))` — byte-stable, so the same hash whether you re-compute it client-side, server-side, or with `cast keccak`.
 
 ## Why Mantle, why now
 
@@ -145,10 +147,12 @@ Mantle is closing the xStocks execution gap with the recent **Atomic RFQ** launc
 
 ## Honest limitations (because the jury is on-chain analytics)
 
-1. **xStock token addresses on Mantle are not in any public index.** The product database at `assets.backed.fi/legal-documentation/product-database` lists them by name without exposing addresses; Fluxion's developer skill repo lists USDC / USDT0 / WMNT / etc. but no xStocks. Until those are public, `xStockPrice` source stays `stub` in the receipt.
-2. **Aave V3 on Mantle is not deployed.** The "$1B in 19 days" figure refers to overall Mantle TVL growth, not Aave specifically. Removed from the pitch.
-3. **INIT Capital `mintTo` ABI** is not visually verified on Mantlescan. Wrapper has fallback modes; demo defaults to receipts-only so failure is impossible.
-4. **Decision payloads** are cached per browser via `localStorage`. IPFS pinning is the next iteration so any third party can resolve a `reasonHash`.
+1. **xStock token addresses.** For NVDAx / TSLAx / SPYx the Mantle token addresses are resolved from the xStocks public API (`/public/assets/{symbol}`, `deployments[network=Mantle]`) and pinned only after on-chain `symbol()` / `decimals()` verification. Other xStocks stay disabled until verified the same way.
+2. **xStock order-book microstructure is modelled.** The xStocks public API exposes the indicative price and trading-halt status (both `live` in the receipt) but not spread / depth / 24h volume. Those snapshot fields are modelled and flagged — they are a secondary input to the risk score.
+3. **xStock execution (xChange / Atomic RFQ) is not performed.** xChange requires an API key generated in the Backed app, a registered wallet, and an EIP-712-signed `executeSwap()` on the AtomicSwap contract; its developer docs list Ethereum / Ink (EVM) and Solana, not Mantle. Neutrino treats RFQ execution as unavailable unless it has an authenticated, registered, executable route — that guardrail *is* the product. xStock execution is never simulated.
+4. **Aave V3 on Mantle is not deployed.** The "$1B in 19 days" figure refers to overall Mantle TVL growth, not Aave specifically. Removed from the pitch.
+5. **INIT Capital `mintTo` ABI** is not visually verified on Mantlescan. Wrapper has fallback modes; the live execution rail is Fluxion V3, INIT stays experimental.
+6. **Decision payloads** are cached per browser via `localStorage`. IPFS pinning is the next iteration so any third party can resolve a `reasonHash`.
 
 ## License
 
