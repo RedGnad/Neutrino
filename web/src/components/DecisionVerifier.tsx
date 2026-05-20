@@ -30,6 +30,12 @@ interface ParsedDecision {
   action: string;
   riskScore: number;
   reason: string;
+  xstocks?: {
+    indicativePriceUsd: number | null;
+    priceSource: string | null;
+    marketTradingHalted: boolean | null;
+    atomicTradingHalted: boolean | null;
+  } | null;
   narration: {
     model: string | null;
     fromLlm: boolean;
@@ -116,7 +122,7 @@ export function DecisionVerifier({ txHash, reasonHash }: Props) {
         <p className="text-xs text-zinc-500">
           schema{" "}
           <code className="rounded bg-zinc-100 px-1 py-0.5">
-            neutrino.decision.v1
+            neutrino.decision.v2
           </code>
         </p>
       </div>
@@ -223,17 +229,45 @@ function ParsedReceiptSummary({ decision }: { decision: ParsedDecision }) {
         </div>
       </div>
 
+      {decision.xstocks ? (
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+            xStocks public API (live read-only)
+          </p>
+          <div className="mt-2 grid gap-3 text-xs sm:grid-cols-3">
+            <AuditCard
+              title="xStocks data"
+              rows={[
+                [
+                  "indicativePriceUsd",
+                  String(decision.xstocks.indicativePriceUsd ?? "n/a"),
+                ],
+                ["priceSource", decision.xstocks.priceSource ?? "unavailable"],
+                [
+                  "marketTradingHalted",
+                  String(decision.xstocks.marketTradingHalted ?? "n/a"),
+                ],
+                [
+                  "atomicTradingHalted",
+                  String(decision.xstocks.atomicTradingHalted ?? "n/a"),
+                ],
+              ]}
+            />
+          </div>
+        </div>
+      ) : null}
+
       <div className="grid gap-3 text-xs sm:grid-cols-3">
         <AuditCard
-          title="Snapshot"
+          title="Snapshot (price live · microstructure modelled)"
           rows={[
             ["onChainPrice", String(decision.snapshot.onChainPrice ?? "n/a")],
             [
               "referencePrice",
               String(decision.snapshot.referencePrice ?? "n/a"),
             ],
-            ["spreadBps", String(decision.snapshot.spreadBps ?? "n/a")],
-            ["volume24hUsd", String(decision.snapshot.volume24hUsd ?? "n/a")],
+            ["spreadBps*", String(decision.snapshot.spreadBps ?? "n/a")],
+            ["volume24hUsd*", String(decision.snapshot.volume24hUsd ?? "n/a")],
             ["marketOpen", String(decision.snapshot.marketOpen ?? "n/a")],
           ]}
         />
@@ -256,6 +290,15 @@ function ParsedReceiptSummary({ decision }: { decision: ParsedDecision }) {
           ]}
         />
       </div>
+
+      <p className="text-[11px] leading-relaxed text-zinc-500">
+        * <code className="rounded bg-zinc-100 px-1">spreadBps</code> and{" "}
+        <code className="rounded bg-zinc-100 px-1">volume24hUsd</code> are
+        modelled — the xStocks public API exposes the indicative price and
+        trading status (shown above as live), not order-book microstructure.
+        Every field here is covered by the on-chain{" "}
+        <code className="rounded bg-zinc-100 px-1">reasonHash</code>.
+      </p>
     </div>
   );
 }

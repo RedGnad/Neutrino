@@ -6,7 +6,11 @@
 
 Neutrino evaluates Mantle tokenized equities (TSLAx, NVDAx, SPYx, …) and yield-bearing assets (USDY, mETH) for market-hours, liquidity and basis risk, writes a canonical decision receipt on-chain (`reasonHash = keccak256(audit JSON)`), and — when policy allows — executes a safe Mantle-native allocation through Fluxion V3. The deterministic rules engine decides; Claude Haiku 4.5 only narrates.
 
-**Honesty note (read before judging):** there is no *hidden* mock. Decision receipts and the Fluxion execution path are fully live on Mantle mainnet. xStock per-asset quotes are explicitly flagged `stub` in every receipt because public Mantle xStock token addresses / RFQ endpoints are not yet available — xStocks are *risk-evaluated*, never auto-traded. Neutrino does not "trade xStocks".
+**Honesty note (read before judging):** there is no *hidden* mock — every source is flagged `live` / `stub` / `n/a` in each receipt.
+
+- **Live:** decision receipts on Mantle mainnet; the Fluxion V3 execution path; xStock **indicative price** and **trading-halt status** (xStocks public API, unauthenticated, verified 2026-05-21).
+- **Modelled (flagged):** xStock order-book microstructure — spread, depth, 24h volume. The xStocks public API does not expose it, so the risk engine models it and the receipt marks those fields with `*`.
+- **Not done (by design):** xStock **execution**. xChange / Atomic RFQ is an authenticated, issuer-direct channel — Neutrino *risk-evaluates* xStocks and routes execution only through the verified Mantle-native rail (Fluxion V3). Neutrino does not "trade xStocks".
 
 Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantleturingtesthackathon2026) — Phase 2 "AI Awakening" — track **AI x RWA**.
 
@@ -42,9 +46,10 @@ A real `ALLOCATE` executed end-to-end on Fluxion V3 (Mantle mainnet). Demo round
 
 ## What ships today
 
-- **Real on-chain decisions** on Mantle mainnet. Every run writes one `DecisionLogged` event per asset with a `reasonHash` that covers the full canonical audit JSON.
+- **Real on-chain decisions** on Mantle mainnet. Every run writes one `DecisionLogged` event per asset with a `reasonHash` that covers the full canonical audit JSON (schema `neutrino.decision.v2`).
+- **Live xStocks public-API integration.** For every tokenized equity the agent reads the issuer's **indicative price** (`/public/assets/{symbol}/price-data`) and the official **trading-halt status** (`/public/system/status/{symbol}`) — unauthenticated public endpoints, verified 2026-05-21. An `isMarketTradingHalted` / `isAtomicTradingHalted` flag forces `PAUSE`. xStock token contract addresses on Mantle are resolved from the same API and verified on-chain.
 - **Verifiable local receipts** — after a run, the `/agent-decision/[asset]` page reads the on-chain reason hash and lets you re-compute `keccak256` on the audit JSON cached by that browser to confirm a match.
-- **Live freshness flags** in every result panel: market hours, reference prices (Twelve Data), xStock prices (Fluxion), LLM reasoning (Claude Haiku 4.5), on-chain write, on-chain execution. Stub vs live is shown, never hidden.
+- **Live freshness flags** in every result panel: market hours, reference prices (Twelve Data), xStock price (xStocks API), xStock trading status (xStocks API), LLM reasoning (Claude Haiku 4.5), on-chain write, on-chain execution. `live` / `stub` / `n/a` is shown per signal, never hidden.
 - **Two judge-ready scenarios** on the home page:
   - *Risky xStocks* (NVDAx / TSLAx / SPYx) — typically PAUSE outside market hours.
   - *Safe yield* (USDY / mETH) — typically ALLOCATE.
@@ -54,11 +59,11 @@ A real `ALLOCATE` executed end-to-end on Fluxion V3 (Mantle mainnet). Demo round
 > The deployed demo runs the execution as a **round-trip** (USDC → mETH → mETH → USDC) so the shared demo wallet stays solvent across many judge clicks. Both legs are real on-chain Fluxion swaps. This is controlled by `EXECUTE_ROUNDTRIP` (defaults to `true`).
 > **In production the agent must HOLD the mETH position** — a one-way allocation. Before the production cut-over: set `EXECUTE_ROUNDTRIP=false` (or flip the default in `web/src/app/api/run-agent/route.ts`, marked with a `TODO(prod)`), and size the swap from the decision rather than the fixed `EXECUTE_AMOUNT_USDC_BASE_UNITS`.
 
-## What's stubbed (and labelled as such)
+## What's modelled / not done (and labelled as such)
 
-- **xStock token addresses** on Mantle are not publicly indexed. The agent monitors xStocks via reference (Twelve Data) + market-hours awareness, but per-asset on-chain prices are stub until Mantle / Backed publishes the addresses.
-- **xStock execution / RFQ** is not wired yet. The current live execution path is USDC → mETH on Fluxion V3; xStock risk is evaluated, not auto-traded.
-- **INIT Capital `mintTo` ABI** has not been visually verified on a contract page; the wrapper supports three call shapes (default, with-amount, transfer-then-mint) so a smoke test can flip without rewriting the call site.
+- **xStock order-book microstructure** — spread, depth, 24h volume — is **modelled**, not live. The xStocks public API exposes the indicative price and trading status (both live, see above) but not order-book depth. The risk engine models those fields and the receipt marks them with `*`. They are a secondary input; the dominant penalty for the risky scenario is market-hours / halt status, which is live.
+- **xStock execution / xChange Atomic RFQ** is **not performed**. xChange RFQ is an authenticated, issuer-direct channel (API key + registered wallet + EIP-712 quote). Neutrino *risk-evaluates* xStocks and executes only through the verified Mantle-native rail (Fluxion V3 USDC → mETH). This is a deliberate execution-readiness guardrail, not a missing feature.
+- **INIT Capital `mintTo` ABI** has not been visually verified on a contract page; the wrapper supports three call shapes (default, with-amount, transfer-then-mint) so a smoke test can flip without rewriting the call site. INIT is an experimental rail — the live execution path is Fluxion.
 
 ## Reproduce in 5 minutes
 

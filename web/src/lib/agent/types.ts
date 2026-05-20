@@ -39,6 +39,12 @@ export interface MarketSnapshot {
   volatility24h: number;
   marketOpen: boolean;
   takenAt: number;
+  /**
+   * Official trading-halt flags from the xStocks public API (tokenized
+   * equities only; undefined when the status call did not return).
+   */
+  tradingHalted?: boolean;
+  atomicTradingHalted?: boolean;
 }
 
 export interface RiskBreakdown {

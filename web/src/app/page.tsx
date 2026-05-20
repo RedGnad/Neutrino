@@ -18,12 +18,12 @@ export default function Home() {
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-zinc-600">
             Neutrino is the risk-judgment layer for autonomous agents on Mantle.
-            It evaluates tokenized equity exposure for market-hours, liquidity
-            and basis risk, then writes a verifiable decision receipt on-chain
-            and — when policy allows — executes a safe Mantle-native allocation
-            through Fluxion V3. The deterministic engine decides; the LLM only
-            explains. xStock quotes are explicitly marked <code>stub</code>;
-            receipts and execution are live.
+            It reads each xStock&apos;s live indicative price and official
+            trading-halt status from the xStocks public API, scores
+            market-hours, liquidity and basis risk, writes a verifiable
+            decision receipt on-chain, and — when policy allows — executes a
+            safe Mantle-native allocation through Fluxion V3. The deterministic
+            engine decides; the LLM only explains.
           </p>
           <p className="mt-3 max-w-2xl text-sm font-medium text-zinc-700">
             We do not present an “AI trading bot”. Neutrino computes risk from
@@ -79,7 +79,7 @@ export default function Home() {
           <JudgeStep
             number="1"
             title="Risky xStock decision"
-            body="Shows market-hours, liquidity and basis controls for tokenized equities. xStock quotes are labelled stub until public addresses are available."
+            body="Live xStocks public-API price + trading-halt status per equity, scored against market-hours, liquidity and basis controls. Order-book microstructure is modelled and flagged."
           />
           <JudgeStep
             number="2"
@@ -194,31 +194,31 @@ export default function Home() {
           Live / stub / n/a — visible by design
         </p>
         <h2 className="mt-1 text-lg font-semibold tracking-tight text-zinc-950">
-          No hidden mocks, no fake xStock execution
+          No hidden mocks — every source is flagged
         </h2>
         <div className="mt-4 grid gap-3 text-sm sm:grid-cols-4">
           <SourceLegend
+            label="xStock price + status"
+            state="LIVE"
+            body="Indicative price and official trading-halt status from the xStocks public API (unauthenticated)."
+            tone="live"
+          />
+          <SourceLegend
+            label="xStock microstructure"
+            state="MODELLED"
+            body="Spread / depth / 24h volume — not exposed by the public API, so modelled and flagged in the receipt."
+            tone="stub"
+          />
+          <SourceLegend
             label="Market hours"
             state="LIVE"
-            body="NYSE/NASDAQ schedule evaluated at run time."
+            body="NYSE/NASDAQ schedule evaluated at run time, reinforced by the xStocks halt feed."
             tone="live"
-          />
-          <SourceLegend
-            label="Reference price"
-            state="LIVE"
-            body="Twelve Data for equity references when API quota is available."
-            tone="live"
-          />
-          <SourceLegend
-            label="xStock quote"
-            state="STUB"
-            body="Flagged until Mantle xStock token addresses are public."
-            tone="stub"
           />
           <SourceLegend
             label="Execution"
             state="LIVE / N/A"
-            body="Receipts are live; swaps only run when the judge clicks execute."
+            body="Receipts are live; the Fluxion swap only runs when the judge clicks execute. xStock RFQ execution is not performed."
             tone="neutral"
           />
         </div>

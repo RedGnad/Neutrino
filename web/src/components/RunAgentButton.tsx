@@ -21,6 +21,7 @@ interface PerAssetResult {
     marketHours: SourceState;
     referencePrice: SourceState;
     xStockPrice: SourceState;
+    xStockStatus: SourceState;
     onChainWrite: SourceState;
   };
   txHash?: string;
@@ -53,6 +54,7 @@ interface RunResult {
     marketHours: FlagState;
     referencePrices: FlagState;
     xStockPrices: FlagState;
+    xStockStatus: FlagState;
     onChainWrite: FlagState;
     onChainExecution: FlagState;
     llmReasoning: FlagState;
@@ -398,7 +400,8 @@ function PipelineFlags({ inputs }: { inputs: RunResult["inputs"] }) {
   const flags = [
     { label: "Market hours", state: inputs.marketHours },
     { label: "Reference prices", state: inputs.referencePrices },
-    { label: "xStock prices (Fluxion)", state: inputs.xStockPrices },
+    { label: "xStock price (xStocks API)", state: inputs.xStockPrices },
+    { label: "xStock trading status", state: inputs.xStockStatus },
     { label: "LLM reasoning", state: inputs.llmReasoning },
     { label: "On-chain write", state: inputs.onChainWrite },
     { label: "On-chain execution", state: inputs.onChainExecution },
@@ -424,7 +427,8 @@ function SourceBadges({ sources }: { sources: PerAssetResult["sources"] }) {
   const entries = [
     { label: "market hours", state: sources.marketHours },
     { label: "reference", state: sources.referencePrice },
-    { label: "xStock", state: sources.xStockPrice },
+    { label: "xStock price", state: sources.xStockPrice },
+    { label: "xStock status", state: sources.xStockStatus },
     { label: "on-chain", state: sources.onChainWrite },
   ];
   return (

@@ -28,11 +28,27 @@ export interface DecisionSources {
   marketHours: SourceState;
   referencePrice: SourceState;
   xStockPrice: SourceState;
+  /** Official xStocks trading-status feed (live / stub / n/a). */
+  xStockStatus: SourceState;
   onChainWrite: SourceState;
 }
 
+/**
+ * Live xStocks public-API data captured at decision time. Present for
+ * tokenized equities, null for yield/stable assets. `indicativePrice` is the
+ * issuer's quote; microstructure (spread/depth) is NOT in this block because
+ * the public API does not expose it — see the snapshot fields for the
+ * modelled values and their honesty flags.
+ */
+export interface CanonicalXStocks {
+  indicativePriceUsd: number | null;
+  priceSource: 'xstocks-public-api' | null;
+  marketTradingHalted: boolean | null;
+  atomicTradingHalted: boolean | null;
+}
+
 export interface CanonicalDecision {
-  schema: 'neutrino.decision.v1';
+  schema: 'neutrino.decision.v2';
   agentId: string;
   asset: {
     symbol: string;
@@ -52,6 +68,7 @@ export interface CanonicalDecision {
     volatility24h: number;
     marketOpen: boolean;
   };
+  xstocks: CanonicalXStocks | null;
   breakdown: {
     marketHoursPenalty: number;
     spreadPenalty: number;
@@ -85,6 +102,8 @@ export interface CanonicalBuildInput {
   riskScore: number;
   reason: string;
   sources: DecisionSources;
+  /** Live xStocks public-API data; null for non-equity assets. */
+  xstocks: CanonicalXStocks | null;
   narrationModel: string | null;
   narrationFromLlm: boolean;
   /** When the decision was finalized (epoch ms). */
@@ -98,7 +117,7 @@ export function buildCanonicalDecision(input: CanonicalBuildInput): {
   policyHash: Hex;
 } {
   const decision: CanonicalDecision = {
-    schema: 'neutrino.decision.v1',
+    schema: 'neutrino.decision.v2',
     agentId: input.agentId.toString(),
     asset: {
       symbol: input.meta.symbol,
@@ -112,6 +131,7 @@ export function buildCanonicalDecision(input: CanonicalBuildInput): {
       marketHours: input.sources.marketHours,
       referencePrice: input.sources.referencePrice,
       xStockPrice: input.sources.xStockPrice,
+      xStockStatus: input.sources.xStockStatus,
       onChainWrite: input.sources.onChainWrite,
     },
     snapshot: {
@@ -123,6 +143,7 @@ export function buildCanonicalDecision(input: CanonicalBuildInput): {
       volatility24h: input.snapshot.volatility24h,
       marketOpen: input.snapshot.marketOpen,
     },
+    xstocks: input.xstocks,
     breakdown: {
       marketHoursPenalty: input.breakdown.marketHoursPenalty,
       spreadPenalty: input.breakdown.spreadPenalty,

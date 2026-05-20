@@ -29,6 +29,12 @@ export function decide({ meta, snapshot, policy, basisStats, reason }: DecideInp
 }
 
 function pickAction(meta: AssetMetadata, snap: MarketSnapshot, policy: UserPolicy, risk: number): Action {
+  // Official halt signal from the xStocks public API outranks everything:
+  // if the issuer says trading is halted, the agent does not act.
+  if (meta.kind === 'tokenized_equity' && (snap.tradingHalted || snap.atomicTradingHalted)) {
+    return 'PAUSE';
+  }
+
   if (meta.kind === 'tokenized_equity' && !snap.marketOpen && policy.blockAfterHoursEquity) {
     return 'PAUSE';
   }
@@ -48,6 +54,8 @@ function pickAction(meta: AssetMetadata, snap: MarketSnapshot, policy: UserPolic
 function buildFallbackReason(meta: AssetMetadata, snap: MarketSnapshot, risk: number, action: Action): string {
   const parts: string[] = [];
   if (meta.kind === 'tokenized_equity') {
+    if (snap.tradingHalted) parts.push('xStocks reports the underlying market halted');
+    if (snap.atomicTradingHalted) parts.push('xStocks reports atomic (RFQ) trading halted');
     parts.push(`${meta.market ?? 'underlying'} market is ${snap.marketOpen ? 'open' : 'closed'}`);
   }
   parts.push(`spread ${snap.spreadBps}bps`);

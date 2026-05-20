@@ -33,6 +33,7 @@ import {
 } from './decision/canonical';
 import { isUsMarketOpen } from './fetchers/market-hours';
 import { createMockXStockClient } from './fetchers/xstocks';
+import { fetchXStockLive, type XStockLiveData } from './fetchers/xstocks-public-api';
 import { createTwelveDataClient } from './fetchers/reference-price';
 import { createOnChainLogger } from './onchain/log-decision';
 import { narrateDecision, NARRATION_MODEL } from './llm/narrate';
@@ -48,11 +49,13 @@ export const DEFAULT_POLICY: UserPolicy = {
 };
 
 export const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
-  // xStocks: placeholder addresses until Mantle indexes them publicly. Kept
-  // 0x...0001..0003 so legacy events resolve cleanly via web/src/lib/onchain.ts.
-  NVDAx: { symbol: 'NVDAx', kind: 'tokenized_equity', reference: 'NVDA', address: '0x0000000000000000000000000000000000000001', market: 'NASDAQ' },
-  TSLAx: { symbol: 'TSLAx', kind: 'tokenized_equity', reference: 'TSLA', address: '0x0000000000000000000000000000000000000002', market: 'NASDAQ' },
-  SPYx:  { symbol: 'SPYx',  kind: 'tokenized_equity', reference: 'SPY',  address: '0x0000000000000000000000000000000000000003', market: 'NYSE' },
+  // xStocks: real Mantle mainnet ERC-20 addresses, resolved from the xStocks
+  // public API (deployments[network=Mantle].address) and verified on-chain
+  // 2026-05-21 (symbol()/decimals() on rpc.mantle.xyz). The decision logger
+  // now records these real addresses.
+  NVDAx: { symbol: 'NVDAx', kind: 'tokenized_equity', reference: 'NVDA', address: '0xc845b2894dBddd03858fd2D643B4eF725fE0849d', market: 'NASDAQ' },
+  TSLAx: { symbol: 'TSLAx', kind: 'tokenized_equity', reference: 'TSLA', address: '0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0', market: 'NASDAQ' },
+  SPYx:  { symbol: 'SPYx',  kind: 'tokenized_equity', reference: 'SPY',  address: '0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48', market: 'NYSE' },
   USDY:  { symbol: 'USDY',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.USDY.address },
   mETH:  { symbol: 'mETH',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.mETH.address },
   AAPLx: { symbol: 'AAPLx', kind: 'tokenized_equity', reference: 'AAPL',  address: '0x0', market: 'NASDAQ' },
@@ -149,6 +152,7 @@ export interface RunResult {
     marketHours: FlagState;
     referencePrices: FlagState;
     xStockPrices: FlagState;
+    xStockStatus: FlagState;
     onChainWrite: FlagState;
     onChainExecution: FlagState;
     llmReasoning: FlagState;
@@ -190,6 +194,8 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
   const results: PerAssetResult[] = [];
   let anyReferenceFetched = false;
   let anyLlmNarration = false;
+  let anyXStockPriceLive = false;
+  let anyXStockStatusLive = false;
 
   for (const symbol of monitored) {
     const meta = ASSET_REGISTRY[symbol];
@@ -204,7 +210,35 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
         referencePrice = undefined;
       }
     }
-    const snapshot = await xstocks.fetchSnapshot(symbol, marketOpen, referencePrice);
+
+    // Modelled baseline snapshot (spread / depth / volatility — the xStocks
+    // public API does not expose order-book microstructure, so these stay
+    // modelled and are flagged accordingly).
+    const modelled = await xstocks.fetchSnapshot(symbol, marketOpen, referencePrice);
+
+    // For tokenized equities, overlay the LIVE xStocks public-API signal:
+    // the issuer's indicative price and the official trading-halt status.
+    let xstockLive: XStockLiveData | null = null;
+    if (meta.kind === 'tokenized_equity') {
+      xstockLive = await fetchXStockLive(symbol);
+      if (xstockLive.priceLive) anyXStockPriceLive = true;
+      if (xstockLive.statusLive) anyXStockStatusLive = true;
+    }
+    const snapshot =
+      xstockLive && xstockLive.priceLive
+        ? {
+            ...modelled,
+            onChainPrice: xstockLive.indicativePrice as number,
+            tradingHalted: xstockLive.marketTradingHalted ?? undefined,
+            atomicTradingHalted: xstockLive.atomicTradingHalted ?? undefined,
+          }
+        : xstockLive
+          ? {
+              ...modelled,
+              tradingHalted: xstockLive.marketTradingHalted ?? undefined,
+              atomicTradingHalted: xstockLive.atomicTradingHalted ?? undefined,
+            }
+          : modelled;
 
     // Deterministic plan first, LLM narration on top, then re-decide so the
     // canonical reason matches what the LLM produced.
@@ -223,12 +257,15 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
       ? decide({ meta, snapshot, policy: DEFAULT_POLICY, reason: llmReason })
       : basePlan;
 
+    const isEquity = meta.kind === 'tokenized_equity';
     const sources: DecisionSources = {
       marketHours: 'live',
       referencePrice: !meta.reference ? 'n/a' : referenceFetched ? 'live' : 'stub',
-      xStockPrice: meta.kind === 'tokenized_equity'
-        ? (xstocks.isStub() ? 'stub' : 'live')
-        : 'n/a',
+      // xStockPrice = the issuer's indicative quote (xStocks public API).
+      // Order-book microstructure stays modelled — not claimed as live.
+      xStockPrice: !isEquity ? 'n/a' : xstockLive?.priceLive ? 'live' : 'stub',
+      // xStockStatus = the official market/atomic trading-halt feed.
+      xStockStatus: !isEquity ? 'n/a' : xstockLive?.statusLive ? 'live' : 'stub',
       onChainWrite: 'live',
     };
 
@@ -242,6 +279,14 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
       riskScore: plan.riskScore,
       reason: plan.reason,
       sources,
+      xstocks: isEquity
+        ? {
+            indicativePriceUsd: xstockLive?.indicativePrice ?? null,
+            priceSource: xstockLive?.priceLive ? 'xstocks-public-api' : null,
+            marketTradingHalted: xstockLive?.marketTradingHalted ?? null,
+            atomicTradingHalted: xstockLive?.atomicTradingHalted ?? null,
+          }
+        : null,
       narrationModel: reasonFromLlm ? NARRATION_MODEL : null,
       narrationFromLlm: reasonFromLlm,
       timestamp: Date.now(),
@@ -303,8 +348,13 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
   const equityCount = monitored.filter((s) => ASSET_REGISTRY[s].kind === 'tokenized_equity').length;
   const referencePrices: FlagState =
     equityCount === 0 ? 'n/a' : anyReferenceFetched ? 'live' : 'stub';
+  // xStock indicative price + trading status come from the xStocks public
+  // API. 'live' once at least one equity returned data, 'stub' if the API
+  // was unreachable for the whole run, 'n/a' when no equity was monitored.
   const xStockPrices: FlagState =
-    equityCount === 0 ? 'n/a' : xstocks.isStub() ? 'stub' : 'live';
+    equityCount === 0 ? 'n/a' : anyXStockPriceLive ? 'live' : 'stub';
+  const xStockStatus: FlagState =
+    equityCount === 0 ? 'n/a' : anyXStockStatusLive ? 'live' : 'stub';
   // 'live' once every decision has a tx hash (in the mempool). A missing
   // tx hash means the submission itself failed — that is the only 'stub'.
   const onChainWrite: FlagState = results.every((r) => r.txHash) ? 'live' : 'stub';
@@ -324,6 +374,7 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
       marketHours: 'live',
       referencePrices,
       xStockPrices,
+      xStockStatus,
       onChainWrite,
       onChainExecution,
       llmReasoning: anyLlmNarration ? 'live' : 'stub',

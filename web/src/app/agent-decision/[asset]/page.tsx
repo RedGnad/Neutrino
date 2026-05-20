@@ -170,9 +170,9 @@ export default async function AgentDecisionPage({ params }: Props) {
       ) : null}
 
       <p className="text-xs text-zinc-500">
-        Decision receipts cover schema <code className="rounded bg-zinc-100 px-1 py-0.5">neutrino.decision.v1</code>:
-        agent identity, asset metadata, market snapshot, source-freshness flags, risk breakdown,
-        policy, action, score, narration metadata. The on-chain reasonHash equals{' '}
+        Decision receipts cover schema <code className="rounded bg-zinc-100 px-1 py-0.5">neutrino.decision.v2</code>:
+        agent identity, asset metadata, market snapshot, live xStocks public-API data, source-freshness
+        flags, risk breakdown, policy, action, score, narration metadata. The on-chain reasonHash equals{' '}
         <code className="rounded bg-zinc-100 px-1 py-0.5">keccak256</code> of that JSON. IPFS pinning
         comes next — for now payloads are cached per-browser when you trigger a run.
       </p>

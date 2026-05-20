@@ -58,11 +58,16 @@ export type ActionLabel = (typeof ACTION_LABELS)[number];
  * All keys lower-cased so the resolver does case-insensitive lookup.
  */
 const ASSET_BY_ADDRESS: Record<string, { symbol: string; reference?: string }> = {
-  // --- Equities (placeholder until xStock addresses are public) ---
+  // --- xStocks: real Mantle mainnet ERC-20 addresses (xStocks public API,
+  //     deployments[network=Mantle], verified on-chain 2026-05-21) ---
+  '0xc845b2894dbddd03858fd2d643b4ef725fe0849d': { symbol: 'NVDAx', reference: 'NVDA' },
+  '0x8ad3c73f833d3f9a523ab01476625f269aeb7cf0': { symbol: 'TSLAx', reference: 'TSLA' },
+  '0x90a2a4c76b5d8c0bc892a69ea28aa775a8f2dd48': { symbol: 'SPYx', reference: 'SPY' },
+  // --- Legacy placeholder addresses kept so pre-2026-05-21 demo receipts
+  //     (logged before the real xStock addresses were wired) still resolve ---
   '0x0000000000000000000000000000000000000001': { symbol: 'NVDAx', reference: 'NVDA' },
   '0x0000000000000000000000000000000000000002': { symbol: 'TSLAx', reference: 'TSLA' },
   '0x0000000000000000000000000000000000000003': { symbol: 'SPYx', reference: 'SPY' },
-  // --- Legacy placeholder kept so older demo receipts still resolve ---
   '0x0000000000000000000000000000000000000005': { symbol: 'mETH' },
   // --- Real Mantle mainnet token addresses ---
   '0x5be26527e817998a7206475496fde1e68957c5a6': { symbol: 'USDY' }, // Ondo USDY
@@ -170,13 +175,13 @@ export function timeAgo(ts: number): string {
 
 /**
  * All assets the agent currently monitors. Source of truth for the dashboard.
- * Stable / yield asset addresses are real Mantle mainnet ERC-20s; equity
- * addresses are placeholders pending publicly-indexed xStock addresses.
+ * Every address is a real Mantle mainnet ERC-20 — xStock addresses resolved
+ * from the xStocks public API and verified on-chain 2026-05-21.
  */
 export const TRACKED_ASSETS = [
-  { symbol: 'NVDAx', reference: 'NVDA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x0000000000000000000000000000000000000001' as Address },
-  { symbol: 'TSLAx', reference: 'TSLA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x0000000000000000000000000000000000000002' as Address },
-  { symbol: 'SPYx',  reference: 'SPY',  kind: 'tokenized_equity' as const, market: 'NYSE' as const,   address: '0x0000000000000000000000000000000000000003' as Address },
+  { symbol: 'NVDAx', reference: 'NVDA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0xc845b2894dBddd03858fd2D643B4eF725fE0849d' as Address },
+  { symbol: 'TSLAx', reference: 'TSLA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0' as Address },
+  { symbol: 'SPYx',  reference: 'SPY',  kind: 'tokenized_equity' as const, market: 'NYSE' as const,   address: '0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48' as Address },
   { symbol: 'USDY',  kind: 'yield_bearing' as const, address: '0x5bE26527e817998A7206475496fDE1E68957c5A6' as Address },
   { symbol: 'mETH',  kind: 'yield_bearing' as const, address: '0xcDA86A272531e8640cD7F1a92c01839911B90bb0' as Address },
 ] as const;
