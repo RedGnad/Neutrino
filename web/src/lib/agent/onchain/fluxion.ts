@@ -104,6 +104,25 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Retry a read/RPC call through Mantle public-RPC hiccups ("Requested
+ * resource not found", timeouts). Only transient transport errors are
+ * retried — a genuine revert propagates immediately.
+ */
+async function withRpcRetry<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  const maxAttempts = 4;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (attempt >= maxAttempts || !isRetryableRpcError(e)) {
+        throw new Error(`${label}: ${shortError(e)}`);
+      }
+      await sleep(1_500 * attempt);
+    }
+  }
+}
+
 async function waitForReceipt(
   pub: PublicClient,
   hash: Hex,
@@ -117,7 +136,15 @@ async function waitForReceipt(
         timeout: Math.min(15_000, Math.max(1_000, deadline - Date.now())),
       });
     } catch (e) {
-      if (Date.now() >= deadline || !isRetryableRpcError(e)) throw e;
+      if (Date.now() >= deadline || !isRetryableRpcError(e)) {
+        // The tx may have mined while our poll was failing — check directly
+        // before surfacing an error.
+        try {
+          return await pub.getTransactionReceipt({ hash });
+        } catch {
+          throw e;
+        }
+      }
       await sleep(1_500);
     }
   }
@@ -136,18 +163,15 @@ export async function findPoolFee(
   tokenB: Address,
 ): Promise<number | null> {
   for (const fee of FLUXION.feeTiers) {
-    let pool: Address;
-    try {
-      pool = (await pub.readContract({
+    const pool = await withRpcRetry(`Fluxion pool discovery (fee ${fee})`, () =>
+      pub.readContract({
         address: FLUXION.factory,
         abi: FACTORY_ABI,
         functionName: 'getPool',
         args: [tokenA, tokenB, fee],
-      })) as Address;
-    } catch (e) {
-      throw new Error(`Fluxion pool discovery failed at fee ${fee}: ${shortError(e)}`);
-    }
-    if (pool !== ZERO_ADDRESS) return fee;
+      }),
+    );
+    if ((pool as Address) !== ZERO_ADDRESS) return fee;
   }
   return null;
 }
@@ -157,8 +181,8 @@ export async function quoteExactInputSingle(
   pub: PublicClient,
   params: { tokenIn: Address; tokenOut: Address; amountIn: bigint; fee: number },
 ): Promise<bigint> {
-  try {
-    const { result } = await pub.simulateContract({
+  const { result } = await withRpcRetry('Fluxion quote', () =>
+    pub.simulateContract({
       address: FLUXION.quoterV2,
       abi: QUOTER_V2_ABI,
       functionName: 'quoteExactInputSingle',
@@ -171,11 +195,9 @@ export async function quoteExactInputSingle(
           sqrtPriceLimitX96: 0n,
         },
       ],
-    });
-    return result[0];
-  } catch (e) {
-    throw new Error(`Fluxion quote failed: ${shortError(e)}`);
-  }
+    }),
+  );
+  return result[0];
 }
 
 export interface SwapResult {
@@ -233,20 +255,20 @@ export async function swapExactInputSingle(
 
   // 3. Approve if necessary.
   let approveTxHash: Hex | undefined;
-  let allowance: bigint;
-  try {
-    allowance = (await pub.readContract({
+  const allowance = (await withRpcRetry('Fluxion allowance check', () =>
+    pub.readContract({
       address: input.tokenIn,
       abi: ERC20_ABI,
       functionName: 'allowance',
       args: [signer, FLUXION.swapRouter],
-    })) as bigint;
-  } catch (e) {
-    throw new Error(`Fluxion allowance check failed: ${shortError(e)}`);
-  }
+    }),
+  )) as bigint;
 
   if (allowance < input.amountIn) {
     try {
+      const approveNonce = await withRpcRetry('Fluxion nonce fetch (approve)', () =>
+        pub.getTransactionCount({ address: signer, blockTag: 'pending' }),
+      );
       approveTxHash = await wallet.writeContract({
         address: input.tokenIn,
         abi: ERC20_ABI,
@@ -254,7 +276,7 @@ export async function swapExactInputSingle(
         args: [FLUXION.swapRouter, input.amountIn],
         account,
         chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
-        nonce: await pub.getTransactionCount({ address: signer, blockTag: 'pending' }),
+        nonce: approveNonce,
       });
     } catch (e) {
       throw new Error(`Fluxion approve submit failed: ${shortError(e)}`);
@@ -269,6 +291,9 @@ export async function swapExactInputSingle(
   // 4. Swap.
   let txHash: Hex;
   try {
+    const swapNonce = await withRpcRetry('Fluxion nonce fetch (swap)', () =>
+      pub.getTransactionCount({ address: signer, blockTag: 'pending' }),
+    );
     txHash = await wallet.writeContract({
       address: FLUXION.swapRouter,
       abi: SWAP_ROUTER_ABI,
@@ -287,7 +312,7 @@ export async function swapExactInputSingle(
       ],
       account,
       chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
-      nonce: await pub.getTransactionCount({ address: signer, blockTag: 'pending' }),
+      nonce: swapNonce,
     });
   } catch (e) {
     throw new Error(`Fluxion swap submit failed: ${shortError(e)}`);

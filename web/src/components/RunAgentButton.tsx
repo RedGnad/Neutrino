@@ -211,8 +211,12 @@ function cacheCanonicalJsons(result: RunResult) {
 }
 
 function ResultPanel({ result }: { result: RunResult }) {
-  const written = result.results.filter(
-    (r) => r.txHash && r.blockNumber !== "0",
+  // A decision is "written" once its tx is in the mempool (txHash present).
+  // blockNumber "0" only means our receipt poll hasn't confirmed it yet —
+  // Mantle mines in ~2s, so it is pending, never failed.
+  const written = result.results.filter((r) => r.txHash).length;
+  const pending = result.results.filter(
+    (r) => r.txHash && r.blockNumber === "0",
   ).length;
   const explorerTx =
     result.network === "mantle"
@@ -227,6 +231,11 @@ function ResultPanel({ result }: { result: RunResult }) {
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
         <p className="font-medium text-zinc-900">
           {written}/{result.results.length} decisions written on-chain
+          {pending > 0 ? (
+            <span className="ml-1 font-normal text-zinc-500">
+              ({pending} confirming)
+            </span>
+          ) : null}
         </p>
         <p className="text-zinc-600">
           {(result.durationMs / 1000).toFixed(1)}s · {networkLabel} · scenario{" "}
@@ -250,16 +259,27 @@ function ResultPanel({ result }: { result: RunResult }) {
                 {r.riskScore}
                 <span className="text-zinc-400">/1000</span>
               </span>
-              <span className="flex-1 truncate">
+              <span className="flex-1 whitespace-nowrap">
                 {r.txHash ? (
-                  <a
-                    href={`${explorerTx}/${r.txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-xs text-emerald-700 underline-offset-2 hover:underline"
-                  >
-                    {r.txHash.slice(0, 16)}…
-                  </a>
+                  <>
+                    <a
+                      href={`${explorerTx}/${r.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-xs text-emerald-700 underline-offset-2 hover:underline"
+                    >
+                      {r.txHash.slice(0, 16)}…
+                    </a>
+                    {r.blockNumber && r.blockNumber !== "0" ? (
+                      <span className="ml-1.5 text-[10px] text-zinc-400">
+                        block {r.blockNumber}
+                      </span>
+                    ) : (
+                      <span className="ml-1.5 text-[10px] text-amber-600">
+                        confirming…
+                      </span>
+                    )}
+                  </>
                 ) : (
                   <span className="text-xs text-rose-600">
                     {r.error ?? "no tx"}

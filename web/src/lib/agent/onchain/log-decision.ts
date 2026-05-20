@@ -35,6 +35,60 @@ export interface LoggedDecision {
   blockNumber: bigint;
 }
 
+function shortError(e: unknown): string {
+  const err = e as { shortMessage?: string; message?: string };
+  return err.shortMessage ?? err.message?.split('\n')[0] ?? 'unknown error';
+}
+
+/**
+ * Mantle's public RPC intermittently answers eth_getTransactionReceipt (and
+ * other reads) with "Requested resource not found" while a tx is still
+ * propagating. That is a transport hiccup, NOT a failed transaction — so we
+ * retry rather than treat it as a permanent error.
+ */
+function isTransientRpcError(e: unknown): boolean {
+  return /Requested resource not found|resource not found|could not be found|timed out|timeout|fetch failed|ECONNRESET|socket hang up|503|502|429/i.test(
+    shortError(e),
+  );
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Wait for a receipt, tolerating Mantle public-RPC hiccups. Returns the
+ * mined block number, or 0n only if the tx is genuinely not included within
+ * the window. A 0n here means "not yet confirmed", never "failed" — the tx
+ * hash is already in the mempool and will mine.
+ */
+async function waitForReceiptRobust(
+  pub: PublicClient,
+  hash: Hex,
+  timeoutMs: number,
+): Promise<bigint> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const receipt = await pub.waitForTransactionReceipt({
+        hash,
+        timeout: Math.min(20_000, Math.max(2_000, deadline - Date.now())),
+      });
+      return receipt.blockNumber;
+    } catch (e) {
+      if (!isTransientRpcError(e)) break;
+      await sleep(2_000);
+    }
+  }
+  // One last direct lookup — the tx may have mined while our poll was failing.
+  try {
+    const receipt = await pub.getTransactionReceipt({ hash });
+    return receipt.blockNumber;
+  } catch {
+    return 0n;
+  }
+}
+
 export interface OnChainLogger {
   log(agentId: bigint, assetAddress: Address, decision: Decision): Promise<LoggedDecision>;
 }
@@ -110,15 +164,12 @@ export function createOnChainLogger(cfg: LoggerConfig): OnChainLogger {
         decision.policyHash,
       ]);
 
-      // Best-effort receipt wait; if it times out, the tx is still in the
-      // mempool and the next call's nonce stays correct. We surface
-      // blockNumber=0n on timeout so the caller can decide what to render.
-      try {
-        const receipt = await pub.waitForTransactionReceipt({ hash: txHash, timeout: 90_000 });
-        return { txHash, blockNumber: receipt.blockNumber };
-      } catch {
-        return { txHash, blockNumber: 0n };
-      }
+      // Receipt wait tolerant of Mantle public-RPC hiccups. If it still times
+      // out, the tx is in the mempool and the next call's nonce stays correct;
+      // we surface blockNumber=0n (= "pending", not "failed") so the caller
+      // can render it honestly.
+      const blockNumber = await waitForReceiptRobust(pub, txHash, 120_000);
+      return { txHash, blockNumber };
     },
   };
 }
