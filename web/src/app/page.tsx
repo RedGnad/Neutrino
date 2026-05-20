@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { RunAgentButton } from "@/components/RunAgentButton";
+import { LatestExecution } from "@/components/LatestExecution";
 import { NETWORK_LABEL } from "@/lib/onchain";
 
 export default function Home() {
@@ -19,9 +20,10 @@ export default function Home() {
             Neutrino is the risk-judgment layer for autonomous agents on Mantle.
             It evaluates tokenized equity exposure for market-hours, liquidity
             and basis risk, then writes a verifiable decision receipt on-chain
-            and routes capital toward documented Mantle yield rails when
-            execution is appropriate. The deterministic engine decides; the LLM
-            only explains.
+            and — when policy allows — executes a safe Mantle-native allocation
+            through Fluxion V3. The deterministic engine decides; the LLM only
+            explains. xStock quotes are explicitly marked <code>stub</code>;
+            receipts and execution are live.
           </p>
           <p className="mt-3 max-w-2xl text-sm font-medium text-zinc-700">
             We do not present an “AI trading bot”. Neutrino computes risk from
@@ -169,6 +171,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <LatestExecution />
 
       <section className="grid gap-4 sm:grid-cols-3">
         <PrincipleCard

@@ -4,7 +4,9 @@
 
 **Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade.**
 
-Neutrino evaluates Mantle tokenized equities (TSLAx, NVDAx, SPYx, …) and yield-bearing assets (USDY, mETH) for market-hours, liquidity and basis risk, writes a canonical decision receipt on-chain (`reasonHash = keccak256(audit JSON)`), and routes capital toward documented Mantle RWA-yield rails (INIT Capital, Fluxion) when execution is appropriate. The deterministic rules engine decides; Claude Haiku 4.5 only narrates.
+Neutrino evaluates Mantle tokenized equities (TSLAx, NVDAx, SPYx, …) and yield-bearing assets (USDY, mETH) for market-hours, liquidity and basis risk, writes a canonical decision receipt on-chain (`reasonHash = keccak256(audit JSON)`), and — when policy allows — executes a safe Mantle-native allocation through Fluxion V3. The deterministic rules engine decides; Claude Haiku 4.5 only narrates.
+
+**Honesty note (read before judging):** there is no *hidden* mock. Decision receipts and the Fluxion execution path are fully live on Mantle mainnet. xStock per-asset quotes are explicitly flagged `stub` in every receipt because public Mantle xStock token addresses / RFQ endpoints are not yet available — xStocks are *risk-evaluated*, never auto-traded. Neutrino does not "trade xStocks".
 
 Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantleturingtesthackathon2026) — Phase 2 "AI Awakening" — track **AI x RWA**.
 
@@ -12,7 +14,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 
 ## Live demo
 
-- **Production**: pending Vercel redeploy / domain rebind. Do not submit a Vercel URL until it returns `200 OK`.
+- **Live app**: **https://neutrino-fawn.vercel.app** — returns `200 OK`. *(Any `neutrino-ebon…` URL is a dead alias from an earlier deploy — do not use it.)*
 - **Source**: https://github.com/RedGnad/Neutrino
 - **Mantle Mainnet contracts** *(both addresses identical to Sepolia thanks to CREATE determinism)*:
   - `RWAAgent` (ERC-8004 identity NFT): [`0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96`](https://mantlescan.xyz/address/0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96)
@@ -26,6 +28,15 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 | SPYx | PAUSE | [`0xe27d79b5…`](https://mantlescan.xyz/tx/0xe27d79b5795bea80ab226a0a723674be662c08a8a186aaa47830d1886d588a59) |
 | USDY | ALLOCATE | [`0xbd18bb0f…`](https://mantlescan.xyz/tx/0xbd18bb0fc2c8a49abd933c12a938ddaf3a50cfd7167720b1a57c04a436e70b95) |
 | mETH | ALLOCATE | [`0x3f6f53f1…`](https://mantlescan.xyz/tx/0x3f6f53f1a14d4c3c30dfac4c19a7a9ba439105de4d27dab3d4257d23f1d711d7) |
+
+### Latest verified on-chain execution
+
+A real `ALLOCATE` executed end-to-end on Fluxion V3 (Mantle mainnet). Demo round-trip — two real swaps, see the `EXECUTE_ROUNDTRIP` note below:
+
+| Leg | Swap | Block | Tx |
+|---|---|---|---|
+| 1 | USDC → mETH | 95591939 | [`0xbd5f817b…`](https://mantlescan.xyz/tx/0xbd5f817be6387c2cd052c414d9ff1f79f7e0298e926644bdfe8562d8421f2a8a) |
+| 2 | mETH → USDC *(demo unwind)* | 95591942 | [`0x5697e5a9…`](https://mantlescan.xyz/tx/0x5697e5a96f31c431d81cce936ae0a666f1d819427eddcc69d905a3f9fa2d3e6d) |
 
 ---
 
