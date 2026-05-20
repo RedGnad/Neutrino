@@ -16,6 +16,7 @@ import {
   type PublicClient,
   type WalletClient,
   encodeFunctionData,
+  maxUint256,
   parseAbiItem,
 } from 'viem';
 import type { Account } from 'viem/accounts';
@@ -269,11 +270,14 @@ export async function swapExactInputSingle(
       const approveNonce = await withRpcRetry('Fluxion nonce fetch (approve)', () =>
         pub.getTransactionCount({ address: signer, blockTag: 'pending' }),
       );
+      // Approve max so this is a one-time cost: subsequent runs find a
+      // sufficient allowance and skip the approve tx entirely. Fewer on-chain
+      // round-trips per run keeps the serverless execution inside its budget.
       approveTxHash = await wallet.writeContract({
         address: input.tokenIn,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [FLUXION.swapRouter, input.amountIn],
+        args: [FLUXION.swapRouter, maxUint256],
         account,
         chain: { id: MANTLE_MAINNET.chainId, name: MANTLE_MAINNET.name, nativeCurrency: { name: 'Mantle', symbol: 'MNT', decimals: 18 }, rpcUrls: { default: { http: [MANTLE_MAINNET.rpcUrl] } } },
         nonce: approveNonce,
@@ -282,7 +286,7 @@ export async function swapExactInputSingle(
       throw new Error(`Fluxion approve submit failed: ${shortError(e)}`);
     }
     try {
-      await waitForReceipt(pub, approveTxHash, 90_000);
+      await waitForReceipt(pub, approveTxHash, 60_000);
     } catch (e) {
       throw new Error(`Fluxion approve receipt wait failed for ${approveTxHash}: ${shortError(e)}`);
     }
@@ -319,7 +323,7 @@ export async function swapExactInputSingle(
   }
   let receipt: { blockNumber: bigint };
   try {
-    receipt = await waitForReceipt(pub, txHash, 120_000);
+    receipt = await waitForReceipt(pub, txHash, 60_000);
   } catch (e) {
     throw new Error(`Fluxion swap receipt wait failed for ${txHash}: ${shortError(e)}`);
   }

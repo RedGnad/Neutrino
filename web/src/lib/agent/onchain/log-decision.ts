@@ -168,7 +168,7 @@ export function createOnChainLogger(cfg: LoggerConfig): OnChainLogger {
       // out, the tx is in the mempool and the next call's nonce stays correct;
       // we surface blockNumber=0n (= "pending", not "failed") so the caller
       // can render it honestly.
-      const blockNumber = await waitForReceiptRobust(pub, txHash, 120_000);
+      const blockNumber = await waitForReceiptRobust(pub, txHash, 60_000);
       return { txHash, blockNumber };
     },
   };
