@@ -6,9 +6,11 @@ import { runAgentOnce, type ExecutionConfig, type Scenario } from '@/lib/agent/r
 export const runtime = 'nodejs';
 // Force fresh execution every time (no static caching of POST results).
 export const dynamic = 'force-dynamic';
-// Each run can take up to ~120s (5 reference fetches + 5 LLM calls + 5 on-chain
-// writes + optional swap). Bump the function timeout accordingly.
-export const maxDuration = 180;
+// Vercel Hobby caps serverless functions at 60s — anything higher is silently
+// clamped, so declare it honestly. The execute path is kept inside this budget
+// by max-approve allowances (one-time, so steady-state runs are 4 on-chain
+// txs) and 45s receipt-wait caps. Bump this to 300 on a Pro plan if needed.
+export const maxDuration = 60;
 
 let runQueue: Promise<void> = Promise.resolve();
 

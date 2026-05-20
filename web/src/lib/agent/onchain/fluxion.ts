@@ -286,7 +286,7 @@ export async function swapExactInputSingle(
       throw new Error(`Fluxion approve submit failed: ${shortError(e)}`);
     }
     try {
-      await waitForReceipt(pub, approveTxHash, 60_000);
+      await waitForReceipt(pub, approveTxHash, 45_000);
     } catch (e) {
       throw new Error(`Fluxion approve receipt wait failed for ${approveTxHash}: ${shortError(e)}`);
     }
@@ -323,7 +323,7 @@ export async function swapExactInputSingle(
   }
   let receipt: { blockNumber: bigint };
   try {
-    receipt = await waitForReceipt(pub, txHash, 60_000);
+    receipt = await waitForReceipt(pub, txHash, 45_000);
   } catch (e) {
     throw new Error(`Fluxion swap receipt wait failed for ${txHash}: ${shortError(e)}`);
   }
