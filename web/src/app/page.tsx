@@ -144,17 +144,19 @@ export default function Home() {
                 Real Fluxion mETH swap
               </p>
               <p className="mt-1 text-xs text-zinc-600">
-                Runs the safe scenario and swaps 1 USDC to{" "}
+                Runs the safe scenario, then performs a real{" "}
                 <a
                   href="https://fluxion-network.gitbook.io/fluxion-network/developer-resources/technical-overview-and-api/amm-v3-swaprouter.md"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-emerald-700 underline-offset-2 hover:underline"
                 >
-                  mETH on Fluxion V3
+                  Fluxion V3
                 </a>{" "}
-                — a real Mantle-native LST route. Returns the real Mantlescan tx
-                hash.
+                allocation: USDC → mETH (Mantle-native LST). For this shared
+                demo wallet the position is then unwound mETH → USDC — two real
+                on-chain swaps, two Mantlescan tx hashes. In production the
+                agent holds the mETH position.
               </p>
             </div>
             <RunAgentButton
@@ -162,7 +164,7 @@ export default function Home() {
               executeOnChain
               label="Run + execute on Mantle"
               variant="execute"
-              hint="Decisions + 1 USDC→mETH swap · uses ~1 USDC + gas"
+              hint="Decisions + real Fluxion round-trip (USDC→mETH→USDC) · ~1% fees, gas"
             />
           </div>
         </div>

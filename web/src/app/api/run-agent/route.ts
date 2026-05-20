@@ -51,14 +51,20 @@ function resolveExecution(
       | 'allocate'
       | 'move-to-stable-yield');
 
-  const amountRaw = process.env.EXECUTE_AMOUNT_USDC_BASE_UNITS ?? '1000000';
+  const amountRaw = process.env.EXECUTE_AMOUNT_USDC_BASE_UNITS ?? '500000';
   const amountUsdcBaseUnits = BigInt(amountRaw);
 
   const slippageBps = process.env.EXECUTE_SLIPPAGE_BPS
     ? Number(process.env.EXECUTE_SLIPPAGE_BPS)
     : 50;
 
-  return { action, amountUsdcBaseUnits, slippageBps };
+  // DEMO DEFAULT: round-trip the allocation (USDC→mETH→USDC) so the shared
+  // demo wallet stays solvent across judge clicks. Set EXECUTE_ROUNDTRIP=false
+  // for production, where the agent holds the mETH position.
+  // TODO(prod): flip this default to `false` before the production cut-over.
+  const roundTrip = process.env.EXECUTE_ROUNDTRIP !== 'false';
+
+  return { action, amountUsdcBaseUnits, slippageBps, roundTrip };
 }
 
 interface RequestBody {

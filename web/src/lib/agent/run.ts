@@ -38,7 +38,7 @@ import { createOnChainLogger } from './onchain/log-decision';
 import { narrateDecision, NARRATION_MODEL } from './llm/narrate';
 import { swapExactInputSingle } from './onchain/fluxion';
 import { supplyToInit, type InitSupplyMode } from './onchain/init-capital';
-import { INIT_CAPITAL, MAINNET_TOKENS } from './onchain/mantle-mainnet';
+import { ERC20_ABI, INIT_CAPITAL, MAINNET_TOKENS } from './onchain/mantle-mainnet';
 
 export const DEFAULT_POLICY: UserPolicy = {
   name: 'No after-hours risk',
@@ -91,6 +91,20 @@ export interface ExecutionConfig {
   amountUsdcBaseUnits: bigint;
   slippageBps?: number;
   initSupplyMode?: InitSupplyMode;
+  /**
+   * Demo mode: after the USDC→mETH allocation, swap the mETH back to USDC so
+   * the shared demo wallet stays solvent across many judge clicks. Both legs
+   * are real on-chain Fluxion swaps. Production sets this `false` — the agent
+   * holds the mETH position, as a real allocation should.
+   */
+  roundTrip?: boolean;
+}
+
+/** One real on-chain transaction within an execution (multi-leg for round-trips). */
+export interface ExecutionStep {
+  label: string;
+  txHash: Hex;
+  blockNumber: string;
 }
 
 export interface ExecutionResult {
@@ -99,6 +113,8 @@ export interface ExecutionResult {
   approveTxHash?: Hex;
   description: string;
   blockNumber: string;
+  /** Every on-chain leg, in order. The demo round-trip has two. */
+  steps?: ExecutionStep[];
 }
 
 export interface PerAssetResult {
@@ -332,21 +348,89 @@ async function runExecution(cfg: RunConfig): Promise<ExecutionResult> {
     // staked ETH. Pool confirmed at fee tier 3000 (0.3%):
     // 0xEEbc5E596d6C788Bcaa5324f44a8F648b746e041. Aligned with the RWA
     // narrative (Mantle-native LST) far better than a generic USDC → WMNT.
-    const result = await swapExactInputSingle(
-      { pub, wallet, account },
-      {
-        tokenIn: MAINNET_TOKENS.USDC.address,
-        tokenOut: MAINNET_TOKENS.mETH.address,
-        amountIn: exec.amountUsdcBaseUnits,
-        slippageBps: exec.slippageBps,
-      },
-    );
+    const clients = { pub, wallet, account };
+    const usdc = MAINNET_TOKENS.USDC.address;
+    const meth = MAINNET_TOKENS.mETH.address;
+
+    // Pre-flight balance check. Never submit a swap the runner cannot cover —
+    // a USDC shortfall otherwise surfaces as a cryptic empty-reason revert
+    // from the pool callback. Cap the amount to the live balance and fail
+    // with an actionable message if it is below a usable floor.
+    const usdcBalance = (await pub.readContract({
+      address: usdc,
+      abi: ERC20_ABI,
+      functionName: 'balanceOf',
+      args: [account.address],
+    })) as bigint;
+    const MIN_SWAP = 20_000n; // 0.02 USDC
+    const amountIn =
+      exec.amountUsdcBaseUnits <= usdcBalance ? exec.amountUsdcBaseUnits : usdcBalance;
+    if (amountIn < MIN_SWAP) {
+      throw new Error(
+        `Runner USDC balance is ${formatUsdc(usdcBalance)} USDC — below the 0.02 USDC ` +
+          `execution minimum. Fund the runner wallet with USDC to re-enable on-chain execution.`,
+      );
+    }
+
+    // Leg 1 — USDC → mETH (the allocation itself).
+    const methBefore = (await pub.readContract({
+      address: meth,
+      abi: ERC20_ABI,
+      functionName: 'balanceOf',
+      args: [account.address],
+    })) as bigint;
+    const leg1 = await swapExactInputSingle(clients, {
+      tokenIn: usdc,
+      tokenOut: meth,
+      amountIn,
+      slippageBps: exec.slippageBps,
+    });
+
+    if (!exec.roundTrip) {
+      // Production behaviour: the agent holds the mETH position.
+      return {
+        action: 'allocate',
+        txHash: leg1.txHash,
+        approveTxHash: leg1.approveTxHash,
+        blockNumber: leg1.blockNumber.toString(),
+        description: `Swapped ${formatUsdc(amountIn)} USDC → mETH on Fluxion V3 (Mantle-native LST, fee ${leg1.fee / 100} bps).`,
+        steps: [{ label: 'USDC → mETH', txHash: leg1.txHash, blockNumber: leg1.blockNumber.toString() }],
+      };
+    }
+
+    // Leg 2 — mETH → USDC. Demo-only unwind: keeps the shared demo wallet
+    // solvent for every judge. Both legs are real on-chain Fluxion swaps.
+    let methReceived = (await pub.readContract({
+      address: meth,
+      abi: ERC20_ABI,
+      functionName: 'balanceOf',
+      args: [account.address],
+    })) as bigint;
+    methReceived -= methBefore;
+    if (methReceived <= 0n) {
+      throw new Error(
+        `Round-trip leg 1 settled (${leg1.txHash}) but the mETH credit did not show on the runner balance — skipping the unwind.`,
+      );
+    }
+    const leg2 = await swapExactInputSingle(clients, {
+      tokenIn: meth,
+      tokenOut: usdc,
+      amountIn: methReceived,
+      slippageBps: exec.slippageBps,
+    });
     return {
       action: 'allocate',
-      txHash: result.txHash,
-      approveTxHash: result.approveTxHash,
-      blockNumber: result.blockNumber.toString(),
-      description: `Swapped ${formatUsdc(exec.amountUsdcBaseUnits)} USDC → mETH on Fluxion V3 (Mantle-native LST, fee ${result.fee / 100} bps).`,
+      txHash: leg1.txHash,
+      approveTxHash: leg1.approveTxHash,
+      blockNumber: leg1.blockNumber.toString(),
+      description:
+        `Demo round-trip on Fluxion V3 — swapped ${formatUsdc(amountIn)} USDC → mETH, then unwound ` +
+        `mETH → USDC. Two real on-chain swaps; the unwind keeps the shared demo wallet solvent for ` +
+        `every judge. In production the agent holds the mETH position (roundTrip disabled).`,
+      steps: [
+        { label: 'USDC → mETH', txHash: leg1.txHash, blockNumber: leg1.blockNumber.toString() },
+        { label: 'mETH → USDC (demo unwind)', txHash: leg2.txHash, blockNumber: leg2.blockNumber.toString() },
+      ],
     };
   }
 

@@ -37,7 +37,11 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 - **Two judge-ready scenarios** on the home page:
   - *Risky xStocks* (NVDAx / TSLAx / SPYx) — typically PAUSE outside market hours.
   - *Safe yield* (USDY / mETH) — typically ALLOCATE.
-- **Optional real Fluxion execution** behind an opt-in button: the execution demo swaps USDC → mETH on Fluxion V3. Receipt-only runs remain the default for safe judging.
+- **Optional real Fluxion execution** behind an opt-in button: the execution demo performs a real USDC → mETH allocation on Fluxion V3. Receipt-only runs remain the default for safe judging.
+
+> ⚠️ **DEV NOTE — switch to production behaviour before the final cut-over.**
+> The deployed demo runs the execution as a **round-trip** (USDC → mETH → mETH → USDC) so the shared demo wallet stays solvent across many judge clicks. Both legs are real on-chain Fluxion swaps. This is controlled by `EXECUTE_ROUNDTRIP` (defaults to `true`).
+> **In production the agent must HOLD the mETH position** — a one-way allocation. Before the production cut-over: set `EXECUTE_ROUNDTRIP=false` (or flip the default in `web/src/app/api/run-agent/route.ts`, marked with a `TODO(prod)`), and size the swap from the decision rather than the fixed `EXECUTE_AMOUNT_USDC_BASE_UNITS`.
 
 ## What's stubbed (and labelled as such)
 

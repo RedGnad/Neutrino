@@ -28,12 +28,19 @@ interface PerAssetResult {
   error?: string;
 }
 
+interface ExecutionStep {
+  label: string;
+  txHash: string;
+  blockNumber: string;
+}
+
 interface ExecutionResult {
   action: "allocate" | "move-to-stable-yield";
   txHash: string;
   approveTxHash?: string;
   description: string;
   blockNumber: string;
+  steps?: ExecutionStep[];
 }
 
 interface RunResult {
@@ -315,17 +322,36 @@ function ResultPanel({ result }: { result: RunResult }) {
             On-chain execution
           </p>
           <p className="mt-1 text-zinc-900">{result.execution.description}</p>
-          <p className="mt-1 text-xs text-zinc-600">
-            block {result.execution.blockNumber} ·{" "}
-            <a
-              href={`${explorerTx}/${result.execution.txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono text-emerald-700 underline-offset-2 hover:underline"
-            >
-              {result.execution.txHash.slice(0, 18)}…
-            </a>
-          </p>
+          <ul className="mt-2 space-y-1">
+            {(result.execution.steps ?? [
+              {
+                label: "swap",
+                txHash: result.execution.txHash,
+                blockNumber: result.execution.blockNumber,
+              },
+            ]).map((step, i) => (
+              <li
+                key={step.txHash}
+                className="flex items-baseline gap-2 text-xs text-zinc-600"
+              >
+                <span className="font-medium text-zinc-500">
+                  Leg {i + 1}
+                </span>
+                <span className="text-zinc-700">{step.label}</span>
+                <a
+                  href={`${explorerTx}/${step.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-emerald-700 underline-offset-2 hover:underline"
+                >
+                  {step.txHash.slice(0, 18)}…
+                </a>
+                <span className="text-[10px] text-zinc-400">
+                  block {step.blockNumber}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       ) : null}
 
