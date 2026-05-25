@@ -119,19 +119,25 @@ export interface OnChainDecision {
   caller: Address;
 }
 
+// RWADecisionLogger deployed on Mantle mainnet around this block.
+// Used as floor so getLogs never starts after our earliest events.
+const DEPLOYMENT_BLOCK = 95_500_000n;
+
 /**
  * Pull the most recent N DecisionLogged events from RWADecisionLogger.
  *
- * Public RPCs (both mainnet and Sepolia) cap getLogs block ranges, so we read
- * a sliding window of the most recent blocks rather than from a fixed floor.
- * 200k blocks ≈ 5-7 days at Mantle's block time — comfortable for our cadence.
+ * Uses DEPLOYMENT_BLOCK as the floor so the sliding window never starts
+ * after the contract's first events. Reads in one request on public RPCs
+ * (Mantle allows up to ~500k blocks per getLogs request).
  */
 export async function fetchRecentDecisions(limit = 50): Promise<OnChainDecision[]> {
   if (!LOGGER_ADDRESS) return [];
 
-  const LOOKBACK_BLOCKS = 200_000n;
+  const LOOKBACK_BLOCKS = 500_000n;
   const latest = await publicClient.getBlockNumber();
-  const fromBlock = latest > LOOKBACK_BLOCKS ? latest - LOOKBACK_BLOCKS : 0n;
+  const windowStart = latest > LOOKBACK_BLOCKS ? latest - LOOKBACK_BLOCKS : 0n;
+  // Always include from DEPLOYMENT_BLOCK so we never miss early events.
+  const fromBlock = windowStart < DEPLOYMENT_BLOCK ? windowStart : DEPLOYMENT_BLOCK;
   const logs = await publicClient.getLogs({
     address: LOGGER_ADDRESS,
     event: DECISION_LOGGED_EVENT,

@@ -1,78 +1,144 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Azeret+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
-/* ── Design tokens ──────────────────────────────── */
+/* ── Design tokens ─────────────────────────────── */
 :root {
-  --bb-bg:           #070A0F;
-  --bb-panel:        #0F1520;
-  --bb-raised:       #161E30;
-  --bb-border:       rgba(255, 255, 255, 0.07);
-  --bb-border-hi:    rgba(255, 255, 255, 0.14);
-  --bb-text:         #EBE5D7;
-  --bb-muted:        #8A94A6;
-  --bb-amber:        #F5A623;
-  --bb-orange:       #FF6B35;
-  --bb-teal:         #2DD4A5;
-  --bb-red:          #E84855;
-  --bb-violet:       #7C5CFC;
+  /* Forest-black — not blue-black (Web3 cliché) */
+  --bg:           #080D09;
+  --panel:        #0E1610;
+  --raised:       #162019;
+  --border:       rgba(148, 180, 148, 0.07);
+  --border-hi:    rgba(148, 180, 148, 0.14);
+
+  /* Warm cream text — not cool white */
+  --text:         #E8E0D0;
+  --muted:        #7A9282;
+
+  /* Verdict palette */
+  --gold:         #C8A64A;   /* LIVE / VERIFIED — notary gold    */
+  --terracotta:   #C04030;   /* PAUSE / REFUSED — judicial red   */
+  --sage:         #3D8A62;   /* ALLOCATE / SAFE — deep green     */
+  --violet:       #7C5CFC;   /* AUTH GATED                       */
+  --amber:        #C8A64A;   /* backward compat alias → --gold   */
+
+  /* Legacy aliases — keep existing component code working */
+  --bb-bg:        var(--bg);
+  --bb-panel:     var(--panel);
+  --bb-raised:    var(--raised);
+  --bb-border:    var(--border);
+  --bb-border-hi: var(--border-hi);
+  --bb-text:      var(--text);
+  --bb-muted:     var(--muted);
+  --bb-teal:      var(--sage);
+  --bb-amber:     var(--gold);
+  --bb-orange:    var(--terracotta);
+  --bb-red:       #C04030;
+  --bb-violet:    var(--violet);
 }
 
 @theme inline {
-  --font-mono: 'IBM Plex Mono', 'Menlo', 'Consolas', monospace;
-  --font-sans: 'IBM Plex Sans', 'system-ui', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono:    'Azeret Mono', 'JetBrains Mono', 'Menlo', monospace;
 }
 
-/* ── Base ─────────────────────────────────────── */
+/* ── Base ──────────────────────────────────────── */
 body {
-  background: var(--bb-bg);
-  color: var(--bb-text);
-  font-family: 'IBM Plex Sans', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
+  background:              var(--bg);
+  color:                   var(--text);
+  font-family:             'Plus Jakarta Sans', system-ui, sans-serif;
+  -webkit-font-smoothing:  antialiased;
+  /* Subtle grain overlay — NOT a png, pure CSS noise via SVG filter */
+  position: relative;
 }
 
-code, pre, .font-mono {
-  font-family: 'IBM Plex Mono', 'Menlo', 'Consolas', monospace;
+/* Grain layer using a repeating SVG noise pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
 }
 
-/* ── Scrollbar ────────────────────────────────── */
+code, pre {
+  font-family: 'Azeret Mono', 'JetBrains Mono', monospace;
+}
+
+/* ── Scrollbar ─────────────────────────────────── */
 ::-webkit-scrollbar        { width: 4px; height: 4px; }
-::-webkit-scrollbar-track  { background: var(--bb-panel); }
-::-webkit-scrollbar-thumb  { background: var(--bb-border-hi); border-radius: 2px; }
+::-webkit-scrollbar-track  { background: var(--panel); }
+::-webkit-scrollbar-thumb  { background: var(--border-hi); border-radius: 2px; }
 
-/* ── Animations ───────────────────────────────── */
-@keyframes scanline {
-  0%   { top: -4px; opacity: 0; }
-  10%  { opacity: 0.6; }
-  90%  { opacity: 0.2; }
-  100% { top: calc(100% + 4px); opacity: 0; }
-}
-
+/* ── Animations ────────────────────────────────── */
 @keyframes live-blink {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.25; }
+  50%       { opacity: 0.2; }
 }
 
-@keyframes receipt-reveal {
-  0%   { opacity: 0; transform: translateY(6px); }
+@keyframes ruling-appear {
+  0%   { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes status-flash {
-  0%   { box-shadow: 0 0 0 0 rgba(45, 212, 165, 0.4); }
-  70%  { box-shadow: 0 0 0 10px rgba(45, 212, 165, 0); }
-  100% { box-shadow: 0 0 0 0  rgba(45, 212, 165, 0); }
+@keyframes seal-stamp {
+  0%   { transform: scale(1.15) rotate(-3deg); opacity: 0; }
+  60%  { transform: scale(0.97) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg);   opacity: 1; }
 }
 
-.animate-scanline       { animation: scanline 5s linear infinite; }
+@keyframes ledger-draw {
+  0%   { width: 0; }
+  100% { width: 100%; }
+}
+
+@keyframes scanline {
+  0%   { top: -4px; opacity: 0; }
+  10%  { opacity: 0.4; }
+  90%  { opacity: 0.15; }
+  100% { top: calc(100% + 4px); opacity: 0; }
+}
+
+@keyframes status-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(61,138,98,0.4); }
+  70%  { box-shadow: 0 0 0 10px rgba(61,138,98,0); }
+  100% { box-shadow: 0 0 0 0 rgba(61,138,98,0); }
+}
+
 .animate-live           { animation: live-blink 2s ease-in-out infinite; }
-.animate-receipt-reveal { animation: receipt-reveal 0.4s ease-out forwards; }
+.animate-ruling         { animation: ruling-appear 0.4s ease-out forwards; }
+.animate-seal           { animation: seal-stamp 0.5s cubic-bezier(.2,.8,.4,1.2) forwards; }
+.animate-scanline       { animation: scanline 5s linear infinite; }
+.animate-receipt-reveal { animation: ruling-appear 0.4s ease-out forwards; }
 .animate-status-flash   { animation: status-flash 1s ease-out; }
 
-/* ── BlackBox card chrome ─────────────────────── */
+/* ── Ruling card (replaces bb-card) ────────────── */
+/* Cards with a thick left accent border — like legal briefs */
+.ruling-card {
+  background:    var(--panel);
+  border-top:    1px solid var(--border);
+  border-right:  1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-left:   3px solid var(--border-hi);
+  border-radius: 0 8px 8px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ruling-card.pause    { border-left-color: var(--terracotta); }
+.ruling-card.allocate { border-left-color: var(--sage); }
+.ruling-card.verified { border-left-color: var(--gold); }
+.ruling-card.modelled { border-left-color: var(--gold); }
+.ruling-card.auth     { border-left-color: var(--violet); }
+
+/* Legacy bb-card → ruling-card style */
 .bb-card {
-  background: var(--bb-panel);
-  border: 1px solid var(--bb-border-hi);
-  border-radius: 12px;
+  background:   var(--panel);
+  border:       1px solid var(--border-hi);
+  border-left:  3px solid var(--border-hi);
+  border-radius: 0 8px 8px 0;
   overflow: hidden;
   position: relative;
 }
@@ -80,92 +146,147 @@ code, pre, .font-mono {
 .bb-card .bb-scanline {
   position: absolute;
   left: 0; right: 0;
-  height: 3px;
+  height: 2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(45, 212, 165, 0.4) 40%,
-    rgba(45, 212, 165, 0.6) 50%,
-    rgba(45, 212, 165, 0.4) 60%,
+    rgba(61,138,98,0.3) 40%,
+    rgba(61,138,98,0.5) 50%,
+    rgba(61,138,98,0.3) 60%,
     transparent 100%
   );
   pointer-events: none;
   z-index: 10;
 }
 
-/* ── Telemetry row ────────────────────────────── */
+/* ── Telemetry rows (ledger lines) ─────────────── */
 .telemetry-row {
-  display: flex;
+  display:       flex;
   justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--bb-border);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  line-height: 1.4;
+  align-items:   baseline;
+  padding:       5px 0;
+  border-bottom: 1px solid var(--border);
+  font-family:   'Azeret Mono', monospace;
+  font-size:     11px;
+  line-height:   1.4;
 }
 
 .telemetry-row:last-child { border-bottom: none; }
 
 .telemetry-label {
-  color: var(--bb-muted);
-  letter-spacing: 0.08em;
+  color:          var(--muted);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  font-size: 10px;
+  font-size:      10px;
 }
 
 .telemetry-value {
-  color: var(--bb-text);
+  color:       var(--text);
   font-weight: 500;
 }
 
-/* ── Decision badge ───────────────────────────── */
-.decision-pause    { color: var(--bb-orange); }
-.decision-allocate { color: var(--bb-teal); }
-.decision-hold     { color: var(--bb-amber); }
-.decision-reduce   { color: var(--bb-amber); }
+/* ── Verdict / decision ────────────────────────── */
+.verdict-pause    { color: var(--terracotta); }
+.verdict-allocate { color: var(--sage); }
+.verdict-hold     { color: var(--gold); }
+.verdict-reduce   { color: var(--gold); }
 
-/* ── Source badge colours ─────────────────────── */
-.badge-live      { background: rgba(45,212,165,0.1);  color: var(--bb-teal);   border: 1px solid rgba(45,212,165,0.25); }
-.badge-stub      { background: rgba(245,166,35,0.1);  color: var(--bb-amber);  border: 1px solid rgba(245,166,35,0.25); }
-.badge-na        { background: rgba(138,148,166,0.1); color: var(--bb-muted);  border: 1px solid rgba(138,148,166,0.2); }
-.badge-notexec   { background: rgba(124,92,252,0.1);  color: #9D84FF;          border: 1px solid rgba(124,92,252,0.25); }
+/* legacy aliases */
+.decision-pause    { color: var(--terracotta); }
+.decision-allocate { color: var(--sage); }
+.decision-hold     { color: var(--gold); }
+.decision-reduce   { color: var(--gold); }
 
-/* ── Hash display ─────────────────────────────── */
+/* ── Source badges — understated, no neon ──────── */
+.badge-live    {
+  background: rgba(61,138,98,0.1);
+  color: var(--sage);
+  border: 1px solid rgba(61,138,98,0.25);
+}
+.badge-stub    {
+  background: rgba(200,166,74,0.1);
+  color: var(--gold);
+  border: 1px solid rgba(200,166,74,0.25);
+}
+.badge-na      {
+  background: rgba(122,146,130,0.1);
+  color: var(--muted);
+  border: 1px solid rgba(122,146,130,0.2);
+}
+.badge-notexec {
+  background: rgba(124,92,252,0.1);
+  color: #9D84FF;
+  border: 1px solid rgba(124,92,252,0.25);
+}
+
+/* ── Hash display ──────────────────────────────── */
 .hash-block {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid var(--bb-border);
-  border-radius: 6px;
-  padding: 10px 12px;
-  word-break: break-all;
-  color: var(--bb-muted);
-  line-height: 1.6;
+  font-family:  'Azeret Mono', monospace;
+  font-size:    11px;
+  background:   rgba(0,0,0,0.25);
+  border:       1px solid var(--border);
+  border-radius: 4px;
+  padding:      10px 12px;
+  word-break:   break-all;
+  color:        var(--muted);
+  line-height:  1.6;
 }
+.hash-block.match    { border-color: rgba(61,138,98,0.35);  color: var(--sage); }
+.hash-block.mismatch { border-color: rgba(192,64,48,0.35);  color: var(--terracotta); }
 
-.hash-block.match    { border-color: rgba(45,212,165,0.3);  color: var(--bb-teal); }
-.hash-block.mismatch { border-color: rgba(232,72,85,0.3);   color: var(--bb-red); }
-
-/* ── Panel / section ──────────────────────────── */
+/* ── Panel / section ───────────────────────────── */
 .bb-section {
-  background: var(--bb-panel);
-  border: 1px solid var(--bb-border);
-  border-radius: 12px;
-  padding: 24px;
+  background:    var(--panel);
+  border:        1px solid var(--border);
+  border-left:   3px solid var(--border-hi);
+  border-radius: 0 8px 8px 0;
+  padding:       24px;
 }
 
-/* ── Nav link ─────────────────────────────────── */
+/* ── Nav link ──────────────────────────────────── */
 .nav-link {
-  color: var(--bb-muted);
-  font-family: 'IBM Plex Sans', sans-serif;
+  color:       var(--muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition:  color 0.15s, background 0.15s;
 }
 .nav-link:hover {
-  color: var(--bb-text);
-  background: rgba(255,255,255,0.05);
+  color:      var(--text);
+  background: rgba(148,180,148,0.06);
 }
 
-/* ── Timeline ─────────────────────────────────── */
+/* ── Timeline connector ────────────────────────── */
 .timeline-connector {
-  width: 1px;
-  background: linear-gradient(180deg, var(--bb-teal) 0%, var(--bb-border) 100%);
-  margin: 0 auto;
+  width:      1px;
+  background: linear-gradient(180deg, var(--sage) 0%, var(--border) 100%);
+  margin:     0 auto;
+}
+
+/* ── Fraunces display helper ───────────────────── */
+.font-display {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+/* ── Exhibit corner marks ──────────────────────── */
+.exhibit-corner::before,
+.exhibit-corner::after {
+  content:    '';
+  position:   absolute;
+  width:      12px;
+  height:     12px;
+  border-color: var(--border-hi);
+  border-style: solid;
+}
+.exhibit-corner::before {
+  top:  8px; left: 8px;
+  border-width: 1px 0 0 1px;
+}
+.exhibit-corner::after {
+  bottom: 8px; right: 8px;
+  border-width: 0 1px 1px 0;
+}
+
+/* ── Ledger rule line ───────────────────────────── */
+.ledger-line {
+  height:     1px;
+  background: linear-gradient(90deg, var(--border-hi) 0%, transparent 100%);
+  margin:     16px 0;
 }

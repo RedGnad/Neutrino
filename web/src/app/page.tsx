@@ -26,37 +26,40 @@ function Hero() {
   return (
     <section
       className="-mx-6 -mt-10 px-6 pt-14 pb-14"
-      style={{ background: "linear-gradient(180deg, #070A0F 0%, #0B1020 100%)" }}
+      style={{ background: "linear-gradient(180deg, var(--bg) 0%, var(--panel) 100%)" }}
     >
       <div className="mx-auto max-w-6xl">
-        {/* Label row */}
-        <div className="flex items-center gap-2 mb-8">
+        {/* Classification label */}
+        <div className="flex items-center gap-2 mb-10">
+          <span className="h-1.5 w-1.5 rounded-full animate-live" style={{ background: "var(--sage)" }} />
           <span
-            className="h-1.5 w-1.5 rounded-full animate-live"
-            style={{ background: "var(--bb-teal)" }}
-          />
-          <span
-            className="text-[10px] font-medium uppercase tracking-widest"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+            className="text-[9px] font-medium uppercase tracking-widest"
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
           >
             Neutrino · AI × RWA · {NETWORK_LABEL}
           </span>
         </div>
 
         {/* Two-column hero */}
-        <div className="grid gap-12 lg:grid-cols-[1fr_auto]">
-          {/* Left: Headline */}
-          <div className="space-y-6 max-w-xl">
+        <div className="grid gap-14 lg:grid-cols-[1fr_auto] items-start">
+          {/* Left: Headline in Fraunces */}
+          <div className="space-y-7 max-w-2xl">
             <div>
+              {/* The unexpected moment: serif italic in a DeFi context */}
               <h1
-                className="text-4xl font-bold leading-[1.15] tracking-tight sm:text-5xl"
-                style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+                className="italic leading-[1.1] tracking-tight"
+                style={{
+                  fontFamily: "'Fraunces', Georgia, serif",
+                  fontSize: "clamp(2.4rem, 5vw, 3.8rem)",
+                  fontWeight: 600,
+                  color: "var(--text)",
+                }}
               >
                 Tokenized stocks
                 <br />
                 trade 24/7.
                 <br />
-                <span style={{ color: "var(--bb-muted)" }}>
+                <span style={{ color: "var(--muted)" }}>
                   Their underlying
                   <br />
                   markets don&rsquo;t.
@@ -64,20 +67,20 @@ function Hero() {
               </h1>
               <p
                 className="mt-6 text-base leading-relaxed"
-                style={{ color: "var(--bb-muted)" }}
+                style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
               >
-                Neutrino is the risk-judgment layer for autonomous Mantle RWA agents.
+                Neutrino is the autonomous risk-judgment layer for Mantle RWA agents.
                 It reads live xStocks signals, scores risk with deterministic rules,
-                writes a verifiable receipt on Mantle, and executes only through
-                a verified Mantle rail. The engine decides. The LLM explains.
+                writes a verifiable receipt on Mantle, and executes only through a
+                verified rail. The engine decides. The LLM explains.
               </p>
             </div>
 
-            {/* Proof chips */}
+            {/* Proof chips — understated, no neon glow */}
             <div className="flex flex-wrap gap-2">
-              <ProofChip label="xStocks price + status" state="LIVE" color="teal" />
-              <ProofChip label="Mantle receipts" state="LIVE" color="teal" />
-              <ProofChip label="Fluxion execution" state="LIVE" color="teal" />
+              <ProofChip label="xStocks price + status" state="LIVE" color="sage" />
+              <ProofChip label="Mantle receipts" state="LIVE" color="sage" />
+              <ProofChip label="Fluxion execution" state="LIVE" color="sage" />
               <ProofChip label="xChange RFQ" state="AUTH GATED" color="violet" />
             </div>
 
@@ -85,15 +88,15 @@ function Hero() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="#scenarios"
-                className="inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold transition-all"
-                style={{ background: "var(--bb-teal)", color: "#070A0F" }}
+                className="inline-flex h-10 items-center rounded px-5 text-sm font-semibold transition-all"
+                style={{ background: "var(--sage)", color: "#080D09", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
               >
                 Run the agent
               </Link>
               <Link
                 href="/proof"
-                className="inline-flex h-10 items-center rounded-md px-5 text-sm font-medium transition-colors"
-                style={{ background: "rgba(255,255,255,0.05)", color: "var(--bb-text)", border: "1px solid rgba(255,255,255,0.1)" }}
+                className="inline-flex h-10 items-center rounded px-5 text-sm font-medium transition-colors"
+                style={{ background: "rgba(148,180,148,0.06)", color: "var(--text)", border: "1px solid var(--border-hi)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
               >
                 On-chain proofs
               </Link>
@@ -102,22 +105,22 @@ function Hero() {
             {/* Contract addresses */}
             {(LOGGER_ADDRESS || AGENT_ADDRESS) ? (
               <div
-                className="flex flex-wrap gap-4 pt-2 text-[11px]"
-                style={{ fontFamily: "'IBM Plex Mono', monospace" }}
+                className="flex flex-wrap gap-4 pt-1 text-[10px]"
+                style={{ fontFamily: "'Azeret Mono', monospace" }}
               >
                 {LOGGER_ADDRESS ? (
                   <a
                     href={`${EXPLORER_ADDR}/${LOGGER_ADDRESS}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 transition-colors"
-                    style={{ color: "rgba(138,148,166,0.5)" }}
+                    className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
+                    style={{ color: "rgba(122,146,130,0.45)" }}
                   >
                     RWADecisionLogger:{" "}
-                    <span style={{ color: "var(--bb-muted)" }}>
+                    <span style={{ color: "var(--muted)" }}>
                       {LOGGER_ADDRESS.slice(0, 10)}…{LOGGER_ADDRESS.slice(-6)}
                     </span>
-                    <span style={{ color: "var(--bb-teal)" }}>↗</span>
+                    <span style={{ color: "var(--sage)" }}>↗</span>
                   </a>
                 ) : null}
                 {AGENT_ADDRESS ? (
@@ -125,21 +128,21 @@ function Hero() {
                     href={`${EXPLORER_ADDR}/${AGENT_ADDRESS}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 transition-colors"
-                    style={{ color: "rgba(138,148,166,0.5)" }}
+                    className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
+                    style={{ color: "rgba(122,146,130,0.45)" }}
                   >
                     RWAAgent:{" "}
-                    <span style={{ color: "var(--bb-muted)" }}>
+                    <span style={{ color: "var(--muted)" }}>
                       {AGENT_ADDRESS.slice(0, 10)}…{AGENT_ADDRESS.slice(-6)}
                     </span>
-                    <span style={{ color: "var(--bb-teal)" }}>↗</span>
+                    <span style={{ color: "var(--sage)" }}>↗</span>
                   </a>
                 ) : null}
               </div>
             ) : null}
           </div>
 
-          {/* Right: BlackBoxCard — simulated preview, no fake verified */}
+          {/* Right: BlackBoxCard — verdict card, no fake verified */}
           <div className="flex items-start justify-center lg:justify-end">
             <BlackBoxCard
               label="SIMULATED PREVIEW"
@@ -169,22 +172,22 @@ function ProofChip({
 }: {
   label: string;
   state: string;
-  color: "teal" | "amber" | "violet" | "muted";
+  color: "sage" | "gold" | "violet" | "muted";
 }) {
   const styles: Record<string, { bg: string; border: string; dot: string; text: string }> = {
-    teal:   { bg: "rgba(45,212,165,0.08)",  border: "rgba(45,212,165,0.25)",  dot: "var(--bb-teal)",   text: "var(--bb-teal)" },
-    amber:  { bg: "rgba(245,166,35,0.08)",  border: "rgba(245,166,35,0.25)",  dot: "var(--bb-amber)",  text: "var(--bb-amber)" },
-    violet: { bg: "rgba(124,92,252,0.08)",  border: "rgba(124,92,252,0.25)",  dot: "#9D84FF",          text: "#9D84FF" },
-    muted:  { bg: "rgba(138,148,166,0.08)", border: "rgba(138,148,166,0.2)",  dot: "var(--bb-muted)",  text: "var(--bb-muted)" },
+    sage:   { bg: "rgba(61,138,98,0.08)",   border: "rgba(61,138,98,0.2)",   dot: "var(--sage)",   text: "var(--sage)" },
+    gold:   { bg: "rgba(200,166,74,0.08)",  border: "rgba(200,166,74,0.2)",  dot: "var(--gold)",   text: "var(--gold)" },
+    violet: { bg: "rgba(124,92,252,0.08)",  border: "rgba(124,92,252,0.2)",  dot: "#9D84FF",        text: "#9D84FF" },
+    muted:  { bg: "rgba(122,146,130,0.06)", border: "rgba(122,146,130,0.15)",dot: "var(--muted)",  text: "var(--muted)" },
   };
   const s = styles[color];
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs"
-      style={{ background: s.bg, border: `1px solid ${s.border}`, fontFamily: "'IBM Plex Mono', monospace" }}
+      className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-[10px]"
+      style={{ background: s.bg, border: `1px solid ${s.border}`, fontFamily: "'Azeret Mono', monospace" }}
     >
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: s.dot }} />
-      <span style={{ color: "var(--bb-muted)" }}>{label}</span>
+      <span style={{ color: "var(--muted)" }}>{label}</span>
       <span className="font-semibold" style={{ color: s.text }}>{state}</span>
     </span>
   );
@@ -597,9 +600,9 @@ function JudgeModeGuide() {
       label: "Run risky xStocks",
       sub: "Scenario 01 below",
       action: "PAUSE expected",
-      color: "var(--bb-orange)",
-      bg: "rgba(255,107,53,0.08)",
-      border: "rgba(255,107,53,0.2)",
+      color: "var(--terracotta)",
+      bg: "rgba(192,64,48,0.07)",
+      border: "rgba(192,64,48,0.18)",
       href: "#scenarios",
     },
     {
@@ -607,9 +610,9 @@ function JudgeModeGuide() {
       label: "Verify receipt",
       sub: "Open /proof or agent-decision",
       action: "Hash match on-chain",
-      color: "var(--bb-teal)",
-      bg: "rgba(45,212,165,0.08)",
-      border: "rgba(45,212,165,0.2)",
+      color: "var(--sage)",
+      bg: "rgba(61,138,98,0.07)",
+      border: "rgba(61,138,98,0.18)",
       href: "/proof",
     },
     {
@@ -617,9 +620,9 @@ function JudgeModeGuide() {
       label: "Run safe yield",
       sub: "Scenario 02 below",
       action: "ALLOCATE expected",
-      color: "var(--bb-teal)",
-      bg: "rgba(45,212,165,0.06)",
-      border: "rgba(45,212,165,0.15)",
+      color: "var(--sage)",
+      bg: "rgba(61,138,98,0.05)",
+      border: "rgba(61,138,98,0.13)",
       href: "#scenarios",
     },
     {
@@ -627,26 +630,31 @@ function JudgeModeGuide() {
       label: "Execute Fluxion",
       sub: "Scenario 03 below",
       action: "Real on-chain tx",
-      color: "var(--bb-amber)",
-      bg: "rgba(245,166,35,0.08)",
-      border: "rgba(245,166,35,0.2)",
+      color: "var(--gold)",
+      bg: "rgba(200,166,74,0.07)",
+      border: "rgba(200,166,74,0.18)",
       href: "#scenarios",
     },
   ] as const;
 
   return (
     <section
-      className="rounded-xl px-6 py-5"
-      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)" }}
+      className="px-6 py-5"
+      style={{
+        background: "var(--panel)",
+        border: "1px solid var(--border)",
+        borderLeft: "3px solid var(--border-hi)",
+        borderRadius: "0 8px 8px 0",
+      }}
     >
       <div className="flex items-center gap-3 mb-4">
         <span
-          className="rounded px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-widest"
-          style={{ background: "rgba(45,212,165,0.12)", border: "1px solid rgba(45,212,165,0.3)", color: "var(--bb-teal)" }}
+          className="rounded px-2 py-0.5 text-[9px] font-medium uppercase tracking-widest"
+          style={{ fontFamily: "'Azeret Mono', monospace", background: "rgba(61,138,98,0.1)", border: "1px solid rgba(61,138,98,0.25)", color: "var(--sage)" }}
         >
           JUDGE FLOW
         </span>
-        <span className="text-xs" style={{ color: "var(--bb-muted)" }}>
+        <span className="text-xs" style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Complete evaluation path — start here
         </span>
       </div>
@@ -655,20 +663,20 @@ function JudgeModeGuide() {
           <a
             key={s.n}
             href={s.href}
-            className="rounded-lg p-4 block transition-opacity hover:opacity-80"
+            className="rounded p-4 block transition-opacity hover:opacity-80"
             style={{ background: s.bg, border: `1px solid ${s.border}` }}
           >
             <p
-              className="text-[10px] font-mono font-semibold uppercase tracking-widest mb-1"
-              style={{ color: "rgba(138,148,166,0.4)" }}
+              className="text-[9px] font-medium uppercase tracking-widest mb-1"
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(122,146,130,0.4)" }}
             >
               STEP {s.n}
             </p>
-            <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+            <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--text)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {s.label}
             </p>
-            <p className="text-[11px]" style={{ color: "var(--bb-muted)" }}>{s.sub}</p>
-            <p className="mt-2 text-[10px] font-mono font-medium" style={{ color: s.color }}>
+            <p className="text-[11px]" style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.sub}</p>
+            <p className="mt-2 text-[10px] font-medium" style={{ fontFamily: "'Azeret Mono', monospace", color: s.color }}>
               → {s.action}
             </p>
           </a>
@@ -684,28 +692,28 @@ function AttackSurfaceSection() {
   const qa = [
     {
       q: "Is the AI deciding?",
-      a: "No. A deterministic rules engine picks the action and risk score. Claude Haiku 4.5 only narrates the decision in plain language. llmControlsAction = false in every receipt.",
-      color: "var(--bb-teal)",
+      a: "No. A deterministic rules engine picks the action and risk score. Claude Haiku 4.5 only narrates the decision. llmControlsAction = false in every receipt.",
+      color: "var(--sage)",
     },
     {
       q: "Is the xStock price fake?",
-      a: "No. The xStocks public API returns a real indicative price and trading-halt status for each asset. Spread / depth / volume are modelled and explicitly flagged as 'stub' in every receipt.",
-      color: "var(--bb-teal)",
+      a: "No. The xStocks public API returns a real indicative price and trading-halt status. Spread / depth / volume are modelled and flagged as 'stub' in every receipt.",
+      color: "var(--sage)",
     },
     {
       q: "Why no xChange RFQ execution?",
-      a: "xChange is an authenticated institutional channel: it requires an API key, a registered wallet, an EIP-712 signed quote and a separate on-chain execution step. This demo uses Fluxion V3 as the verified execution rail.",
+      a: "xChange requires an API key, registered wallet, EIP-712 signed quote, and a separate on-chain execution step. Not a public endpoint. Fluxion V3 is the verified rail used here.",
       color: "#9D84FF",
     },
     {
-      q: "Is the hash really verifiable?",
-      a: "Yes. Open any receipt, click 'Verify hash' — keccak256(canonicalJson) must equal the bytes32 reasonHash stored in the DecisionLogged event on Mantlescan. The JSON is byte-stable.",
-      color: "var(--bb-teal)",
+      q: "Is the hash verifiable?",
+      a: "Yes. Click 'Verify hash' on any receipt — keccak256(canonicalJson) must equal the bytes32 reasonHash in the DecisionLogged event on Mantlescan. The JSON is byte-stable.",
+      color: "var(--sage)",
     },
     {
-      q: "Can it actually execute on-chain?",
-      a: "Yes. Scenario 03 triggers a real Fluxion V3 USDC→mETH→USDC round-trip on Mantle mainnet. Two Mantlescan tx hashes are produced. The demo wallet recycles capital to stay solvent.",
-      color: "var(--bb-amber)",
+      q: "Can it actually execute?",
+      a: "Yes. Scenario 03 triggers a real Fluxion V3 USDC→mETH→USDC round-trip on Mantle mainnet. Two Mantlescan tx hashes are produced and shown below.",
+      color: "var(--gold)",
     },
   ] as const;
 
@@ -713,33 +721,34 @@ function AttackSurfaceSection() {
     <section className="bb-section space-y-5">
       <div>
         <p
-          className="text-[10px] font-medium uppercase tracking-widest mb-1"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-orange)" }}
+          className="text-[9px] font-medium uppercase tracking-widest mb-2"
+          style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--terracotta)" }}
         >
           JUDGE ATTACK SURFACE
         </p>
+        {/* Fraunces italic for section titles throughout */}
         <h2
-          className="text-lg font-semibold tracking-tight"
-          style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+          className="text-xl italic"
+          style={{ fontFamily: "'Fraunces', Georgia, serif", color: "var(--text)", fontWeight: 600, letterSpacing: "-0.01em" }}
         >
-          Pre-answered objections
+          Anticipated objections
         </h2>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {qa.map(({ q, a, color }) => (
           <div
             key={q}
-            className="rounded-lg px-4 py-4 grid gap-1 sm:grid-cols-[1fr_2fr]"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+            className="rounded px-4 py-3 grid gap-2 sm:grid-cols-[220px_1fr] items-baseline"
+            style={{ background: "rgba(148,180,148,0.03)", border: "1px solid var(--border)" }}
           >
             <p
-              className="text-sm font-semibold pr-4"
-              style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+              className="text-sm font-semibold"
+              style={{ color: "var(--text)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               {q}
             </p>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--bb-muted)" }}>
-              <span className="font-semibold mr-1.5" style={{ color }}>→</span>
+            <p className="text-sm leading-relaxed" style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <span className="font-bold mr-1.5" style={{ color }}>→</span>
               {a}
             </p>
           </div>
@@ -755,31 +764,31 @@ function WhyMantleSection() {
   return (
     <section className="bb-section">
       <p
-        className="text-[10px] font-medium uppercase tracking-widest mb-3"
-        style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-teal)" }}
+        className="text-[9px] font-medium uppercase tracking-widest mb-2"
+        style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--sage)" }}
       >
         WHY THIS MATTERS FOR MANTLE
       </p>
       <h2
-        className="text-lg font-semibold tracking-tight mb-3"
-        style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+        className="text-xl italic mb-3"
+        style={{ fontFamily: "'Fraunces', Georgia, serif", color: "var(--text)", fontWeight: 600, letterSpacing: "-0.01em" }}
       >
-        The black box for autonomous RWA agents
+        The ledger of autonomous judgment
       </h2>
-      <p className="text-sm leading-relaxed max-w-3xl" style={{ color: "var(--bb-muted)" }}>
+      <p className="text-sm leading-relaxed max-w-3xl" style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         Mantle is building institutional RWA execution rails — xStocks equities, Atomic RFQ,
         USDY, INIT Capital yield pools, mETH as native collateral. As more autonomous agents
         touch this capital, the scarce layer is no longer execution. It&rsquo;s{" "}
-        <strong style={{ color: "var(--bb-text)" }}>trustworthy autonomous judgment</strong>.
+        <strong style={{ color: "var(--text)" }}>trustworthy autonomous judgment</strong>.
         Neutrino is that layer: the agent that decides <em>when</em> the rails are safe,
         records the full rationale on-chain, and only then allows capital to move.
-        Every decision is a verifiable record — like a flight recorder for on-chain risk.
+        Every decision is a verifiable record — a ruling that stands alone.
       </p>
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
         {[
-          { title: "Engine separated from narration", body: "The deterministic rules engine picks the action. Claude Haiku 4.5 only explains. Decisions are reproducible from the receipt without LLM nondeterminism.", accent: "var(--bb-muted)" },
-          { title: "Source-freshness on every receipt", body: "Every decision payload pins live / stub / n/a per signal. Nothing is hidden — judges see exactly which inputs were real at the moment of decision.", accent: "var(--bb-teal)" },
-          { title: "Verifiable by re-hash", body: "The full audit JSON is byte-stable. keccak256(payload) equals the bytes32 reasonHash emitted by RWADecisionLogger on Mantle. Verify it yourself.", accent: "#9D84FF" },
+          { title: "Engine separated from narration", body: "The deterministic rules engine picks the action. Claude Haiku 4.5 only explains. Decisions are reproducible from the receipt without LLM nondeterminism.", accent: "var(--muted)" },
+          { title: "Source-freshness on every receipt", body: "Every decision payload pins live / stub / n/a per signal. Nothing is hidden — judges see exactly which inputs were real at the moment of decision.", accent: "var(--sage)" },
+          { title: "Verifiable by re-hash", body: "The full audit JSON is byte-stable. keccak256(payload) equals the bytes32 reasonHash emitted by RWADecisionLogger on Mantle. Verify it yourself.", accent: "var(--violet)" },
         ].map((c) => (
           <div
             key={c.title}

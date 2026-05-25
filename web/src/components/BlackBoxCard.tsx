@@ -32,65 +32,80 @@ const DEMO_DATA: BlackBoxData = {
   live: false,
 };
 
-export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", className = "" }: BlackBoxCardProps) {
-  const scanRef = useRef<HTMLDivElement>(null);
-  const [tick, setTick] = useState(0);
+// Verdict colour per action
+function verdictStyle(action: string): { text: string; border: string; bg: string } {
+  if (action === "PAUSE" || action === "REDUCE")
+    return { text: "var(--terracotta)", border: "rgba(192,64,48,0.4)", bg: "rgba(192,64,48,0.06)" };
+  if (action === "ALLOCATE")
+    return { text: "var(--sage)", border: "rgba(61,138,98,0.4)", bg: "rgba(61,138,98,0.06)" };
+  return { text: "var(--gold)", border: "rgba(200,166,74,0.4)", bg: "rgba(200,166,74,0.06)" };
+}
 
+export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", className = "" }: BlackBoxCardProps) {
+  const [tick, setTick] = useState(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Re-trigger verdict stamp animation every 6s
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 5000);
+    const id = setInterval(() => setTick((t) => t + 1), 6000);
     return () => clearInterval(id);
   }, []);
 
   const action = data.action ?? "PAUSE";
-  const actionColor =
-    action === "PAUSE"
-      ? "var(--bb-orange)"
-      : action === "ALLOCATE"
-        ? "var(--bb-teal)"
-        : "var(--bb-amber)";
+  const vs = verdictStyle(action);
 
   const rows = [
-    { k: "ASSET", v: data.asset ?? "—" },
+    { k: "ASSET",  v: data.asset ?? "—" },
     { k: "SIGNAL", v: data.signal ?? "—" },
-    { k: "RFQ", v: data.rfqReadiness ?? "auth-gated" },
-    { k: "SCORE", v: typeof data.score === "number" ? `${data.score} / 1000` : data.score ?? "—" },
+    { k: "RFQ",    v: data.rfqReadiness ?? "auth-gated" },
+    { k: "SCORE",  v: typeof data.score === "number" ? `${data.score} / 1000` : data.score ?? "—" },
   ];
 
   return (
     <div
-      className={`bb-card relative select-none ${className}`}
-      style={{ minWidth: 280, maxWidth: 360 }}
+      ref={cardRef}
+      className={`relative select-none ${className}`}
+      style={{
+        minWidth: 280,
+        maxWidth: 340,
+        background: "var(--panel)",
+        border: `1px solid ${vs.border}`,
+        borderLeft: `3px solid ${vs.text}`,
+        borderRadius: "0 10px 10px 0",
+      }}
     >
-      {/* Scanline */}
+      {/* Corner crop marks — exhibit aesthetic */}
       <div
-        key={tick}
-        className="bb-scanline animate-scanline"
-        style={{ top: 0 }}
-        ref={scanRef}
+        className="absolute pointer-events-none"
+        style={{ top: 8, right: 8, width: 10, height: 10, borderTop: "1px solid var(--border-hi)", borderRight: "1px solid var(--border-hi)" }}
+      />
+      <div
+        className="absolute pointer-events-none"
+        style={{ bottom: 8, left: 8, width: 10, height: 10, borderBottom: "1px solid var(--border-hi)", borderLeft: "1px solid var(--border-hi)" }}
       />
 
       {/* Top bar */}
       <div
         className="flex items-center justify-between px-4 py-2.5"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.3)" }}
+        style={{ borderBottom: "1px solid var(--border)", background: "rgba(0,0,0,0.2)" }}
       >
         <div className="flex items-center gap-2">
           <span
-            className="h-2 w-2 rounded-full animate-live"
-            style={{ background: data.live ? "var(--bb-teal)" : "#E84855" }}
+            className="h-1.5 w-1.5 rounded-full animate-live"
+            style={{ background: data.live ? "var(--sage)" : "var(--muted)" }}
           />
           <span
-            className="text-[10px] font-medium uppercase tracking-widest"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+            className="text-[9px] font-medium uppercase tracking-widest"
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
           >
             {label}
           </span>
         </div>
         <span
-          className="text-[10px] font-mono"
-          style={{ color: data.live ? "var(--bb-teal)" : "var(--bb-muted)" }}
+          className="text-[9px]"
+          style={{ fontFamily: "'Azeret Mono', monospace", color: data.live ? "var(--sage)" : "rgba(122,146,130,0.4)" }}
         >
-          {data.live ? "● LIVE" : "● DEMO"}
+          {data.live ? "● LIVE" : "● PREVIEW"}
         </span>
       </div>
 
@@ -104,51 +119,67 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
         ))}
       </div>
 
-      {/* Decision — the centrepiece */}
+      {/* Verdict — the centrepiece. PAUSE renders as a heavy ruling stamp. */}
       <div
-        className="mx-4 mb-3 rounded-md px-4 py-3 text-center"
+        key={`verdict-${tick}`}
+        className="mx-4 mb-3 rounded animate-seal"
         style={{
-          background: `${actionColor}14`,
-          border: `1px solid ${actionColor}40`,
+          background: vs.bg,
+          border: `1px solid ${vs.border}`,
+          padding: "12px 16px",
         }}
       >
         <p
-          className="text-[10px] font-medium uppercase tracking-widest mb-1"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+          className="text-[9px] font-medium uppercase tracking-widest mb-1"
+          style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
         >
-          AGENT DECISION
+          AGENT VERDICT
         </p>
+        {/* Fraunces italic for the verdict — the "unexpected" moment */}
         <p
-          className="text-2xl font-bold tracking-wider"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: actionColor }}
+          className="text-3xl italic leading-none tracking-tight"
+          style={{ fontFamily: "'Fraunces', Georgia, serif", color: vs.text, fontWeight: 600 }}
         >
-          {action}
+          {action === "PAUSE" ? "Refused." : action === "ALLOCATE" ? "Cleared." : action}
         </p>
+        {action === "PAUSE" && (
+          <p className="mt-1 text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(192,64,48,0.5)" }}>
+            after-hours equity · execution blocked
+          </p>
+        )}
+        {action === "ALLOCATE" && (
+          <p className="mt-1 text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(61,138,98,0.5)" }}>
+            risk within policy · execution permitted
+          </p>
+        )}
       </div>
 
       {/* Footer */}
-      <div
-        className="px-4 pb-4 space-y-1"
-      >
+      <div className="px-4 pb-4 space-y-0">
         <div className="telemetry-row">
           <span className="telemetry-label">RECEIPT</span>
-          <span className="telemetry-value" style={{ color: "var(--bb-muted)", fontSize: 11 }}>
+          <span
+            className="text-[11px] font-mono"
+            style={{ color: "var(--muted)", fontFamily: "'Azeret Mono', monospace", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+          >
             {data.receiptHash ?? "—"}
           </span>
         </div>
         <div className="telemetry-row">
-          <span className="telemetry-label">LOGGED</span>
+          <span className="telemetry-label">NETWORK</span>
           <span className="telemetry-value">{data.timestamp ?? "Mantle mainnet"}</span>
         </div>
-        <div className="telemetry-row">
-          <span className="telemetry-label">VERIFIED</span>
-          <span
-            className="telemetry-value font-semibold"
-            style={{ color: data.verified ? "var(--bb-teal)" : "var(--bb-muted)" }}
-          >
-            {data.verified === true ? "✓ MATCH" : data.verified === false ? "✗ MISMATCH" : "—"}
-          </span>
-        </div>
+        {data.verified !== undefined && (
+          <div className="telemetry-row">
+            <span className="telemetry-label">VERIFIED</span>
+            <span
+              className="telemetry-value font-semibold"
+              style={{ color: data.verified ? "var(--sage)" : "var(--muted)" }}
+            >
+              {data.verified === true ? "✓ MATCH" : "—"}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
