@@ -9,10 +9,12 @@ export default function Home() {
   return (
     <div className="space-y-12">
       <Hero />
+      <JudgeModeGuide />
+      <LatestExecution />
       <DecisionTimeline />
       <ScenarioSection />
-      <LatestExecution />
       <DataHonestySection />
+      <AttackSurfaceSection />
       <WhyMantleSection />
     </div>
   );
@@ -137,18 +139,18 @@ function Hero() {
             ) : null}
           </div>
 
-          {/* Right: BlackBoxCard */}
+          {/* Right: BlackBoxCard — simulated preview, no fake verified */}
           <div className="flex items-start justify-center lg:justify-end">
             <BlackBoxCard
-              label="SAMPLE DECISION RECORD"
+              label="SIMULATED PREVIEW"
               data={{
                 asset: "TSLAx / TSLA",
                 signal: "after-hours · no halt",
                 rfqReadiness: "auth-gated",
                 score: 480,
                 action: "PAUSE",
-                receiptHash: "0x3f6f53f1…a9b0",
-                verified: true,
+                receiptHash: "run agent to generate",
+                verified: undefined,
                 timestamp: "Mantle mainnet",
                 live: false,
               }}
@@ -585,6 +587,167 @@ const TOKEN_METADATA = [
   { symbol: "USDY",  underlying: "Ondo T-bills",   decimals: 18, address: "0x5bE26527e817998A7206475496fDE1E68957c5A6", source: "Mantle ERC-20" },
   { symbol: "mETH",  underlying: "Mantle LST",     decimals: 18, address: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0", source: "Mantle ERC-20" },
 ] as const;
+
+/* ─── Judge Mode ────────────────────────────────────────────────────── */
+
+function JudgeModeGuide() {
+  const steps = [
+    {
+      n: "01",
+      label: "Run risky xStocks",
+      sub: "Scenario 01 below",
+      action: "PAUSE expected",
+      color: "var(--bb-orange)",
+      bg: "rgba(255,107,53,0.08)",
+      border: "rgba(255,107,53,0.2)",
+      href: "#scenarios",
+    },
+    {
+      n: "02",
+      label: "Verify receipt",
+      sub: "Open /proof or agent-decision",
+      action: "Hash match on-chain",
+      color: "var(--bb-teal)",
+      bg: "rgba(45,212,165,0.08)",
+      border: "rgba(45,212,165,0.2)",
+      href: "/proof",
+    },
+    {
+      n: "03",
+      label: "Run safe yield",
+      sub: "Scenario 02 below",
+      action: "ALLOCATE expected",
+      color: "var(--bb-teal)",
+      bg: "rgba(45,212,165,0.06)",
+      border: "rgba(45,212,165,0.15)",
+      href: "#scenarios",
+    },
+    {
+      n: "04",
+      label: "Execute Fluxion",
+      sub: "Scenario 03 below",
+      action: "Real on-chain tx",
+      color: "var(--bb-amber)",
+      bg: "rgba(245,166,35,0.08)",
+      border: "rgba(245,166,35,0.2)",
+      href: "#scenarios",
+    },
+  ] as const;
+
+  return (
+    <section
+      className="rounded-xl px-6 py-5"
+      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <span
+          className="rounded px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-widest"
+          style={{ background: "rgba(45,212,165,0.12)", border: "1px solid rgba(45,212,165,0.3)", color: "var(--bb-teal)" }}
+        >
+          JUDGE FLOW
+        </span>
+        <span className="text-xs" style={{ color: "var(--bb-muted)" }}>
+          Complete evaluation path — start here
+        </span>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-4">
+        {steps.map((s) => (
+          <a
+            key={s.n}
+            href={s.href}
+            className="rounded-lg p-4 block transition-opacity hover:opacity-80"
+            style={{ background: s.bg, border: `1px solid ${s.border}` }}
+          >
+            <p
+              className="text-[10px] font-mono font-semibold uppercase tracking-widest mb-1"
+              style={{ color: "rgba(138,148,166,0.4)" }}
+            >
+              STEP {s.n}
+            </p>
+            <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+              {s.label}
+            </p>
+            <p className="text-[11px]" style={{ color: "var(--bb-muted)" }}>{s.sub}</p>
+            <p className="mt-2 text-[10px] font-mono font-medium" style={{ color: s.color }}>
+              → {s.action}
+            </p>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Attack Surface ────────────────────────────────────────────────── */
+
+function AttackSurfaceSection() {
+  const qa = [
+    {
+      q: "Is the AI deciding?",
+      a: "No. A deterministic rules engine picks the action and risk score. Claude Haiku 4.5 only narrates the decision in plain language. llmControlsAction = false in every receipt.",
+      color: "var(--bb-teal)",
+    },
+    {
+      q: "Is the xStock price fake?",
+      a: "No. The xStocks public API returns a real indicative price and trading-halt status for each asset. Spread / depth / volume are modelled and explicitly flagged as 'stub' in every receipt.",
+      color: "var(--bb-teal)",
+    },
+    {
+      q: "Why no xChange RFQ execution?",
+      a: "xChange is an authenticated institutional channel: it requires an API key, a registered wallet, an EIP-712 signed quote and a separate on-chain execution step. This demo uses Fluxion V3 as the verified execution rail.",
+      color: "#9D84FF",
+    },
+    {
+      q: "Is the hash really verifiable?",
+      a: "Yes. Open any receipt, click 'Verify hash' — keccak256(canonicalJson) must equal the bytes32 reasonHash stored in the DecisionLogged event on Mantlescan. The JSON is byte-stable.",
+      color: "var(--bb-teal)",
+    },
+    {
+      q: "Can it actually execute on-chain?",
+      a: "Yes. Scenario 03 triggers a real Fluxion V3 USDC→mETH→USDC round-trip on Mantle mainnet. Two Mantlescan tx hashes are produced. The demo wallet recycles capital to stay solvent.",
+      color: "var(--bb-amber)",
+    },
+  ] as const;
+
+  return (
+    <section className="bb-section space-y-5">
+      <div>
+        <p
+          className="text-[10px] font-medium uppercase tracking-widest mb-1"
+          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-orange)" }}
+        >
+          JUDGE ATTACK SURFACE
+        </p>
+        <h2
+          className="text-lg font-semibold tracking-tight"
+          style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+        >
+          Pre-answered objections
+        </h2>
+      </div>
+      <div className="space-y-3">
+        {qa.map(({ q, a, color }) => (
+          <div
+            key={q}
+            className="rounded-lg px-4 py-4 grid gap-1 sm:grid-cols-[1fr_2fr]"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <p
+              className="text-sm font-semibold pr-4"
+              style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+            >
+              {q}
+            </p>
+            <p className="text-sm leading-relaxed" style={{ color: "var(--bb-muted)" }}>
+              <span className="font-semibold mr-1.5" style={{ color }}>→</span>
+              {a}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 /* ─── Why Mantle ────────────────────────────────────────────────────── */
 

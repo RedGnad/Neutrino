@@ -26,13 +26,13 @@ const DEMO_DATA: BlackBoxData = {
   rfqReadiness: "auth-gated",
   score: 480,
   action: "PAUSE",
-  receiptHash: "0x3f6f53f1…a9b0",
-  verified: true,
-  timestamp: "2026-05-25 · Mantle",
+  receiptHash: "run agent to generate",
+  verified: undefined,
+  timestamp: "Mantle mainnet",
   live: false,
 };
 
-export function BlackBoxCard({ data = DEMO_DATA, label = "SAMPLE DECISION RECORD", className = "" }: BlackBoxCardProps) {
+export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", className = "" }: BlackBoxCardProps) {
   const scanRef = useRef<HTMLDivElement>(null);
   const [tick, setTick] = useState(0);
 

@@ -2,10 +2,11 @@ import { createPublicClient, http, type Address, type Hex, parseAbiItem } from '
 import { mantle, mantleSepoliaTestnet } from 'viem/chains';
 
 /**
- * Network selection for live reads. The web mirrors whatever NEUTRINO_NETWORK
- * the API route writes to so /proof and /market-map see the same chain.
+ * Network selection for live reads. Defaults to mainnet because the deployed
+ * contracts (RWADecisionLogger, RWAAgent) are on Mantle mainnet.
+ * Override with NEUTRINO_NETWORK=mantle_sepolia for local testnet development.
  */
-const NEUTRINO_NETWORK = (process.env.NEUTRINO_NETWORK ?? 'mantle_sepolia') as
+const NEUTRINO_NETWORK = (process.env.NEUTRINO_NETWORK ?? 'mantle') as
   | 'mantle'
   | 'mantle_sepolia';
 
@@ -17,10 +18,18 @@ const RPC_URL =
 
 const CHAIN = NEUTRINO_NETWORK === 'mantle' ? mantle : mantleSepoliaTestnet;
 
-export const LOGGER_ADDRESS = (process.env.NEXT_PUBLIC_RWA_DECISION_LOGGER_ADDRESS ??
-  '') as Address;
+// Deployed on Mantle mainnet — hardcoded fallbacks so the public site works
+// even if Vercel env vars are not set. These are NEXT_PUBLIC_* (non-secret).
+const LOGGER_FALLBACK = '0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2';
+const AGENT_FALLBACK  = '0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96';
 
-export const AGENT_ADDRESS = (process.env.NEXT_PUBLIC_RWA_AGENT_ADDRESS ?? '') as Address;
+export const LOGGER_ADDRESS = (
+  process.env.NEXT_PUBLIC_RWA_DECISION_LOGGER_ADDRESS || LOGGER_FALLBACK
+) as Address;
+
+export const AGENT_ADDRESS = (
+  process.env.NEXT_PUBLIC_RWA_AGENT_ADDRESS || AGENT_FALLBACK
+) as Address;
 
 export const EXPLORER_TX =
   NEUTRINO_NETWORK === 'mantle' ? 'https://mantlescan.xyz/tx' : 'https://sepolia.mantlescan.xyz/tx';
