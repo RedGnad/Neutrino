@@ -17,20 +17,34 @@ export default async function ProofPage() {
     : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={{ color: "var(--bb-text)" }}>
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          On-chain proof
+        <p
+          className="text-[10px] font-medium uppercase tracking-widest mb-2"
+          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+        >
+          ON-CHAIN PROOF REGISTRY
+        </p>
+        <h1
+          className="text-2xl font-semibold tracking-tight"
+          style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+        >
+          Verifiable decision receipts — Mantle mainnet
         </h1>
-        <p className="mt-1 text-sm text-zinc-600">
+        <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--bb-muted)" }}>
           Every decision Neutrino takes is logged via{" "}
-          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">
+          <code
+            className="rounded px-1.5 py-0.5 text-xs"
+            style={{ background: "rgba(45,212,165,0.1)", color: "var(--bb-teal)", fontFamily: "'IBM Plex Mono', monospace" }}
+          >
             RWADecisionLogger
           </code>{" "}
           on {NETWORK_LABEL}. Rows below are read live from the chain.
         </p>
       </div>
 
+      {/* Contract addresses */}
       <ContractCards />
 
       {!LOGGER_ADDRESS ? (
@@ -41,53 +55,67 @@ export default async function ProofPage() {
       ) : decisions.length === 0 ? (
         <Empty
           title="No decisions on-chain yet"
-          body="Run the agent (pnpm --dir agent start) to write your first DecisionLogged event."
+          body="Run the agent from the home page or via pnpm dev to write the first DecisionLogged event."
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{ border: "1px solid var(--bb-border)", background: "var(--bb-panel)" }}
+        >
           <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-zinc-500">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium">When</th>
-                <th className="px-4 py-3 text-left font-medium">Asset</th>
-                <th className="px-4 py-3 text-left font-medium">Action</th>
-                <th className="px-4 py-3 text-right font-medium">Risk</th>
-                <th className="px-4 py-3 text-right font-medium">Block</th>
-                <th className="px-4 py-3 text-left font-medium">Reason hash</th>
-                <th className="px-4 py-3 text-left font-medium">Tx</th>
-                <th className="px-4 py-3 text-left font-medium">Verify</th>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                {["When", "Asset", "Action", "Risk", "Block", "Reason hash", "Tx", "Verify"].map((h, i) => (
+                  <th
+                    key={h}
+                    className={`px-4 py-3 text-[10px] font-medium uppercase tracking-widest ${i >= 3 && i <= 4 ? "text-right" : "text-left"}`}
+                    style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)", background: "rgba(0,0,0,0.2)" }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
-              {decisions.map((d) => {
+            <tbody>
+              {decisions.map((d, idx) => {
                 const asset = resolveAsset(d.assetAddress);
+                const actionColor =
+                  d.action === "PAUSE" ? "var(--bb-orange)"
+                  : d.action === "ALLOCATE" ? "var(--bb-teal)"
+                  : "var(--bb-amber)";
                 return (
-                  <tr key={d.txHash} className="hover:bg-zinc-50">
-                    <td className="whitespace-nowrap px-4 py-3 text-zinc-600">
+                  <tr
+                    key={d.txHash}
+                    style={{ borderBottom: idx < decisions.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}
+                    className="transition-colors hover:bg-white/[0.02]"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 text-xs" style={{ color: "var(--bb-muted)" }}>
                       {timeAgo(d.timestamp)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-medium text-zinc-950">
+                      <span className="text-sm font-medium" style={{ color: "var(--bb-text)" }}>
                         {asset.symbol}
                       </span>
                       {asset.reference ? (
-                        <span className="ml-2 text-xs text-zinc-500">
+                        <span className="ml-2 text-xs" style={{ color: "rgba(138,148,166,0.5)" }}>
                           ↔ {asset.reference}
                         </span>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3 font-medium text-zinc-700">
-                      {d.action}
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-semibold" style={{ color: actionColor, fontFamily: "'IBM Plex Mono', monospace" }}>
+                        {d.action}
+                      </span>
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums">
+                    <td className="px-4 py-3 text-right tabular-nums text-sm" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Mono', monospace" }}>
                       {d.riskScore}
-                      <span className="text-zinc-400">/1000</span>
+                      <span style={{ color: "rgba(138,148,166,0.4)" }}>/1000</span>
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-zinc-500">
+                    <td className="px-4 py-3 text-right tabular-nums text-xs" style={{ color: "var(--bb-muted)", fontFamily: "'IBM Plex Mono', monospace" }}>
                       {d.blockNumber.toString()}
                     </td>
                     <td className="px-4 py-3">
-                      <code className="font-mono text-xs text-zinc-500">
+                      <code className="font-mono text-xs" style={{ color: "rgba(138,148,166,0.5)" }}>
                         {d.reasonHash.slice(0, 10)}…{d.reasonHash.slice(-4)}
                       </code>
                     </td>
@@ -96,15 +124,17 @@ export default async function ProofPage() {
                         href={`${EXPLORER_TX}/${d.txHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-mono text-xs text-emerald-700 underline-offset-2 hover:underline"
+                        className="font-mono text-xs transition-opacity hover:opacity-80"
+                        style={{ color: "var(--bb-teal)" }}
                       >
-                        {d.txHash.slice(0, 10)}…
+                        {d.txHash.slice(0, 10)}… ↗
                       </a>
                     </td>
                     <td className="px-4 py-3">
                       <a
                         href={`/agent-decision/${asset.symbol}`}
-                        className="text-xs font-medium text-emerald-700 underline-offset-2 hover:underline"
+                        className="text-xs font-medium transition-opacity hover:opacity-80"
+                        style={{ color: "var(--bb-teal)", fontFamily: "'IBM Plex Mono', monospace" }}
                       >
                         Receipt →
                       </a>
@@ -117,28 +147,35 @@ export default async function ProofPage() {
         </div>
       )}
 
-      <p className="text-xs text-zinc-500">
-        {decisions.length > 0
-          ? `Showing ${decisions.length} most recent decision${decisions.length === 1 ? "" : "s"} from RWADecisionLogger.`
-          : null}
-      </p>
-
-      <section className="rounded-lg border border-zinc-200 bg-white p-5">
-        <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">
-          What a judge can verify
+      {decisions.length > 0 && (
+        <p className="text-xs" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.4)" }}>
+          Showing {decisions.length} most recent decision{decisions.length === 1 ? "" : "s"} from RWADecisionLogger.
         </p>
-        <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+      )}
+
+      {/* What a judge can verify */}
+      <section
+        className="rounded-xl p-5 space-y-4"
+        style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
+      >
+        <p
+          className="text-[10px] font-medium uppercase tracking-widest"
+          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-teal)" }}
+        >
+          WHAT A JUDGE CAN VERIFY
+        </p>
+        <div className="grid gap-3 sm:grid-cols-3">
           <ProofItem
-            title="Event exists"
-            body="DecisionLogged is read from Mantle, with tx, block, caller, action and risk score."
+            title="Event exists on-chain"
+            body="DecisionLogged is read live from Mantle — tx hash, block number, caller, action, risk score."
           />
           <ProofItem
             title="Hash is binding"
-            body="Open a receipt after running the agent to re-hash the cached canonical JSON locally."
+            body="Open any receipt, click Verify hash — keccak256(canonicalJson) must equal the on-chain reasonHash."
           />
           <ProofItem
             title="Sources are explicit"
-            body="The payload marks market hours, reference prices, xStock quote and on-chain write as live, stub, simulated or n/a."
+            body="Every field in the payload is marked live, stub, simulated or n/a. Spread/depth/volume are modelled, never claimed live."
           />
         </div>
       </section>
@@ -165,33 +202,47 @@ function ContractCard({ label, address }: { label: string; address: string }) {
       href={`${EXPLORER_ADDR}/${address}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+      className="rounded-xl p-4 block transition-colors"
+      style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
     >
-      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+      <p
+        className="text-[10px] font-medium uppercase tracking-widest mb-1"
+        style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+      >
         {label}
       </p>
-      <p className="mt-1 font-mono text-sm text-zinc-900">
+      <p className="font-mono text-sm" style={{ color: "var(--bb-text)" }}>
         {address.slice(0, 10)}…{address.slice(-8)}
       </p>
-      <p className="mt-1 text-xs text-emerald-700">View on Mantlescan ↗</p>
+      <p className="mt-1 text-xs" style={{ color: "var(--bb-teal)" }}>
+        View on Mantlescan ↗
+      </p>
     </a>
   );
 }
 
 function ProofItem({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4">
-      <p className="font-medium text-zinc-950">{title}</p>
-      <p className="mt-1 text-zinc-600">{body}</p>
+    <div
+      className="rounded-lg p-4"
+      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <p className="text-sm font-semibold mb-1" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+        {title}
+      </p>
+      <p className="text-xs leading-relaxed" style={{ color: "var(--bb-muted)" }}>{body}</p>
     </div>
   );
 }
 
 function Empty({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center">
-      <p className="text-sm font-medium text-zinc-900">{title}</p>
-      <p className="mt-1 text-sm text-zinc-600">{body}</p>
+    <div
+      className="rounded-xl p-8 text-center"
+      style={{ background: "var(--bb-panel)", border: "1px dashed rgba(255,255,255,0.1)" }}
+    >
+      <p className="text-sm font-medium mb-1" style={{ color: "var(--bb-text)" }}>{title}</p>
+      <p className="text-sm" style={{ color: "var(--bb-muted)" }}>{body}</p>
     </div>
   );
 }

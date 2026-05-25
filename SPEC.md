@@ -359,7 +359,7 @@ The user funds the existing burner address `0xdE7140BF0803257C493f26B588Dd68460f
 
 ### Optional 30-min adds (post Phase 2)
 
-- Publish `agent-card.json` at `https://neutrino-ebon.vercel.app/agent-card.json` per ERC-8004 v1 schema (`name=Neutrino`, `services=[{type:"web", url}]`, `supportedTrust=["reputation"]`).
+- Publish `agent-card.json` at `https://neutrino-fawn.vercel.app/agent-card.json` per ERC-8004 v1 schema (`name=Neutrino`, `services=[{type:"web", url}]`, `supportedTrust=["reputation"]`).
 - IPFS pin the off-chain reasonHash payloads (full breakdown + LLM prose) → `/agent-decision/[asset]` resolves the hash to the real explanation.
 
 ---

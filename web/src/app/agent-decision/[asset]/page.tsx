@@ -27,139 +27,181 @@ export default async function AgentDecisionPage({ params }: Props) {
   const latest = decisions[0] ?? null;
   const status = statusFor(latest?.action ?? null, latest?.riskScore ?? null);
 
+  const actionColor =
+    latest?.action === "PAUSE" ? "var(--bb-orange)"
+    : latest?.action === "ALLOCATE" ? "var(--bb-teal)"
+    : "var(--bb-amber)";
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6" style={{ color: "var(--bb-text)" }}>
+      {/* Breadcrumb + heading */}
       <div>
-        <Link href="/market-map" className="text-sm text-zinc-500 hover:text-zinc-900">
-          ← Back to market map
+        <Link
+          href="/market-map"
+          className="text-xs font-mono transition-opacity hover:opacity-80"
+          style={{ color: "var(--bb-muted)" }}
+        >
+          ← Market map
         </Link>
-        <div className="mt-3 flex items-baseline gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{asset.symbol}</h1>
+        <div className="mt-3 flex items-baseline gap-3 flex-wrap">
+          <h1
+            className="text-2xl font-semibold tracking-tight"
+            style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+          >
+            {asset.symbol}
+          </h1>
           {'reference' in asset && asset.reference ? (
-            <span className="text-sm text-zinc-500">references {asset.reference}</span>
+            <span className="text-sm" style={{ color: "var(--bb-muted)" }}>
+              references {asset.reference}
+            </span>
           ) : null}
           <span
-            className={`ml-auto inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${status.classes}`}
+            className="ml-auto text-[10px] font-mono font-medium uppercase tracking-widest rounded px-2 py-0.5"
+            style={{
+              background: status.label === 'ALLOCATE' ? 'rgba(45,212,165,0.12)' : status.label === 'PAUSE' ? 'rgba(255,107,53,0.12)' : 'rgba(245,166,35,0.12)',
+              border: `1px solid ${status.label === 'ALLOCATE' ? 'rgba(45,212,165,0.3)' : status.label === 'PAUSE' ? 'rgba(255,107,53,0.3)' : 'rgba(245,166,35,0.3)'}`,
+              color: status.label === 'ALLOCATE' ? 'var(--bb-teal)' : status.label === 'PAUSE' ? 'var(--bb-orange)' : 'var(--bb-amber)',
+            }}
           >
             {status.label}
           </span>
         </div>
       </div>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Kind" value={asset.kind === 'tokenized_equity' ? 'Tokenized equity' : 'Yield-bearing'} />
-        <Stat label="Market" value={'market' in asset ? asset.market : 'on-chain'} />
+      {/* Asset meta stats */}
+      <section className="grid gap-3 sm:grid-cols-3">
+        <Stat label="KIND" value={asset.kind === 'tokenized_equity' ? 'Tokenized equity' : 'Yield-bearing'} />
+        <Stat label="MARKET" value={'market' in asset ? asset.market : 'on-chain'} />
         <Stat
-          label="Token address"
+          label="TOKEN ADDRESS"
           value={`${asset.address.slice(0, 8)}…${asset.address.slice(-4)}`}
           mono
+          link={`${EXPLORER_ADDR}/${asset.address}`}
         />
       </section>
 
       {latest ? (
-        <section className="rounded-lg border border-zinc-200 bg-white p-6">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-            Latest on-chain decision
+        <section
+          className="rounded-xl p-6 space-y-4"
+          style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
+        >
+          <p
+            className="text-[10px] font-medium uppercase tracking-widest"
+            style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+          >
+            LATEST ON-CHAIN DECISION
           </p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{latest.action}</p>
-          <p className="mt-1 text-sm text-zinc-600">
-            Risk score{' '}
-            <span className="font-medium text-zinc-900">{latest.riskScore} / 1000</span> · written{' '}
-            {timeAgo(latest.timestamp)} in{' '}
-            <a
-              href={`${EXPLORER_BLOCK}/${latest.blockNumber}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-emerald-700 underline-offset-2 hover:underline"
+
+          <div className="flex flex-wrap items-center gap-5">
+            <div
+              className="rounded-lg px-5 py-3 text-center"
+              style={{ background: `${actionColor}12`, border: `1px solid ${actionColor}40` }}
             >
-              block {latest.blockNumber.toString()}
-            </a>
-          </p>
-          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-xs uppercase tracking-wider text-zinc-500">Reason hash (off-chain JSON)</dt>
-              <dd className="mt-1 font-mono text-xs text-zinc-700">{latest.reasonHash}</dd>
+              <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: "var(--bb-muted)" }}>ACTION</p>
+              <p
+                className="text-3xl font-bold tracking-wider"
+                style={{ color: actionColor, fontFamily: "'IBM Plex Mono', monospace" }}
+              >
+                {latest.action}
+              </p>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wider text-zinc-500">Policy hash</dt>
-              <dd className="mt-1 font-mono text-xs text-zinc-700">{latest.policyHash}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wider text-zinc-500">Caller</dt>
-              <dd className="mt-1 font-mono text-xs text-zinc-700">
+              <p className="text-sm" style={{ color: "var(--bb-muted)" }}>
+                Risk score{' '}
+                <span className="font-semibold text-base tabular-nums" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Mono', monospace" }}>
+                  {latest.riskScore}
+                </span>
+                <span style={{ color: "rgba(138,148,166,0.4)" }}>/1000</span>
+                {' · written '}
+                {timeAgo(latest.timestamp)} in{' '}
                 <a
-                  href={`${EXPLORER_ADDR}/${latest.caller}`}
+                  href={`${EXPLORER_BLOCK}/${latest.blockNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-emerald-700 underline-offset-2 hover:underline"
+                  className="transition-opacity hover:opacity-80"
+                  style={{ color: "var(--bb-teal)" }}
                 >
-                  {latest.caller.slice(0, 10)}…{latest.caller.slice(-6)}
+                  block {latest.blockNumber.toString()}
                 </a>
-              </dd>
+              </p>
             </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wider text-zinc-500">Tx</dt>
-              <dd className="mt-1 font-mono text-xs">
-                <a
-                  href={`${EXPLORER_TX}/${latest.txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-emerald-700 underline-offset-2 hover:underline"
-                >
-                  {latest.txHash.slice(0, 16)}…
-                </a>
-              </dd>
-            </div>
-          </dl>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <HashField label="REASON HASH (off-chain JSON)" value={latest.reasonHash} />
+            <HashField label="POLICY HASH" value={latest.policyHash} />
+            <HashField label="CALLER" value={latest.caller} link={`${EXPLORER_ADDR}/${latest.caller}`} />
+            <HashField label="TX" value={latest.txHash} link={`${EXPLORER_TX}/${latest.txHash}`} />
+          </div>
         </section>
       ) : (
         <Empty
           title="No on-chain decision for this asset yet"
-          body="Run the agent (`pnpm --dir agent start`) to generate the first decision."
+          body="Run the agent from the home page to generate the first decision."
         />
       )}
 
       {decisions.length > 1 ? (
-        <section className="rounded-lg border border-zinc-200 bg-white">
-          <div className="border-b border-zinc-200 px-6 py-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-              Decision history ({decisions.length})
+        <section
+          className="rounded-xl overflow-hidden"
+          style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
+        >
+          <div
+            className="px-6 py-4"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <p
+              className="text-[10px] font-medium uppercase tracking-widest"
+              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+            >
+              DECISION HISTORY ({decisions.length})
             </p>
           </div>
           <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-zinc-500">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium">When</th>
-                <th className="px-4 py-3 text-left font-medium">Action</th>
-                <th className="px-4 py-3 text-right font-medium">Risk</th>
-                <th className="px-4 py-3 text-right font-medium">Block</th>
-                <th className="px-4 py-3 text-left font-medium">Tx</th>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                {["When", "Action", "Risk", "Block", "Tx"].map((h, i) => (
+                  <th
+                    key={h}
+                    className={`px-4 py-3 text-[10px] font-medium uppercase tracking-widest ${i >= 2 && i <= 3 ? "text-right" : "text-left"}`}
+                    style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)", background: "rgba(0,0,0,0.15)" }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
-              {decisions.map((d) => (
-                <tr key={d.txHash} className="hover:bg-zinc-50">
-                  <td className="px-4 py-3 text-zinc-600">{timeAgo(d.timestamp)}</td>
-                  <td className="px-4 py-3 font-medium text-zinc-700">{d.action}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">
-                    {d.riskScore}
-                    <span className="text-zinc-400">/1000</span>
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-zinc-500">
-                    {d.blockNumber.toString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <a
-                      href={`${EXPLORER_TX}/${d.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-xs text-emerald-700 underline-offset-2 hover:underline"
-                    >
-                      {d.txHash.slice(0, 10)}…
-                    </a>
-                  </td>
-                </tr>
-              ))}
+            <tbody>
+              {decisions.map((d, idx) => {
+                const ac = d.action === "PAUSE" ? "var(--bb-orange)" : d.action === "ALLOCATE" ? "var(--bb-teal)" : "var(--bb-amber)";
+                return (
+                  <tr
+                    key={d.txHash}
+                    className="transition-colors hover:bg-white/[0.02]"
+                    style={{ borderBottom: idx < decisions.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}
+                  >
+                    <td className="px-4 py-3 text-xs" style={{ color: "var(--bb-muted)" }}>{timeAgo(d.timestamp)}</td>
+                    <td className="px-4 py-3 text-sm font-semibold" style={{ color: ac, fontFamily: "'IBM Plex Mono', monospace" }}>{d.action}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-sm" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Mono', monospace" }}>
+                      {d.riskScore}<span style={{ color: "rgba(138,148,166,0.4)" }}>/1000</span>
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-xs" style={{ color: "var(--bb-muted)", fontFamily: "'IBM Plex Mono', monospace" }}>
+                      {d.blockNumber.toString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <a
+                        href={`${EXPLORER_TX}/${d.txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-xs transition-opacity hover:opacity-80"
+                        style={{ color: "var(--bb-teal)" }}
+                      >
+                        {d.txHash.slice(0, 10)}… ↗
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </section>
@@ -169,31 +211,84 @@ export default async function AgentDecisionPage({ params }: Props) {
         <DecisionVerifier txHash={latest.txHash} reasonHash={latest.reasonHash} />
       ) : null}
 
-      <p className="text-xs text-zinc-500">
-        Decision receipts cover schema <code className="rounded bg-zinc-100 px-1 py-0.5">neutrino.decision.v2</code>:
-        agent identity, asset metadata, market snapshot, live xStocks public-API data, source-freshness
-        flags, risk breakdown, policy, action, score, narration metadata. The on-chain reasonHash equals{' '}
-        <code className="rounded bg-zinc-100 px-1 py-0.5">keccak256</code> of that JSON. IPFS pinning
-        comes next — for now payloads are cached per-browser when you trigger a run.
+      <p
+        className="text-[11px] leading-relaxed"
+        style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.4)" }}
+      >
+        Decision receipts cover schema neutrino.decision.v2: agent identity, asset metadata, market
+        snapshot, live xStocks public-API data, source-freshness flags, risk breakdown, policy,
+        action, score, narration metadata. The on-chain reasonHash = keccak256(canonicalJson).
       </p>
     </div>
   );
 }
 
-function Stat({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function Stat({ label, value, mono = false, link }: { label: string; value: string; mono?: boolean; link?: string }) {
+  const content = (
+    <div
+      className="rounded-xl p-4 block"
+      style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
+    >
+      <p
+        className="text-[10px] font-medium uppercase tracking-widest mb-1"
+        style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+      >
+        {label}
+      </p>
+      <p
+        className={`text-base font-semibold ${mono ? "text-sm" : ""}`}
+        style={{ color: link ? "var(--bb-teal)" : "var(--bb-text)", fontFamily: mono ? "'IBM Plex Mono', monospace" : "'IBM Plex Sans', sans-serif" }}
+      >
+        {value}
+      </p>
+    </div>
+  );
+  if (link) {
+    return (
+      <a href={link} target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80">
+        {content}
+      </a>
+    );
+  }
+  return content;
+}
+
+function HashField({ label, value, link }: { label: string; value: string; link?: string }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">{label}</p>
-      <p className={`mt-1 text-lg font-semibold text-zinc-950 ${mono ? 'font-mono text-sm' : ''}`}>{value}</p>
+    <div>
+      <p
+        className="text-[10px] uppercase tracking-widest mb-1"
+        style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}
+      >
+        {label}
+      </p>
+      {link ? (
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-mono text-xs break-all transition-opacity hover:opacity-80"
+          style={{ color: "var(--bb-teal)" }}
+        >
+          {value}
+        </a>
+      ) : (
+        <p className="font-mono text-xs break-all" style={{ color: "rgba(138,148,166,0.6)" }}>
+          {value}
+        </p>
+      )}
     </div>
   );
 }
 
 function Empty({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center">
-      <p className="text-sm font-medium text-zinc-900">{title}</p>
-      <p className="mt-1 text-sm text-zinc-600">{body}</p>
+    <div
+      className="rounded-xl p-8 text-center"
+      style={{ background: "var(--bb-panel)", border: "1px dashed rgba(255,255,255,0.1)" }}
+    >
+      <p className="text-sm font-medium mb-1" style={{ color: "var(--bb-text)" }}>{title}</p>
+      <p className="text-sm" style={{ color: "var(--bb-muted)" }}>{body}</p>
     </div>
   );
 }

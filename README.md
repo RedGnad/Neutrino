@@ -18,7 +18,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 
 ## Live demo
 
-- **Live app**: **https://neutrino-fawn.vercel.app** — returns `200 OK`. *(Any `neutrino-ebon…` URL is a dead alias from an earlier deploy — do not use it.)*
+- **Live app**: **https://neutrino-fawn.vercel.app** — returns `200 OK`.
 - **Source**: https://github.com/RedGnad/Neutrino
 - **Mantle Mainnet contracts** *(both addresses identical to Sepolia thanks to CREATE determinism)*:
   - `RWAAgent` (ERC-8004 identity NFT): [`0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96`](https://mantlescan.xyz/address/0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96)

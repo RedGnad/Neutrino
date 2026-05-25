@@ -1,6 +1,7 @@
 import type { Address, Hex } from 'viem';
 import { NextResponse, type NextRequest } from 'next/server';
 import { runAgentOnce, type ExecutionConfig, type Scenario } from '@/lib/agent/run';
+import { saveReceipt } from '@/lib/agent/receipts/store';
 
 // Streaming-friendly Node runtime; default in Next.js 16, but be explicit.
 export const runtime = 'nodejs';
@@ -121,6 +122,24 @@ export async function POST(request: NextRequest) {
         scenario: body.scenario,
       }),
     );
+
+    // Persist receipts server-side so any browser can retrieve the full
+    // canonical payload by reasonHash (not just the one that triggered the run).
+    for (const r of result.results) {
+      if (r.txHash && r.canonicalJson && r.canonicalHash) {
+        saveReceipt({
+          txHash: r.txHash,
+          blockNumber: r.blockNumber ?? '0',
+          agentId: BigInt(agentIdRaw),
+          asset: r.symbol,
+          action: r.action,
+          riskScore: r.riskScore,
+          canonicalJson: r.canonicalJson,
+          reasonHash: r.canonicalHash,
+        });
+      }
+    }
+
     return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

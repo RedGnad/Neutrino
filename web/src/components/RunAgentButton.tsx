@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type Scenario = "default" | "risky-xstocks" | "safe-yield";
-
 type SourceState = "live" | "stub" | "simulated" | "n/a";
 type FlagState = "live" | "stub" | "n/a";
 
@@ -77,15 +76,10 @@ function broadcastRunLock() {
 }
 
 interface RunAgentButtonProps {
-  /** Scenario to send to /api/run-agent. Default = 'default' (all 5 assets). */
   scenario?: Scenario;
-  /** Force on-chain execution after the decision loop (mainnet only). */
   executeOnChain?: boolean;
-  /** Visible label on the button. */
   label: string;
-  /** Visual variant. */
   variant?: "primary" | "secondary" | "execute";
-  /** Optional one-line subtitle under the button explaining what happens. */
   hint?: string;
 }
 
@@ -106,19 +100,14 @@ export function RunAgentButton({
   const [locked, setLocked] = useState(false);
 
   useEffect(() => {
-    function syncLock() {
-      setLocked(Boolean(activeRunId));
-    }
+    function syncLock() { setLocked(Boolean(activeRunId)); }
     window.addEventListener(RUN_LOCK_EVENT, syncLock);
     syncLock();
     return () => window.removeEventListener(RUN_LOCK_EVENT, syncLock);
   }, []);
 
   async function run() {
-    if (activeRunId) {
-      setLocked(true);
-      return;
-    }
+    if (activeRunId) { setLocked(true); return; }
     const runId = crypto.randomUUID();
     activeRunId = runId;
     setLocked(true);
@@ -136,10 +125,7 @@ export function RunAgentButton({
       });
       const json = await res.json();
       if (!res.ok) {
-        setState({
-          kind: "error",
-          message: json.error ?? `HTTP ${res.status}`,
-        });
+        setState({ kind: "error", message: json.error ?? `HTTP ${res.status}` });
         return;
       }
       const result = json as RunResult;
@@ -159,12 +145,15 @@ export function RunAgentButton({
 
   const running = state.kind === "running";
   const disabled = running || (locked && activeRunId !== null);
-  const buttonClass =
+
+  const btnStyle =
     variant === "execute"
-      ? "bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-emerald-300"
+      ? { background: "var(--bb-teal)", color: "#070A0F" }
       : variant === "secondary"
-        ? "bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-50 disabled:bg-zinc-50 disabled:text-zinc-400"
-        : "bg-zinc-950 hover:bg-zinc-800 text-white disabled:bg-zinc-300";
+        ? { background: "rgba(255,255,255,0.05)", color: "var(--bb-text)", border: "1px solid rgba(255,255,255,0.1)" }
+        : { background: "rgba(255,255,255,0.08)", color: "var(--bb-text)", border: "1px solid rgba(255,255,255,0.12)" };
+
+  const btnDisabledStyle = { opacity: 0.4, cursor: "not-allowed" };
 
   return (
     <div className="space-y-3">
@@ -172,31 +161,35 @@ export function RunAgentButton({
         type="button"
         onClick={run}
         disabled={disabled}
-        className={`inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-medium shadow-sm transition-colors disabled:cursor-not-allowed ${buttonClass}`}
+        className="inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-medium transition-all"
+        style={{ ...btnStyle, ...(disabled ? btnDisabledStyle : {}) }}
       >
-        {running ? (
-          <>
-            <Spinner /> Running on-chain…
-          </>
-        ) : (
-          <>{label}</>
-        )}
+        {running ? <><Spinner /> Running…</> : label}
       </button>
+
       {locked && !running ? (
-        <p className="text-xs text-amber-700">
-          Another Neutrino run is already writing receipts. Wait for it to
-          finish.
+        <p className="text-xs" style={{ color: "var(--bb-amber)", fontFamily: "'IBM Plex Mono', monospace" }}>
+          Another run is in progress. Wait for it to finish.
         </p>
       ) : null}
-      {hint ? <p className="text-xs text-zinc-500">{hint}</p> : null}
+      {hint ? (
+        <p className="text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
+          {hint}
+        </p>
+      ) : null}
 
       {state.kind === "error" ? (
-        <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <div
+          className="rounded-md px-3 py-2 text-sm"
+          style={{ background: "rgba(232,72,85,0.1)", border: "1px solid rgba(232,72,85,0.3)", color: "var(--bb-red)" }}
+        >
           {state.message}
-        </p>
+        </div>
       ) : null}
 
-      {state.kind === "done" ? <ResultPanel result={state.result} /> : null}
+      {state.kind === "done" ? (
+        <ResultPanel result={state.result} scenario={scenario} />
+      ) : null}
     </div>
   );
 }
@@ -208,187 +201,118 @@ function cacheCanonicalJsons(result: RunResult) {
     try {
       window.localStorage.setItem(
         `${STORAGE_PREFIX}${r.txHash.toLowerCase()}`,
-        JSON.stringify({
-          canonicalJson: r.canonicalJson,
-          cachedAt: Date.now(),
-        }),
+        JSON.stringify({ canonicalJson: r.canonicalJson, cachedAt: Date.now() }),
       );
-    } catch {
-      // localStorage full or disabled — ignore, verifier will show fallback.
-    }
+    } catch { /* localStorage full */ }
   }
 }
 
-function ResultPanel({ result }: { result: RunResult }) {
-  // A decision is "written" once its tx is in the mempool (txHash present).
-  // blockNumber "0" only means our receipt poll hasn't confirmed it yet —
-  // Mantle mines in ~2s, so it is pending, never failed.
+function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scenario }) {
   const written = result.results.filter((r) => r.txHash).length;
-  const pending = result.results.filter(
-    (r) => r.txHash && r.blockNumber === "0",
-  ).length;
+  const pending = result.results.filter((r) => r.txHash && r.blockNumber === "0").length;
   const explorerTx =
     result.network === "mantle"
       ? "https://mantlescan.xyz/tx"
       : "https://sepolia.mantlescan.xyz/tx";
-  const networkLabel =
-    result.network === "mantle" ? "Mantle Mainnet" : "Mantle Sepolia";
+  const networkLabel = result.network === "mantle" ? "Mantle Mainnet" : "Mantle Sepolia";
   const firstWritten = result.results.find((r) => r.txHash);
 
   return (
-    <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-5">
+    <div
+      className="space-y-4 rounded-xl p-5 mt-2"
+      style={{ background: "var(--bb-panel)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      {/* Summary header */}
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
-        <p className="font-medium text-zinc-900">
-          {written}/{result.results.length} decisions written on-chain
+        <p className="font-semibold" style={{ color: "var(--bb-text)" }}>
+          {written}/{result.results.length} receipts on-chain
           {pending > 0 ? (
-            <span className="ml-1 font-normal text-zinc-500">
+            <span className="ml-1 font-normal" style={{ color: "var(--bb-amber)" }}>
               ({pending} confirming)
             </span>
           ) : null}
         </p>
-        <p className="text-zinc-600">
-          {(result.durationMs / 1000).toFixed(1)}s · {networkLabel} · scenario{" "}
-          <span className="font-medium text-zinc-900">{result.scenario}</span> ·
+        <p style={{ color: "var(--bb-muted)" }}>
+          {(result.durationMs / 1000).toFixed(1)}s · {networkLabel} ·{" "}
           US market{" "}
-          <span className="font-medium text-zinc-900">
+          <span className="font-medium" style={{ color: result.marketOpen ? "var(--bb-teal)" : "var(--bb-orange)" }}>
             {result.marketOpen ? "open" : "closed"}
           </span>
         </p>
       </div>
 
+      {/* Pipeline flags */}
       <PipelineFlags inputs={result.inputs} />
 
-      <ul className="divide-y divide-zinc-100">
+      {/* Engine / LLM split */}
+      <div
+        className="rounded-md px-4 py-2.5 text-xs flex flex-wrap gap-x-6 gap-y-1"
+        style={{ background: "rgba(124,92,252,0.08)", border: "1px solid rgba(124,92,252,0.15)" }}
+      >
+        <span>
+          <span className="font-semibold" style={{ color: "var(--bb-text)" }}>Deterministic engine</span>
+          <span style={{ color: "var(--bb-muted)" }}> decided action + risk score</span>
+        </span>
+        <span>
+          <span
+            className="font-semibold"
+            style={{ color: result.inputs.llmReasoning === "live" ? "#9D84FF" : "var(--bb-muted)" }}
+          >
+            {result.inputs.llmReasoning === "live"
+              ? `LLM (${result.narrationModel ?? "claude-haiku"}) narrated`
+              : "LLM unavailable — deterministic fallback reason"}
+          </span>
+          <span style={{ color: "var(--bb-muted)" }}> — LLM never controls the action</span>
+        </span>
+      </div>
+
+      {/* RFQ readiness */}
+      {(scenario === "risky-xstocks" || scenario === "default") ? (
+        <RfqReadinessBlock results={result.results} />
+      ) : null}
+
+      {/* Per-asset results */}
+      <ul className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
         {result.results.map((r) => (
-          <li key={r.symbol} className="space-y-1.5 py-3 text-sm">
-            <div className="flex items-baseline gap-3">
-              <span className="w-12 font-medium text-zinc-950">{r.symbol}</span>
-              <span className="w-44 font-medium text-zinc-700">{r.action}</span>
-              <span className="w-16 tabular-nums text-zinc-600">
-                {r.riskScore}
-                <span className="text-zinc-400">/1000</span>
-              </span>
-              <span className="flex-1 whitespace-nowrap">
-                {r.txHash ? (
-                  <>
-                    <a
-                      href={`${explorerTx}/${r.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-xs text-emerald-700 underline-offset-2 hover:underline"
-                    >
-                      {r.txHash.slice(0, 16)}…
-                    </a>
-                    {r.blockNumber && r.blockNumber !== "0" ? (
-                      <span className="ml-1.5 text-[10px] text-zinc-400">
-                        block {r.blockNumber}
-                      </span>
-                    ) : (
-                      <span className="ml-1.5 text-[10px] text-amber-600">
-                        confirming…
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-xs text-rose-600">
-                    {r.error ?? "no tx"}
-                  </span>
-                )}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2 pl-12 text-xs leading-relaxed text-zinc-600">
-              <span
-                className={`mt-0.5 inline-flex shrink-0 items-center rounded-sm px-1 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
-                  r.reasonFromLlm
-                    ? "bg-violet-50 text-violet-700 ring-1 ring-violet-200"
-                    : "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200"
-                }`}
-                title={
-                  r.reasonFromLlm
-                    ? "Narrated by Claude Haiku 4.5"
-                    : "Deterministic fallback (LLM unavailable)"
-                }
-              >
-                {r.reasonFromLlm ? "LLM" : "auto"}
-              </span>
-              <span className="italic">{r.reason}</span>
-            </div>
-            <SourceBadges sources={r.sources} />
-          </li>
+          <AssetRow key={r.symbol} r={r} explorerTx={explorerTx} />
         ))}
       </ul>
 
+      {/* Execution result */}
       {result.execution ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50/40 px-4 py-3 text-sm">
-          <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">
-            On-chain execution
-          </p>
-          <p className="mt-1 text-zinc-900">{result.execution.description}</p>
-          <ul className="mt-2 space-y-1">
-            {(result.execution.steps ?? [
-              {
-                label: "swap",
-                txHash: result.execution.txHash,
-                blockNumber: result.execution.blockNumber,
-              },
-            ]).map((step, i) => (
-              <li
-                key={step.txHash}
-                className="flex items-baseline gap-2 text-xs text-zinc-600"
-              >
-                <span className="font-medium text-zinc-500">
-                  Leg {i + 1}
-                </span>
-                <span className="text-zinc-700">{step.label}</span>
-                <a
-                  href={`${explorerTx}/${step.txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-emerald-700 underline-offset-2 hover:underline"
-                >
-                  {step.txHash.slice(0, 18)}…
-                </a>
-                <span className="text-[10px] text-zinc-400">
-                  block {step.blockNumber}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ExecutionBlock execution={result.execution} explorerTx={explorerTx} />
       ) : null}
 
       {result.executionError ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <p className="text-xs font-medium uppercase tracking-wider text-amber-700">
-            Execution did not settle
-          </p>
-          <p className="mt-1 text-xs leading-relaxed">
-            {result.executionError}
-          </p>
+        <div
+          className="rounded-md px-4 py-3 text-xs leading-relaxed"
+          style={{ background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "var(--bb-amber)" }}
+        >
+          <p className="font-mono font-semibold uppercase tracking-wider text-[10px] mb-1">Execution did not settle</p>
+          {result.executionError}
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-3 border-t border-zinc-100 pt-4 text-xs text-zinc-500">
-        <Link
-          href="/proof"
-          className="font-medium text-emerald-700 underline-offset-2 hover:underline"
-        >
+      {/* Footer links */}
+      <div
+        className="flex flex-wrap items-center gap-3 pt-3 text-xs"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+      >
+        <Link href="/proof" className="font-medium transition-colors" style={{ color: "var(--bb-teal)" }}>
           View all on-chain receipts →
         </Link>
         {firstWritten ? (
           <Link
             href={`/agent-decision/${firstWritten.symbol}`}
-            className="font-medium text-emerald-700 underline-offset-2 hover:underline"
+            className="font-medium transition-colors"
+            style={{ color: "var(--bb-teal)" }}
           >
             Verify {firstWritten.symbol} receipt →
           </Link>
         ) : null}
         {result.narrationModel ? (
-          <span className="ml-auto">
-            Narration:{" "}
-            <code className="rounded bg-zinc-100 px-1 py-0.5">
-              {result.narrationModel}
-            </code>
+          <span className="ml-auto font-mono" style={{ color: "rgba(138,148,166,0.4)" }}>
+            narration: {result.narrationModel}
           </span>
         ) : null}
       </div>
@@ -396,26 +320,100 @@ function ResultPanel({ result }: { result: RunResult }) {
   );
 }
 
+function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) {
+  const actionColor =
+    r.action === "PAUSE" || r.action === "REDUCE"
+      ? "var(--bb-orange)"
+      : r.action === "ALLOCATE"
+        ? "var(--bb-teal)"
+        : "var(--bb-amber)";
+
+  return (
+    <li className="space-y-2 py-3 text-sm">
+      <div className="flex items-center gap-3">
+        <span
+          className="w-14 font-mono font-semibold"
+          style={{ color: "var(--bb-text)" }}
+        >
+          {r.symbol}
+        </span>
+        <span
+          className="w-36 font-mono font-semibold text-xs tracking-wide"
+          style={{ color: actionColor }}
+        >
+          {r.action}
+        </span>
+        <span className="tabular-nums text-xs" style={{ color: "var(--bb-muted)" }}>
+          {r.riskScore}
+          <span style={{ color: "rgba(138,148,166,0.4)" }}>/1000</span>
+        </span>
+        <span className="flex-1 text-right">
+          {r.txHash ? (
+            <>
+              <a
+                href={`${explorerTx}/${r.txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs"
+                style={{ color: "var(--bb-teal)" }}
+              >
+                {r.txHash.slice(0, 16)}…
+              </a>
+              {r.blockNumber && r.blockNumber !== "0" ? (
+                <span className="ml-1.5 text-[10px] font-mono" style={{ color: "rgba(138,148,166,0.4)" }}>
+                  block {r.blockNumber}
+                </span>
+              ) : (
+                <span className="ml-1.5 text-[10px] font-mono" style={{ color: "var(--bb-amber)" }}>
+                  confirming…
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-xs font-mono" style={{ color: "var(--bb-red)" }}>
+              {r.error ?? "no tx"}
+            </span>
+          )}
+        </span>
+      </div>
+
+      <div className="flex items-start gap-2 pl-14">
+        <span
+          className="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-widest"
+          style={
+            r.reasonFromLlm
+              ? { background: "rgba(124,92,252,0.15)", color: "#9D84FF", border: "1px solid rgba(124,92,252,0.25)" }
+              : { background: "rgba(255,255,255,0.05)", color: "var(--bb-muted)", border: "1px solid rgba(255,255,255,0.07)" }
+          }
+          title={r.reasonFromLlm ? "Narrated by Claude Haiku 4.5" : "Deterministic fallback"}
+        >
+          {r.reasonFromLlm ? "LLM" : "auto"}
+        </span>
+        <span className="text-xs italic leading-relaxed" style={{ color: "var(--bb-muted)" }}>
+          {r.reason}
+        </span>
+      </div>
+
+      <SourceBadges sources={r.sources} />
+    </li>
+  );
+}
+
 function PipelineFlags({ inputs }: { inputs: RunResult["inputs"] }) {
   const flags = [
     { label: "Market hours", state: inputs.marketHours },
-    { label: "Reference prices", state: inputs.referencePrices },
-    { label: "xStock price (xStocks API)", state: inputs.xStockPrices },
-    { label: "xStock trading status", state: inputs.xStockStatus },
-    { label: "LLM reasoning", state: inputs.llmReasoning },
+    { label: "Ref prices", state: inputs.referencePrices },
+    { label: "xStock price", state: inputs.xStockPrices },
+    { label: "xStock status", state: inputs.xStockStatus },
+    { label: "LLM", state: inputs.llmReasoning },
     { label: "On-chain write", state: inputs.onChainWrite },
-    { label: "On-chain execution", state: inputs.onChainExecution },
+    { label: "Execution", state: inputs.onChainExecution },
   ];
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {flags.map((f) => (
-        <span
-          key={f.label}
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${stateClasses(f.state)}`}
-        >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${stateDotClass(f.state)}`}
-          />
+        <span key={f.label} className={`inline-flex items-center gap-1.5 rounded px-2.5 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wider ${sourceBadgeClass(f.state)}`}>
+          <span className={`h-1.5 w-1.5 rounded-full ${sourceDotClass(f.state)}`} />
           {f.label}: {f.state}
         </span>
       ))}
@@ -425,19 +423,18 @@ function PipelineFlags({ inputs }: { inputs: RunResult["inputs"] }) {
 
 function SourceBadges({ sources }: { sources: PerAssetResult["sources"] }) {
   const entries = [
-    { label: "market hours", state: sources.marketHours },
-    { label: "reference", state: sources.referencePrice },
-    { label: "xStock price", state: sources.xStockPrice },
-    { label: "xStock status", state: sources.xStockStatus },
+    { label: "mkt-hours", state: sources.marketHours },
+    { label: "ref-price", state: sources.referencePrice },
+    { label: "xstock-price", state: sources.xStockPrice },
+    { label: "xstock-status", state: sources.xStockStatus },
     { label: "on-chain", state: sources.onChainWrite },
   ];
   return (
-    <div className="flex flex-wrap gap-1.5 pl-12 text-[10px]">
+    <div className="flex flex-wrap gap-1 pl-14">
       {entries.map((e) => (
         <span
           key={e.label}
-          className={`inline-flex items-center gap-1 rounded-sm px-1 py-0.5 font-medium uppercase tracking-wider ring-1 ring-inset ${stateClasses(e.state)}`}
-          title={`${e.label}: ${e.state}`}
+          className={`inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-mono font-medium uppercase tracking-wider ${sourceBadgeClass(e.state)}`}
         >
           {e.label}: {e.state}
         </span>
@@ -446,51 +443,100 @@ function SourceBadges({ sources }: { sources: PerAssetResult["sources"] }) {
   );
 }
 
-function stateClasses(s: SourceState): string {
+function sourceBadgeClass(s: SourceState | FlagState): string {
   switch (s) {
-    case "live":
-      return "bg-emerald-50 text-emerald-700 ring-emerald-200";
-    case "stub":
-      return "bg-amber-50 text-amber-700 ring-amber-200";
-    case "simulated":
-      return "bg-violet-50 text-violet-700 ring-violet-200";
-    case "n/a":
-    default:
-      return "bg-zinc-100 text-zinc-500 ring-zinc-200";
+    case "live":      return "badge-live";
+    case "stub":      return "badge-stub";
+    case "simulated": return "badge-notexec";
+    default:          return "badge-na";
   }
 }
 
-function stateDotClass(s: SourceState): string {
+function sourceDotClass(s: SourceState | FlagState): string {
   switch (s) {
-    case "live":
-      return "bg-emerald-500";
-    case "stub":
-      return "bg-amber-500";
-    case "simulated":
-      return "bg-violet-500";
-    case "n/a":
-    default:
-      return "bg-zinc-400";
+    case "live":      return "bg-[var(--bb-teal)]";
+    case "stub":      return "bg-[var(--bb-amber)]";
+    case "simulated": return "bg-[#9D84FF]";
+    default:          return "bg-[var(--bb-muted)]";
   }
+}
+
+function RfqReadinessBlock({ results }: { results: PerAssetResult[] }) {
+  const atomicHalted = results.some((r) => {
+    if (!r.canonicalJson) return false;
+    try {
+      const p = JSON.parse(r.canonicalJson) as { xstocks?: { atomicTradingHalted?: boolean | null } };
+      return p.xstocks?.atomicTradingHalted === true;
+    } catch { return false; }
+  });
+
+  return (
+    <div
+      className="rounded-md px-4 py-3 text-xs leading-relaxed flex items-start gap-2"
+      style={{ background: "rgba(124,92,252,0.06)", border: "1px solid rgba(124,92,252,0.2)" }}
+    >
+      <span className="shrink-0 mt-0.5 font-mono text-[10px] font-semibold" style={{ color: "#9D84FF" }}>RFQ</span>
+      <div>
+        <span className="font-semibold" style={{ color: "#9D84FF" }}>xChange / Atomic RFQ readiness: </span>
+        {atomicHalted ? (
+          <span className="font-mono" style={{ color: "var(--bb-red)" }}>
+            blocked — xStocks API reports <code>atomicTradingHalted = true</code>
+          </span>
+        ) : (
+          <span style={{ color: "var(--bb-muted)" }}>
+            not executed — requires API key + registered wallet + authenticated quote flow.
+            Execution routes through Fluxion V3 only.
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ExecutionBlock({ execution, explorerTx }: { execution: ExecutionResult; explorerTx: string }) {
+  return (
+    <div
+      className="rounded-md px-4 py-3 text-sm space-y-2"
+      style={{ background: "rgba(45,212,165,0.06)", border: "1px solid rgba(45,212,165,0.25)" }}
+    >
+      <p
+        className="text-[10px] font-mono font-semibold uppercase tracking-widest"
+        style={{ color: "var(--bb-teal)" }}
+      >
+        ON-CHAIN EXECUTION SETTLED
+      </p>
+      <p style={{ color: "var(--bb-muted)" }}>{execution.description}</p>
+      <ul className="space-y-1">
+        {(execution.steps ?? [{ label: "swap", txHash: execution.txHash, blockNumber: execution.blockNumber }]).map(
+          (step, i) => (
+            <li key={step.txHash} className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="font-mono font-medium" style={{ color: "rgba(138,148,166,0.5)" }}>Leg {i + 1}</span>
+              <span style={{ color: "var(--bb-muted)" }}>{step.label}</span>
+              <a
+                href={`${explorerTx}/${step.txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono"
+                style={{ color: "var(--bb-teal)" }}
+              >
+                {step.txHash.slice(0, 18)}…
+              </a>
+              <span className="text-[10px] font-mono" style={{ color: "rgba(138,148,166,0.4)" }}>
+                block {step.blockNumber}
+              </span>
+            </li>
+          ),
+        )}
+      </ul>
+    </div>
+  );
 }
 
 function Spinner() {
   return (
     <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="3"
-        opacity="0.25"
-      />
-      <path
-        d="M12 2a10 10 0 0 1 10 10"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 }
