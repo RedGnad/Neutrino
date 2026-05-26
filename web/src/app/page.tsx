@@ -1,13 +1,22 @@
 import Link from "next/link";
 import { RunAgentButton } from "@/components/RunAgentButton";
 import { LatestExecution } from "@/components/LatestExecution";
-import { BlackBoxCard } from "@/components/BlackBoxCard";
 import { DecisionTimeline } from "@/components/DecisionTimeline";
-import { NETWORK_LABEL, LOGGER_ADDRESS, AGENT_ADDRESS, EXPLORER_ADDR } from "@/lib/onchain";
+import {
+  NETWORK_LABEL,
+  LOGGER_ADDRESS,
+  AGENT_ADDRESS,
+  EXPLORER_ADDR,
+  fetchRecentDecisions,
+  resolveAsset,
+  timeAgo,
+} from "@/lib/onchain";
+
+export const revalidate = 30;
 
 export default function Home() {
   return (
-    <div className="space-y-12">
+    <div className="space-y-14">
       <Hero />
       <JudgeModeGuide />
       <LatestExecution />
@@ -22,143 +31,220 @@ export default function Home() {
 
 /* ─── Hero ─────────────────────────────────────────────────────────── */
 
-function Hero() {
+async function Hero() {
+  const decisions = await fetchRecentDecisions(7).catch(() => []);
+
   return (
     <section
-      className="-mx-6 -mt-10 px-6 pt-14 pb-14"
-      style={{ background: "linear-gradient(180deg, var(--bg) 0%, var(--panel) 100%)" }}
+      className="-mx-6 -mt-10 px-6 pt-16 pb-16"
+      style={{
+        background:
+          "linear-gradient(175deg, var(--bg) 0%, var(--panel) 100%)",
+        borderBottom: "1px solid var(--border)",
+      }}
     >
       <div className="mx-auto max-w-6xl">
-        {/* Classification label */}
-        <div className="flex items-center gap-2 mb-10">
-          <span className="h-1.5 w-1.5 rounded-full animate-live" style={{ background: "var(--sage)" }} />
-          <span
-            className="text-[9px] font-medium uppercase tracking-widest"
-            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
-          >
-            Neutrino · AI × RWA · {NETWORK_LABEL}
-          </span>
-        </div>
+        <div className="grid gap-16 lg:grid-cols-[1fr_320px] items-start">
 
-        {/* Two-column hero */}
-        <div className="grid gap-14 lg:grid-cols-[1fr_auto] items-start">
-          {/* Left: Headline in Fraunces */}
-          <div className="space-y-7 max-w-2xl">
-            <div>
-              {/* The unexpected moment: serif italic in a DeFi context */}
+          {/* LEFT — Headline */}
+          <div className="space-y-8">
+            <div className="animate-stagger-1">
+              <span className="section-label flex items-center gap-2">
+                <span
+                  className="h-1.5 w-1.5 rounded-full animate-live"
+                  style={{ background: "var(--clear)" }}
+                />
+                Neutrino · AI × RWA · {NETWORK_LABEL}
+              </span>
+            </div>
+
+            <div className="animate-stagger-2">
               <h1
-                className="italic leading-[1.1] tracking-tight"
+                className="italic leading-[1.05] tracking-tight"
                 style={{
-                  fontFamily: "'Fraunces', Georgia, serif",
-                  fontSize: "clamp(2.4rem, 5vw, 3.8rem)",
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontSize: "clamp(3rem, 6.5vw, 5rem)",
                   fontWeight: 600,
                   color: "var(--text)",
                 }}
               >
-                Tokenized stocks
+                The market
                 <br />
-                trade 24/7.
+                closed at 4pm.
                 <br />
                 <span style={{ color: "var(--muted)" }}>
-                  Their underlying
+                  The token
                   <br />
-                  markets don&rsquo;t.
+                  didn&rsquo;t.
                 </span>
               </h1>
+            </div>
+
+            <div className="animate-stagger-3 max-w-lg">
               <p
-                className="mt-6 text-base leading-relaxed"
-                style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                className="text-base leading-relaxed"
+                style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
               >
-                Neutrino is the autonomous risk-judgment layer for Mantle RWA agents.
-                It reads live xStocks signals, scores risk with deterministic rules,
-                writes a verifiable receipt on Mantle, and executes only through a
-                verified rail. The engine decides. The LLM explains.
+                Neutrino reads live xStocks signals, scores risk with
+                deterministic rules, writes a verifiable receipt on Mantle,
+                and executes only through a verified rail.{" "}
+                <span style={{ color: "var(--text)" }}>
+                  The engine decides. The LLM explains.
+                </span>
               </p>
             </div>
 
-            {/* Proof chips — understated, no neon glow */}
-            <div className="flex flex-wrap gap-2">
-              <ProofChip label="xStocks price + status" state="LIVE" color="sage" />
-              <ProofChip label="Mantle receipts" state="LIVE" color="sage" />
-              <ProofChip label="Fluxion execution" state="LIVE" color="sage" />
-              <ProofChip label="xChange RFQ" state="AUTH GATED" color="violet" />
+            <div className="animate-stagger-4 flex flex-wrap gap-2">
+              <ProofChip label="xStocks price + status" state="LIVE" color="clear" />
+              <ProofChip label="Mantle receipts" state="LIVE" color="clear" />
+              <ProofChip label="Fluxion execution" state="LIVE" color="clear" />
+              <ProofChip label="xChange RFQ" state="AUTH GATED" color="gated" />
             </div>
 
-            {/* CTAs */}
-            <div className="flex flex-wrap gap-3">
+            <div className="animate-stagger-5 flex flex-wrap gap-3">
               <Link
                 href="#scenarios"
                 className="inline-flex h-10 items-center rounded px-5 text-sm font-semibold transition-all"
-                style={{ background: "var(--sage)", color: "#080D09", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                style={{
+                  background: "var(--clear)",
+                  color: "#060504",
+                  fontFamily: "'Instrument Sans', sans-serif",
+                }}
               >
                 Run the agent
               </Link>
               <Link
                 href="/proof"
                 className="inline-flex h-10 items-center rounded px-5 text-sm font-medium transition-colors"
-                style={{ background: "rgba(148,180,148,0.06)", color: "var(--text)", border: "1px solid var(--border-hi)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                style={{
+                  background: "rgba(200,168,110,0.06)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border-hi)",
+                  fontFamily: "'Instrument Sans', sans-serif",
+                }}
               >
                 On-chain proofs
               </Link>
             </div>
 
-            {/* Contract addresses */}
-            {(LOGGER_ADDRESS || AGENT_ADDRESS) ? (
+            {(LOGGER_ADDRESS || AGENT_ADDRESS) && (
               <div
-                className="flex flex-wrap gap-4 pt-1 text-[10px]"
-                style={{ fontFamily: "'Azeret Mono', monospace" }}
+                className="flex flex-wrap gap-4 pt-1"
+                style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px" }}
               >
-                {LOGGER_ADDRESS ? (
+                {LOGGER_ADDRESS && (
                   <a
                     href={`${EXPLORER_ADDR}/${LOGGER_ADDRESS}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
-                    style={{ color: "rgba(122,146,130,0.45)" }}
+                    style={{ color: "rgba(144,126,108,0.5)" }}
                   >
                     RWADecisionLogger:{" "}
                     <span style={{ color: "var(--muted)" }}>
                       {LOGGER_ADDRESS.slice(0, 10)}…{LOGGER_ADDRESS.slice(-6)}
                     </span>
-                    <span style={{ color: "var(--sage)" }}>↗</span>
+                    <span style={{ color: "var(--seal)" }}>↗</span>
                   </a>
-                ) : null}
-                {AGENT_ADDRESS ? (
+                )}
+                {AGENT_ADDRESS && (
                   <a
                     href={`${EXPLORER_ADDR}/${AGENT_ADDRESS}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
-                    style={{ color: "rgba(122,146,130,0.45)" }}
+                    style={{ color: "rgba(144,126,108,0.5)" }}
                   >
                     RWAAgent:{" "}
                     <span style={{ color: "var(--muted)" }}>
                       {AGENT_ADDRESS.slice(0, 10)}…{AGENT_ADDRESS.slice(-6)}
                     </span>
-                    <span style={{ color: "var(--sage)" }}>↗</span>
+                    <span style={{ color: "var(--seal)" }}>↗</span>
                   </a>
-                ) : null}
+                )}
               </div>
-            ) : null}
+            )}
           </div>
 
-          {/* Right: BlackBoxCard — verdict card, no fake verified */}
-          <div className="flex items-start justify-center lg:justify-end">
-            <BlackBoxCard
-              label="SIMULATED PREVIEW"
-              data={{
-                asset: "TSLAx / TSLA",
-                signal: "after-hours · no halt",
-                rfqReadiness: "auth-gated",
-                score: 480,
-                action: "PAUSE",
-                receiptHash: "run agent to generate",
-                verified: undefined,
-                timestamp: "Mantle mainnet",
-                live: false,
-              }}
-            />
+          {/* RIGHT — Live decisions column */}
+          <div
+            className="animate-stagger-3"
+            style={{
+              borderLeft: "1px solid var(--border-hi)",
+              paddingLeft: "28px",
+            }}
+          >
+            <p className="section-label mb-4">LATEST JUDGMENTS · LIVE</p>
+
+            {decisions.length === 0 ? (
+              <p
+                className="text-sm"
+                style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
+              >
+                No decisions on-chain yet — run a scenario below.
+              </p>
+            ) : (
+              <ul className="space-y-0">
+                {decisions.map((d, i) => {
+                  const sym = resolveAsset(d.assetAddress).symbol;
+                  const isPause = d.action === "PAUSE" || d.action === "REDUCE";
+                  const isAllocate = d.action === "ALLOCATE";
+                  const actionColor = isPause
+                    ? "var(--refuse)"
+                    : isAllocate
+                    ? "var(--clear)"
+                    : "var(--seal)";
+
+                  return (
+                    <li
+                      key={d.txHash}
+                      className="flex items-baseline gap-3 py-2.5"
+                      style={{
+                        borderBottom: "1px solid var(--border)",
+                        animation: `stagger-up 0.4s ease-out ${i * 60}ms both`,
+                      }}
+                    >
+                      <span
+                        className="font-semibold text-sm shrink-0 w-12"
+                        style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--text)" }}
+                      >
+                        {sym}
+                      </span>
+                      <span
+                        className="text-xs font-medium flex-1"
+                        style={{ fontFamily: "'Azeret Mono', monospace", color: actionColor }}
+                      >
+                        {d.action}
+                      </span>
+                      <span
+                        className="text-[10px] shrink-0"
+                        style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.5)" }}
+                      >
+                        {timeAgo(d.timestamp)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            <div
+              className="mt-4 flex items-center justify-between"
+              style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px" }}
+            >
+              <span style={{ color: "rgba(144,126,108,0.4)" }}>
+                {decisions.length} decision{decisions.length !== 1 ? "s" : ""} · {NETWORK_LABEL}
+              </span>
+              <Link
+                href="/proof"
+                className="transition-opacity hover:opacity-70"
+                style={{ color: "var(--seal)" }}
+              >
+                all proofs ↗
+              </Link>
+            </div>
           </div>
+
         </div>
       </div>
     </section>
@@ -172,19 +258,24 @@ function ProofChip({
 }: {
   label: string;
   state: string;
-  color: "sage" | "gold" | "violet" | "muted";
+  color: "clear" | "seal" | "gated" | "muted";
 }) {
-  const styles: Record<string, { bg: string; border: string; dot: string; text: string }> = {
-    sage:   { bg: "rgba(61,138,98,0.08)",   border: "rgba(61,138,98,0.2)",   dot: "var(--sage)",   text: "var(--sage)" },
-    gold:   { bg: "rgba(200,166,74,0.08)",  border: "rgba(200,166,74,0.2)",  dot: "var(--gold)",   text: "var(--gold)" },
-    violet: { bg: "rgba(124,92,252,0.08)",  border: "rgba(124,92,252,0.2)",  dot: "#9D84FF",        text: "#9D84FF" },
-    muted:  { bg: "rgba(122,146,130,0.06)", border: "rgba(122,146,130,0.15)",dot: "var(--muted)",  text: "var(--muted)" },
-  };
-  const s = styles[color];
+  const s = {
+    clear: { bg: "rgba(58,155,98,0.08)",  border: "rgba(58,155,98,0.22)",  dot: "var(--clear)", text: "var(--clear)" },
+    seal:  { bg: "rgba(212,160,64,0.08)", border: "rgba(212,160,64,0.22)", dot: "var(--seal)",  text: "var(--seal)" },
+    gated: { bg: "rgba(120,104,212,0.08)",border: "rgba(120,104,212,0.22)",dot: "var(--gated)", text: "#9B8FE8" },
+    muted: { bg: "rgba(144,126,108,0.06)",border: "rgba(144,126,108,0.16)",dot: "var(--muted)", text: "var(--muted)" },
+  }[color];
+
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-[10px]"
-      style={{ background: s.bg, border: `1px solid ${s.border}`, fontFamily: "'Azeret Mono', monospace" }}
+      className="inline-flex items-center gap-1.5 rounded px-2.5 py-1"
+      style={{
+        background: s.bg,
+        border: `1px solid ${s.border}`,
+        fontFamily: "'Azeret Mono', monospace",
+        fontSize: "10px",
+      }}
     >
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: s.dot }} />
       <span style={{ color: "var(--muted)" }}>{label}</span>
@@ -193,70 +284,172 @@ function ProofChip({
   );
 }
 
+/* ─── Judge Mode Guide ──────────────────────────────────────────────── */
+
+function JudgeModeGuide() {
+  const steps = [
+    {
+      n: "01",
+      label: "Run risky xStocks",
+      sub: "Scenario 01 below",
+      action: "PAUSE expected",
+      color: "var(--refuse)",
+      href: "#scenarios",
+    },
+    {
+      n: "02",
+      label: "Verify receipt",
+      sub: "/proof or /agent-decision",
+      action: "Hash match on-chain",
+      color: "var(--clear)",
+      href: "/proof",
+    },
+    {
+      n: "03",
+      label: "Run safe yield",
+      sub: "Scenario 02 below",
+      action: "ALLOCATE expected",
+      color: "var(--clear)",
+      href: "#scenarios",
+    },
+    {
+      n: "04",
+      label: "Execute Fluxion",
+      sub: "Scenario 03 below",
+      action: "Real on-chain tx",
+      color: "var(--seal)",
+      href: "#scenarios",
+    },
+  ] as const;
+
+  return (
+    <section className="section-ruled">
+      <div className="flex items-center gap-4 mb-6">
+        <span
+          className="rounded px-2 py-0.5"
+          style={{
+            fontFamily: "'Azeret Mono', monospace",
+            fontSize: "9px",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            background: "rgba(58,155,98,0.1)",
+            border: "1px solid rgba(58,155,98,0.25)",
+            color: "var(--clear)",
+          }}
+        >
+          JUDGE FLOW
+        </span>
+        <span
+          className="text-sm"
+          style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
+        >
+          Complete evaluation path — start here
+        </span>
+      </div>
+
+      <div className="grid gap-0 sm:grid-cols-4 sm:divide-x"
+        style={{ borderColor: "var(--border)" }}
+      >
+        {steps.map((s, i) => (
+          <a
+            key={s.n}
+            href={s.href}
+            className="group block transition-all hover:opacity-80 px-0 py-3 sm:px-5 sm:first:pl-0 sm:last:pr-0"
+          >
+            <p
+              className="mb-2"
+              style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", letterSpacing: "0.12em", color: "rgba(144,126,108,0.4)", textTransform: "uppercase" }}
+            >
+              STEP {s.n}
+            </p>
+            <p
+              className="font-semibold mb-0.5 text-sm"
+              style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
+            >
+              {s.label}
+            </p>
+            <p
+              className="text-xs"
+              style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
+            >
+              {s.sub}
+            </p>
+            <p
+              className="mt-2 font-medium"
+              style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", color: s.color }}
+            >
+              → {s.action}
+            </p>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /* ─── Scenarios ─────────────────────────────────────────────────────── */
 
 function ScenarioSection() {
   return (
-    <section id="scenarios" className="scroll-mt-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-end justify-between">
-        <div>
-          <p
-            className="text-[10px] font-medium uppercase tracking-widest mb-1"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-teal)" }}
+    <section id="scenarios" className="section-ruled scroll-mt-8 space-y-6">
+      <div className="flex flex-col gap-1 mb-6">
+        <span className="section-label">AGENT SCENARIOS</span>
+        <h2
+          className="italic"
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "1.75rem",
+            fontWeight: 600,
+            color: "var(--text)",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          Run the full pipeline — pick a scenario
+        </h2>
+        <p
+          className="text-sm mt-1 max-w-xl"
+          style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
+        >
+          Each run fetches live xStocks signals, scores deterministically, narrates via LLM, writes one{" "}
+          <code
+            className="rounded px-1 py-0.5 text-xs"
+            style={{ fontFamily: "'Azeret Mono', monospace", background: "rgba(255,255,255,0.05)", color: "var(--text)" }}
           >
-            AGENT SCENARIOS
-          </p>
-          <h2
-            className="text-xl font-semibold tracking-tight"
-            style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
-          >
-            Run the full pipeline — pick a scenario
-          </h2>
-          <p className="mt-1 text-sm" style={{ color: "var(--bb-muted)" }}>
-            Each run fetches live xStocks signals, scores deterministically,
-            narrates via LLM, writes one{" "}
-            <code
-              className="rounded px-1 py-0.5 text-xs"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", background: "rgba(255,255,255,0.05)", color: "var(--bb-text)" }}
-            >
-              DecisionLogged
-            </code>{" "}
-            event per asset on Mantle mainnet.
-          </p>
-        </div>
+            DecisionLogged
+          </code>{" "}
+          event per asset on Mantle mainnet.
+        </p>
       </div>
 
-      {/* Deterministic / LLM banner */}
+      {/* Engine / LLM split banner */}
       <div
-        className="rounded-md px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm"
-        style={{ background: "rgba(124,92,252,0.08)", border: "1px solid rgba(124,92,252,0.2)" }}
+        className="rounded px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm"
+        style={{ background: "rgba(120,104,212,0.06)", border: "1px solid rgba(120,104,212,0.18)" }}
       >
-        <div className="flex items-center gap-2">
+        <span className="flex items-center gap-2">
           <span
-            className="rounded px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-widest"
-            style={{ background: "rgba(255,255,255,0.08)", color: "var(--bb-text)" }}
+            className="rounded px-2 py-0.5"
+            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", background: "rgba(255,255,255,0.06)", color: "var(--text)", letterSpacing: "0.08em" }}
           >
             DETERMINISTIC ENGINE
           </span>
-          <span style={{ color: "var(--bb-muted)" }}>decides action + risk score</span>
-        </div>
-        <div className="flex items-center gap-2">
+          <span style={{ color: "var(--muted)", fontSize: "13px" }}>decides action + risk score</span>
+        </span>
+        <span className="flex items-center gap-2">
           <span
-            className="rounded px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-widest"
-            style={{ background: "rgba(124,92,252,0.15)", color: "#9D84FF" }}
+            className="rounded px-2 py-0.5"
+            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", background: "rgba(120,104,212,0.14)", color: "#9B8FE8", letterSpacing: "0.08em" }}
           >
             LLM NARRATES
           </span>
-          <span style={{ color: "var(--bb-muted)" }}>explains the decision · never controls it</span>
-        </div>
+          <span style={{ color: "var(--muted)", fontSize: "13px" }}>explains the decision — never controls it</span>
+        </span>
       </div>
 
-      {/* 3 scenario cards */}
       <div className="grid gap-5 lg:grid-cols-3">
         <ScenarioCard
           index="01"
-          colorKey="pause"
+          colorKey="refuse"
           title="After-hours xStock exposure"
           subtitle="Expected: PAUSE"
           assets={["NVDAx", "TSLAx", "SPYx"]}
@@ -274,7 +467,7 @@ function ScenarioSection() {
 
         <ScenarioCard
           index="02"
-          colorKey="allocate"
+          colorKey="clear"
           title="Safe on-chain RWA yield"
           subtitle="Expected: ALLOCATE"
           assets={["USDY", "mETH"]}
@@ -292,7 +485,7 @@ function ScenarioSection() {
 
         <ScenarioCard
           index="03"
-          colorKey="execute"
+          colorKey="seal"
           title="Verified Mantle execution"
           subtitle="ROUND-TRIP ON MAINNET"
           assets={["USDC", "mETH"]}
@@ -326,7 +519,7 @@ function ScenarioCard({
   button,
 }: {
   index: string;
-  colorKey: "pause" | "allocate" | "execute";
+  colorKey: "refuse" | "clear" | "seal";
   title: string;
   subtitle: string;
   assets: string[];
@@ -336,107 +529,136 @@ function ScenarioCard({
   button: React.ReactNode;
 }) {
   const scheme = {
-    pause:   { border: "rgba(255,107,53,0.3)",  bg: "rgba(255,107,53,0.04)",  accent: "var(--bb-orange)", labelBg: "rgba(255,107,53,0.12)", labelText: "var(--bb-orange)" },
-    allocate: { border: "rgba(45,212,165,0.3)", bg: "rgba(45,212,165,0.04)", accent: "var(--bb-teal)",   labelBg: "rgba(45,212,165,0.12)", labelText: "var(--bb-teal)" },
-    execute:  { border: "rgba(245,166,35,0.3)", bg: "rgba(245,166,35,0.04)", accent: "var(--bb-amber)",  labelBg: "rgba(245,166,35,0.12)", labelText: "var(--bb-amber)" },
+    refuse: {
+      border: "rgba(209,64,64,0.22)",
+      bg: "rgba(209,64,64,0.04)",
+      accent: "var(--refuse)",
+      labelBg: "rgba(209,64,64,0.1)",
+      labelText: "var(--refuse)",
+      chipBg: "rgba(209,64,64,0.1)",
+      chipText: "var(--refuse)",
+    },
+    clear: {
+      border: "rgba(58,155,98,0.22)",
+      bg: "rgba(58,155,98,0.04)",
+      accent: "var(--clear)",
+      labelBg: "rgba(58,155,98,0.1)",
+      labelText: "var(--clear)",
+      chipBg: "rgba(58,155,98,0.1)",
+      chipText: "var(--clear)",
+    },
+    seal: {
+      border: "rgba(212,160,64,0.22)",
+      bg: "rgba(212,160,64,0.04)",
+      accent: "var(--seal)",
+      labelBg: "rgba(212,160,64,0.1)",
+      labelText: "var(--seal)",
+      chipBg: "rgba(212,160,64,0.1)",
+      chipText: "var(--seal)",
+    },
   }[colorKey];
-
-  const assetColors: Record<string, string> = {
-    equity:  "rgba(255,107,53,0.12)",
-    yield:   "rgba(45,212,165,0.12)",
-    execute: "rgba(245,166,35,0.12)",
-  };
-  const assetTextColors: Record<string, string> = {
-    equity:  "var(--bb-orange)",
-    yield:   "var(--bb-teal)",
-    execute: "var(--bb-amber)",
-  };
 
   return (
     <div
-      className="rounded-xl flex flex-col gap-4 p-5"
+      className="relative overflow-hidden rounded-xl flex flex-col gap-4 p-5"
       style={{ background: scheme.bg, border: `1px solid ${scheme.border}` }}
     >
-      <div className="space-y-2">
+      {/* Giant background number — texture, not label */}
+      <span
+        className="absolute right-3 bottom-0 select-none pointer-events-none leading-none"
+        style={{
+          fontFamily: "'Azeret Mono', monospace",
+          fontSize: "140px",
+          fontWeight: 700,
+          color: "transparent",
+          WebkitTextStroke: `1px ${scheme.accent}`,
+          opacity: 0.055,
+        }}
+      >
+        {index}
+      </span>
+
+      <div className="relative space-y-2">
         <div className="flex items-start justify-between gap-2">
           <span
-            className="text-[10px] font-mono font-medium uppercase tracking-widest"
-            style={{ color: "rgba(138,148,166,0.5)" }}
+            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", color: "rgba(144,126,108,0.45)", letterSpacing: "0.1em", textTransform: "uppercase" }}
           >
             SCENARIO {index}
           </span>
           <span
-            className="rounded px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider shrink-0"
-            style={{ background: scheme.labelBg, color: scheme.labelText }}
+            className="rounded px-2 py-0.5 shrink-0"
+            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", background: scheme.labelBg, color: scheme.labelText }}
           >
             {subtitle}
           </span>
         </div>
         <h3
           className="text-base font-semibold leading-snug"
-          style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+          style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
         >
           {title}
         </h3>
-        <p className="text-xs leading-relaxed" style={{ color: "var(--bb-muted)" }}>
+        <p
+          className="text-xs leading-relaxed"
+          style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
+        >
           {description}
         </p>
       </div>
 
-      {/* Asset chips */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="relative flex flex-wrap gap-1.5">
         {assets.map((a) => (
           <span
             key={a}
             className="rounded px-2 py-0.5 text-xs font-mono font-medium"
-            style={{ background: assetColors[assetKind], color: assetTextColors[assetKind] }}
+            style={{ background: scheme.chipBg, color: scheme.chipText, fontFamily: "'Azeret Mono', monospace" }}
           >
             {a}
           </span>
         ))}
       </div>
 
-      {/* RFQ note */}
-      {rfqNote ? (
+      {rfqNote && (
         <div
-          className="rounded px-3 py-2 text-[11px] leading-relaxed"
-          style={{ background: "rgba(124,92,252,0.08)", border: "1px solid rgba(124,92,252,0.2)", fontFamily: "'IBM Plex Mono', monospace", color: "#9D84FF" }}
+          className="relative rounded px-3 py-2 text-[11px] leading-relaxed"
+          style={{ background: "rgba(120,104,212,0.08)", border: "1px solid rgba(120,104,212,0.2)", fontFamily: "'Azeret Mono', monospace", color: "#9B8FE8" }}
         >
           {rfqNote}
         </div>
-      ) : null}
+      )}
 
-      {/* Button */}
-      <div className="mt-auto">
-        {button}
-      </div>
+      <div className="relative mt-auto">{button}</div>
     </div>
   );
 }
 
-/* ─── Data honesty ──────────────────────────────────────────────────── */
+/* ─── Data Honesty ──────────────────────────────────────────────────── */
 
 function DataHonestySection() {
   return (
-    <section className="bb-section space-y-6">
+    <section className="section-ruled space-y-7">
       <div>
-        <p
-          className="text-[10px] font-medium uppercase tracking-widest mb-1"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-teal)" }}
-        >
-          DATA HONESTY
-        </p>
+        <span className="section-label">§ DATA TRANSPARENCY</span>
         <h2
-          className="text-lg font-semibold tracking-tight"
-          style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
+          className="italic"
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "1.6rem",
+            fontWeight: 600,
+            color: "var(--text)",
+            letterSpacing: "-0.01em",
+          }}
         >
-          Every source is labelled — nothing is hidden
+          Every source, explicitly labelled.
         </h2>
-        <p className="mt-1 text-sm" style={{ color: "var(--bb-muted)" }}>
+        <p
+          className="mt-2 text-sm max-w-xl"
+          style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
+        >
           Each decision receipt pins a{" "}
           <code
             className="rounded px-1 py-0.5 text-xs"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", background: "rgba(255,255,255,0.05)", color: "var(--bb-text)" }}
+            style={{ fontFamily: "'Azeret Mono', monospace", background: "rgba(255,255,255,0.05)", color: "var(--text)" }}
           >
             live · stub · n/a
           </code>{" "}
@@ -444,55 +666,49 @@ function DataHonestySection() {
         </p>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-3">
-        <SourceColumn
+      <div className="grid gap-7 sm:grid-cols-3">
+        <SourcePanel
           state="LIVE"
-          color="teal"
+          color="clear"
           items={[
             "xStock indicative price (xStocks public API)",
             "xStock trading-halt status (xStocks public API)",
-            "Mantle token addresses (verified on-chain 2026-05-21)",
+            "Mantle token addresses (verified on-chain)",
             "US market hours (evaluated at run time)",
             "Mantle decision receipts (RWADecisionLogger)",
             "Fluxion V3 execution (opt-in)",
           ]}
         />
-        <SourceColumn
+        <SourcePanel
           state="MODELLED"
-          color="amber"
+          color="seal"
           items={[
             "xStock spread / depth",
             "xStock 24h volume",
             "Order-book microstructure",
           ]}
-          note="xStocks public API does not expose order-book data. Modelled and flagged in every receipt."
+          note="xStocks public API does not expose order-book data. Modelled and flagged as 'stub' in every receipt."
         />
-        <SourceColumn
+        <SourcePanel
           state="AUTH GATED"
-          color="violet"
+          color="gated"
           items={["xChange / Atomic RFQ"]}
-          note="xChange is an authenticated issuer-direct channel. Requires API key + registered wallet + quote flow. Neutrino evaluates xStocks risk; execution routes through verified Mantle rails only."
-          rfqNote
+          note="xChange requires API key + registered wallet + EIP-712 signed quote. Not a public endpoint. Neutrino evaluates xStocks risk; execution routes through Fluxion V3 only."
         />
       </div>
 
-      {/* Token metadata table */}
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 20 }}>
-        <p
-          className="text-[10px] font-medium uppercase tracking-widest mb-3"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
-        >
-          VERIFIED XSTOCK TOKEN METADATA · MANTLE MAINNET · 2026-05-21
-        </p>
+      {/* Token metadata */}
+      <div style={{ borderTop: "1px solid var(--border)", paddingTop: "20px" }}>
+        <p className="section-label mb-3">VERIFIED XSTOCK TOKEN METADATA · MANTLE MAINNET · 2026-05-21</p>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+          <table className="w-full" style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "11px" }}>
             <thead>
               <tr>
                 {["SYMBOL", "UNDERLYING", "DEC", "MANTLE ADDRESS", "SOURCE"].map((h) => (
                   <th
                     key={h}
-                    className="pb-2 pr-6 text-left font-medium uppercase tracking-wider text-[10px]"
-                    style={{ color: "rgba(138,148,166,0.4)" }}
+                    className="pb-2 pr-6 text-left font-medium uppercase tracking-wider"
+                    style={{ color: "rgba(144,126,108,0.4)", fontSize: "9px", letterSpacing: "0.12em" }}
                   >
                     {h}
                   </th>
@@ -500,25 +716,22 @@ function DataHonestySection() {
               </tr>
             </thead>
             <tbody>
-              {TOKEN_METADATA.map((t, i) => (
-                <tr
-                  key={t.symbol}
-                  style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
-                >
-                  <td className="py-2 pr-6 font-semibold" style={{ color: "var(--bb-text)" }}>{t.symbol}</td>
-                  <td className="py-2 pr-6" style={{ color: "var(--bb-muted)" }}>{t.underlying}</td>
-                  <td className="py-2 pr-6" style={{ color: "var(--bb-muted)" }}>{t.decimals}</td>
+              {TOKEN_METADATA.map((t) => (
+                <tr key={t.symbol} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                  <td className="py-2 pr-6 font-semibold" style={{ color: "var(--text)" }}>{t.symbol}</td>
+                  <td className="py-2 pr-6" style={{ color: "var(--muted)" }}>{t.underlying}</td>
+                  <td className="py-2 pr-6" style={{ color: "var(--muted)" }}>{t.decimals}</td>
                   <td className="py-2 pr-6">
                     <a
                       href={`https://mantlescan.xyz/address/${t.address}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: "var(--bb-teal)" }}
+                      style={{ color: "var(--seal)" }}
                     >
                       {t.address.slice(0, 10)}…{t.address.slice(-6)}
                     </a>
                   </td>
-                  <td className="py-2" style={{ color: "rgba(138,148,166,0.5)" }}>{t.source}</td>
+                  <td className="py-2" style={{ color: "rgba(144,126,108,0.5)" }}>{t.source}</td>
                 </tr>
               ))}
             </tbody>
@@ -529,56 +742,56 @@ function DataHonestySection() {
   );
 }
 
-function SourceColumn({
+function SourcePanel({
   state,
   color,
   items,
   note,
-  rfqNote,
 }: {
   state: string;
-  color: "teal" | "amber" | "violet";
+  color: "clear" | "seal" | "gated";
   items: string[];
   note?: string;
-  rfqNote?: boolean;
 }) {
-  const colorMap = {
-    teal:   { dot: "var(--bb-teal)",  badge: "badge-live",    label: "var(--bb-teal)" },
-    amber:  { dot: "var(--bb-amber)", badge: "badge-stub",    label: "var(--bb-amber)" },
-    violet: { dot: "#9D84FF",         badge: "badge-notexec", label: "#9D84FF" },
+  const c = {
+    clear: { dot: "var(--clear)", badge: "badge-live",    text: "var(--clear)" },
+    seal:  { dot: "var(--seal)",  badge: "badge-stub",    text: "var(--seal)" },
+    gated: { dot: "var(--gated)", badge: "badge-notexec", text: "#9B8FE8" },
   }[color];
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <span className="h-2 w-2 rounded-full" style={{ background: colorMap.dot }} />
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: c.dot }} />
         <span
-          className={`${colorMap.badge} inline-flex items-center rounded px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-widest`}
+          className={`${c.badge} inline-flex items-center rounded px-2 py-0.5`}
+          style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}
         >
           {state}
         </span>
       </div>
       <ul className="space-y-1.5">
         {items.map((item) => (
-          <li key={item} className="flex gap-2 text-sm" style={{ color: "var(--bb-muted)" }}>
-            <span style={{ color: colorMap.dot, marginTop: 2 }}>›</span>
-            {item}
+          <li key={item} className="flex gap-2" style={{ color: "var(--muted)", fontSize: "13px" }}>
+            <span style={{ color: c.dot, marginTop: 2 }}>›</span>
+            <span style={{ fontFamily: "'Instrument Sans', sans-serif" }}>{item}</span>
           </li>
         ))}
       </ul>
-      {note ? (
+      {note && (
         <p
-          className="text-[11px] leading-relaxed rounded p-3"
+          className="rounded p-3 leading-relaxed"
           style={{
-            fontFamily: "'IBM Plex Mono', monospace",
-            color: "rgba(138,148,166,0.6)",
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.04)",
+            fontFamily: "'Azeret Mono', monospace",
+            fontSize: "10px",
+            color: "rgba(144,126,108,0.6)",
+            background: "rgba(255,255,255,0.025)",
+            border: "1px solid rgba(255,255,255,0.05)",
           }}
         >
-          {rfqNote ? <strong style={{ color: "var(--bb-muted)" }}>RFQ readiness: not executable in this demo. </strong> : null}
           {note}
         </p>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -591,101 +804,6 @@ const TOKEN_METADATA = [
   { symbol: "mETH",  underlying: "Mantle LST",     decimals: 18, address: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0", source: "Mantle ERC-20" },
 ] as const;
 
-/* ─── Judge Mode ────────────────────────────────────────────────────── */
-
-function JudgeModeGuide() {
-  const steps = [
-    {
-      n: "01",
-      label: "Run risky xStocks",
-      sub: "Scenario 01 below",
-      action: "PAUSE expected",
-      color: "var(--terracotta)",
-      bg: "rgba(192,64,48,0.07)",
-      border: "rgba(192,64,48,0.18)",
-      href: "#scenarios",
-    },
-    {
-      n: "02",
-      label: "Verify receipt",
-      sub: "Open /proof or agent-decision",
-      action: "Hash match on-chain",
-      color: "var(--sage)",
-      bg: "rgba(61,138,98,0.07)",
-      border: "rgba(61,138,98,0.18)",
-      href: "/proof",
-    },
-    {
-      n: "03",
-      label: "Run safe yield",
-      sub: "Scenario 02 below",
-      action: "ALLOCATE expected",
-      color: "var(--sage)",
-      bg: "rgba(61,138,98,0.05)",
-      border: "rgba(61,138,98,0.13)",
-      href: "#scenarios",
-    },
-    {
-      n: "04",
-      label: "Execute Fluxion",
-      sub: "Scenario 03 below",
-      action: "Real on-chain tx",
-      color: "var(--gold)",
-      bg: "rgba(200,166,74,0.07)",
-      border: "rgba(200,166,74,0.18)",
-      href: "#scenarios",
-    },
-  ] as const;
-
-  return (
-    <section
-      className="px-6 py-5"
-      style={{
-        background: "var(--panel)",
-        border: "1px solid var(--border)",
-        borderLeft: "3px solid var(--border-hi)",
-        borderRadius: "0 8px 8px 0",
-      }}
-    >
-      <div className="flex items-center gap-3 mb-4">
-        <span
-          className="rounded px-2 py-0.5 text-[9px] font-medium uppercase tracking-widest"
-          style={{ fontFamily: "'Azeret Mono', monospace", background: "rgba(61,138,98,0.1)", border: "1px solid rgba(61,138,98,0.25)", color: "var(--sage)" }}
-        >
-          JUDGE FLOW
-        </span>
-        <span className="text-xs" style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Complete evaluation path — start here
-        </span>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-4">
-        {steps.map((s) => (
-          <a
-            key={s.n}
-            href={s.href}
-            className="rounded p-4 block transition-opacity hover:opacity-80"
-            style={{ background: s.bg, border: `1px solid ${s.border}` }}
-          >
-            <p
-              className="text-[9px] font-medium uppercase tracking-widest mb-1"
-              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(122,146,130,0.4)" }}
-            >
-              STEP {s.n}
-            </p>
-            <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--text)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              {s.label}
-            </p>
-            <p className="text-[11px]" style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.sub}</p>
-            <p className="mt-2 text-[10px] font-medium" style={{ fontFamily: "'Azeret Mono', monospace", color: s.color }}>
-              → {s.action}
-            </p>
-          </a>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 /* ─── Attack Surface ────────────────────────────────────────────────── */
 
 function AttackSurfaceSection() {
@@ -693,67 +811,90 @@ function AttackSurfaceSection() {
     {
       q: "Is the AI deciding?",
       a: "No. A deterministic rules engine picks the action and risk score. Claude Haiku 4.5 only narrates the decision. llmControlsAction = false in every receipt.",
-      color: "var(--sage)",
+      verdict: "No.",
+      color: "var(--clear)",
     },
     {
       q: "Is the xStock price fake?",
-      a: "No. The xStocks public API returns a real indicative price and trading-halt status. Spread / depth / volume are modelled and flagged as 'stub' in every receipt.",
-      color: "var(--sage)",
+      a: "The xStocks public API returns a real indicative price and trading-halt status. Spread / depth / volume are modelled and flagged as 'stub' in every receipt.",
+      verdict: "No.",
+      color: "var(--clear)",
     },
     {
       q: "Why no xChange RFQ execution?",
       a: "xChange requires an API key, registered wallet, EIP-712 signed quote, and a separate on-chain execution step. Not a public endpoint. Fluxion V3 is the verified rail used here.",
-      color: "#9D84FF",
+      verdict: "Auth-gated.",
+      color: "var(--gated)",
     },
     {
       q: "Is the hash verifiable?",
       a: "Yes. Click 'Verify hash' on any receipt — keccak256(canonicalJson) must equal the bytes32 reasonHash in the DecisionLogged event on Mantlescan. The JSON is byte-stable.",
-      color: "var(--sage)",
+      verdict: "Yes.",
+      color: "var(--seal)",
     },
     {
       q: "Can it actually execute?",
-      a: "Yes. Scenario 03 triggers a real Fluxion V3 USDC→mETH→USDC round-trip on Mantle mainnet. Two Mantlescan tx hashes are produced and shown below.",
-      color: "var(--gold)",
+      a: "Scenario 03 triggers a real Fluxion V3 USDC→mETH→USDC round-trip on Mantle mainnet. Two Mantlescan tx hashes are produced and shown below.",
+      verdict: "Yes.",
+      color: "var(--seal)",
     },
   ] as const;
 
   return (
-    <section className="bb-section space-y-5">
-      <div>
-        <p
-          className="text-[9px] font-medium uppercase tracking-widest mb-2"
-          style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--terracotta)" }}
-        >
-          JUDGE ATTACK SURFACE
-        </p>
-        {/* Fraunces italic for section titles throughout */}
+    <section className="section-ruled space-y-0">
+      <div className="mb-7">
+        <span className="section-label" style={{ color: "var(--refuse)" }}>JUDGE ATTACK SURFACE</span>
         <h2
-          className="text-xl italic"
-          style={{ fontFamily: "'Fraunces', Georgia, serif", color: "var(--text)", fontWeight: 600, letterSpacing: "-0.01em" }}
+          className="italic"
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "1.6rem",
+            fontWeight: 600,
+            color: "var(--text)",
+            letterSpacing: "-0.01em",
+          }}
         >
-          Anticipated objections
+          Anticipated objections.
         </h2>
       </div>
-      <div className="space-y-2">
-        {qa.map(({ q, a, color }) => (
-          <div
-            key={q}
-            className="rounded px-4 py-3 grid gap-2 sm:grid-cols-[220px_1fr] items-baseline"
-            style={{ background: "rgba(148,180,148,0.03)", border: "1px solid var(--border)" }}
-          >
+
+      {qa.map(({ q, a, verdict, color }, i) => (
+        <div
+          key={q}
+          className="section-ruled"
+          style={{ paddingTop: "20px", marginTop: "0", paddingBottom: "20px" }}
+        >
+          <div className="grid gap-4 sm:grid-cols-[1fr_2fr] items-start">
+            <div>
+              <p
+                className="italic"
+                style={{
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontSize: "1.05rem",
+                  color: "var(--text)",
+                  fontWeight: 600,
+                  lineHeight: 1.3,
+                }}
+              >
+                <span style={{ color: "rgba(144,126,108,0.35)", marginRight: "8px" }}>§{i + 1}</span>
+                {q}
+              </p>
+              <p
+                className="mt-2 text-xl italic font-semibold"
+                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color }}
+              >
+                {verdict}
+              </p>
+            </div>
             <p
-              className="text-sm font-semibold"
-              style={{ color: "var(--text)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              className="text-sm leading-relaxed"
+              style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
             >
-              {q}
-            </p>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              <span className="font-bold mr-1.5" style={{ color }}>→</span>
               {a}
             </p>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </section>
   );
 }
@@ -762,42 +903,83 @@ function AttackSurfaceSection() {
 
 function WhyMantleSection() {
   return (
-    <section className="bb-section">
+    <section className="section-ruled space-y-8">
+      <span className="section-label" style={{ color: "var(--clear)" }}>WHY THIS MATTERS FOR MANTLE</span>
+
+      {/* Pull quote */}
+      <blockquote>
+        <p
+          className="italic leading-[1.15] tracking-tight max-w-3xl"
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(1.6rem, 3vw, 2.2rem)",
+            fontWeight: 600,
+            color: "var(--text)",
+          }}
+        >
+          &ldquo;Every autonomous agent is eventually asked:{" "}
+          <em style={{ color: "var(--seal)" }}>should this money move?</em>{" "}
+          Neutrino was built for that moment.&rdquo;
+        </p>
+        <div
+          className="mt-4 h-px max-w-xs"
+          style={{ background: "linear-gradient(90deg, var(--border-hi) 0%, transparent 100%)" }}
+        />
+      </blockquote>
+
+      {/* Body */}
       <p
-        className="text-[9px] font-medium uppercase tracking-widest mb-2"
-        style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--sage)" }}
+        className="text-sm leading-relaxed max-w-3xl"
+        style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
       >
-        WHY THIS MATTERS FOR MANTLE
-      </p>
-      <h2
-        className="text-xl italic mb-3"
-        style={{ fontFamily: "'Fraunces', Georgia, serif", color: "var(--text)", fontWeight: 600, letterSpacing: "-0.01em" }}
-      >
-        The ledger of autonomous judgment
-      </h2>
-      <p className="text-sm leading-relaxed max-w-3xl" style={{ color: "var(--muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         Mantle is building institutional RWA execution rails — xStocks equities, Atomic RFQ,
         USDY, INIT Capital yield pools, mETH as native collateral. As more autonomous agents
         touch this capital, the scarce layer is no longer execution. It&rsquo;s{" "}
         <strong style={{ color: "var(--text)" }}>trustworthy autonomous judgment</strong>.
         Neutrino is that layer: the agent that decides <em>when</em> the rails are safe,
         records the full rationale on-chain, and only then allows capital to move.
-        Every decision is a verifiable record — a ruling that stands alone.
       </p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+
+      {/* 3 pillars */}
+      <div className="grid gap-5 sm:grid-cols-3">
         {[
-          { title: "Engine separated from narration", body: "The deterministic rules engine picks the action. Claude Haiku 4.5 only explains. Decisions are reproducible from the receipt without LLM nondeterminism.", accent: "var(--muted)" },
-          { title: "Source-freshness on every receipt", body: "Every decision payload pins live / stub / n/a per signal. Nothing is hidden — judges see exactly which inputs were real at the moment of decision.", accent: "var(--sage)" },
-          { title: "Verifiable by re-hash", body: "The full audit JSON is byte-stable. keccak256(payload) equals the bytes32 reasonHash emitted by RWADecisionLogger on Mantle. Verify it yourself.", accent: "var(--violet)" },
+          {
+            title: "Engine separated from narration",
+            body: "The deterministic rules engine picks the action. Claude Haiku 4.5 only explains. Decisions are reproducible from the receipt without LLM nondeterminism.",
+            accent: "var(--muted)",
+          },
+          {
+            title: "Source-freshness on every receipt",
+            body: "Every decision payload pins live / stub / n/a per signal. Nothing is hidden — judges see exactly which inputs were real at the moment of decision.",
+            accent: "var(--clear)",
+          },
+          {
+            title: "Verifiable by re-hash",
+            body: "The full audit JSON is byte-stable. keccak256(payload) equals the bytes32 reasonHash emitted by RWADecisionLogger on Mantle. Verify it yourself.",
+            accent: "var(--seal)",
+          },
         ].map((c) => (
           <div
             key={c.title}
-            className="rounded-lg p-4"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+            className="rounded-lg p-5"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
           >
-            <div className="h-0.5 w-8 rounded-full mb-3" style={{ background: c.accent }} />
-            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--bb-text)" }}>{c.title}</h3>
-            <p className="text-xs leading-relaxed" style={{ color: "var(--bb-muted)" }}>{c.body}</p>
+            <div
+              className="h-0.5 w-7 rounded-full mb-3"
+              style={{ background: c.accent }}
+            />
+            <h3
+              className="text-sm font-semibold mb-2"
+              style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
+            >
+              {c.title}
+            </h3>
+            <p
+              className="text-xs leading-relaxed"
+              style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
+            >
+              {c.body}
+            </p>
           </div>
         ))}
       </div>

@@ -148,10 +148,10 @@ export function RunAgentButton({
 
   const btnStyle =
     variant === "execute"
-      ? { background: "var(--bb-teal)", color: "#070A0F" }
+      ? { background: "var(--seal)", color: "#080705", fontFamily: "'Instrument Sans', sans-serif" }
       : variant === "secondary"
-        ? { background: "rgba(255,255,255,0.05)", color: "var(--bb-text)", border: "1px solid rgba(255,255,255,0.1)" }
-        : { background: "rgba(255,255,255,0.08)", color: "var(--bb-text)", border: "1px solid rgba(255,255,255,0.12)" };
+        ? { background: "rgba(200,168,110,0.06)", color: "var(--text)", border: "1px solid var(--border-hi)", fontFamily: "'Instrument Sans', sans-serif" }
+        : { background: "rgba(200,168,110,0.07)", color: "var(--text)", border: "1px solid var(--border-hi)", fontFamily: "'Instrument Sans', sans-serif" };
 
   const btnDisabledStyle = { opacity: 0.4, cursor: "not-allowed" };
 
@@ -168,12 +168,12 @@ export function RunAgentButton({
       </button>
 
       {locked && !running ? (
-        <p className="text-xs" style={{ color: "var(--bb-amber)", fontFamily: "'IBM Plex Mono', monospace" }}>
+        <p className="text-xs" style={{ color: "var(--seal)", fontFamily: "'Azeret Mono', monospace" }}>
           Another run is in progress. Wait for it to finish.
         </p>
       ) : null}
       {hint ? (
-        <p className="text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
+        <p className="text-[11px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.5)" }}>
           {hint}
         </p>
       ) : null}

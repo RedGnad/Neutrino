@@ -1,27 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Azeret+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600;1,700&family=Instrument+Sans:wght@400;500;600;700&family=Azeret+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 /* ── Design tokens ─────────────────────────────── */
 :root {
-  /* Forest-black — not blue-black (Web3 cliché) */
-  --bg:           #080D09;
-  --panel:        #0E1610;
-  --raised:       #162019;
-  --border:       rgba(148, 180, 148, 0.07);
-  --border-hi:    rgba(148, 180, 148, 0.14);
+  /* Warm void — black with a breath of amber, not green */
+  --bg:           #080705;
+  --panel:        #100E0B;
+  --raised:       #1A1714;
+  --border:       rgba(200, 168, 110, 0.07);
+  --border-hi:    rgba(200, 168, 110, 0.16);
 
-  /* Warm cream text — not cool white */
-  --text:         #E8E0D0;
-  --muted:        #7A9282;
+  /* Warm parchment — not cool white */
+  --text:         #F2E8D5;
+  --muted:        #907E6C;
 
-  /* Verdict palette */
-  --gold:         #C8A64A;   /* LIVE / VERIFIED — notary gold    */
-  --terracotta:   #C04030;   /* PAUSE / REFUSED — judicial red   */
-  --sage:         #3D8A62;   /* ALLOCATE / SAFE — deep green     */
-  --violet:       #7C5CFC;   /* AUTH GATED                       */
-  --amber:        #C8A64A;   /* backward compat alias → --gold   */
+  /* Verdict palette — authority, not decoration */
+  --refuse:       #D14040;   /* blood crimson — PAUSE / danger */
+  --clear:        #3A9B62;   /* deep forest   — ALLOCATE / safe */
+  --seal:         #D4A040;   /* aged gold     — verified / receipt */
+  --pending:      #7A6B58;   /* tobacco       — modelled / uncertain */
+  --gated:        #7868D4;   /* deep indigo   — auth-gated */
 
-  /* Legacy aliases — keep existing component code working */
+  /* Shorthand aliases — existing component code unchanged */
+  --terracotta:   var(--refuse);
+  --sage:         var(--clear);
+  --gold:         var(--seal);
+  --violet:       var(--gated);
+  --amber:        var(--seal);
+
+  /* Legacy bb-* — every existing reference keeps working */
   --bb-bg:        var(--bg);
   --bb-panel:     var(--panel);
   --bb-raised:    var(--raised);
@@ -29,16 +36,16 @@
   --bb-border-hi: var(--border-hi);
   --bb-text:      var(--text);
   --bb-muted:     var(--muted);
-  --bb-teal:      var(--sage);
-  --bb-amber:     var(--gold);
-  --bb-orange:    var(--terracotta);
-  --bb-red:       #C04030;
-  --bb-violet:    var(--violet);
+  --bb-teal:      var(--clear);
+  --bb-amber:     var(--seal);
+  --bb-orange:    var(--refuse);
+  --bb-red:       #D14040;
+  --bb-violet:    var(--gated);
 }
 
 @theme inline {
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-sans:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Instrument Sans', system-ui, sans-serif;
   --font-mono:    'Azeret Mono', 'JetBrains Mono', 'Menlo', monospace;
 }
 
@@ -46,21 +53,20 @@
 body {
   background:              var(--bg);
   color:                   var(--text);
-  font-family:             'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family:             'Instrument Sans', system-ui, sans-serif;
   -webkit-font-smoothing:  antialiased;
-  /* Subtle grain overlay — NOT a png, pure CSS noise via SVG filter */
   position: relative;
 }
 
-/* Grain layer using a repeating SVG noise pattern */
+/* Archival noise — warm grain, not cool static */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 code, pre {
@@ -75,47 +81,107 @@ code, pre {
 /* ── Animations ────────────────────────────────── */
 @keyframes live-blink {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.2; }
+  50%       { opacity: 0.25; }
 }
 
+/* Hero element stagger-up on load */
+@keyframes stagger-up {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Verdict prints left-to-right — like ink on an official stamp */
+@keyframes verdict-print {
+  0%   { clip-path: inset(0 100% 0 0); opacity: 0.2; }
+  8%   { opacity: 1; }
+  100% { clip-path: inset(0 0% 0 0);   opacity: 1; }
+}
+
+/* Horizontal rule extends to the right */
+@keyframes rule-draw {
+  0%   { transform: scaleX(0); opacity: 0; transform-origin: left; }
+  15%  { opacity: 1; }
+  100% { transform: scaleX(1); opacity: 1; transform-origin: left; }
+}
+
+/* Panel entry */
 @keyframes ruling-appear {
   0%   { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
+/* Legacy seal — kept for BlackBoxCard */
 @keyframes seal-stamp {
-  0%   { transform: scale(1.15) rotate(-3deg); opacity: 0; }
-  60%  { transform: scale(0.97) rotate(0deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+  0%   { transform: scale(1.08) rotate(-1.5deg); opacity: 0; }
+  55%  { transform: scale(0.98) rotate(0deg);   opacity: 1; }
+  100% { transform: scale(1) rotate(0deg);       opacity: 1; }
 }
 
-@keyframes ledger-draw {
-  0%   { width: 0; }
-  100% { width: 100%; }
-}
-
-@keyframes scanline {
-  0%   { top: -4px; opacity: 0; }
-  10%  { opacity: 0.4; }
-  90%  { opacity: 0.15; }
-  100% { top: calc(100% + 4px); opacity: 0; }
+/* Decision item slides up into the live column */
+@keyframes decision-enter {
+  0%   { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes status-flash {
-  0%   { box-shadow: 0 0 0 0 rgba(61,138,98,0.4); }
-  70%  { box-shadow: 0 0 0 10px rgba(61,138,98,0); }
-  100% { box-shadow: 0 0 0 0 rgba(61,138,98,0); }
+  0%   { box-shadow: 0 0 0 0 rgba(58,155,98,0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(58,155,98,0); }
+  100% { box-shadow: 0 0 0 0 rgba(58,155,98,0); }
 }
 
-.animate-live           { animation: live-blink 2s ease-in-out infinite; }
+/* ── Animation helpers ─────────────────────────── */
+.animate-live           { animation: live-blink 2.5s ease-in-out infinite; }
 .animate-ruling         { animation: ruling-appear 0.4s ease-out forwards; }
-.animate-seal           { animation: seal-stamp 0.5s cubic-bezier(.2,.8,.4,1.2) forwards; }
-.animate-scanline       { animation: scanline 5s linear infinite; }
+.animate-seal           { animation: seal-stamp 0.45s cubic-bezier(.2,.8,.4,1.2) forwards; }
+.animate-verdict        { animation: verdict-print 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .animate-receipt-reveal { animation: ruling-appear 0.4s ease-out forwards; }
 .animate-status-flash   { animation: status-flash 1s ease-out; }
 
-/* ── Ruling card (replaces bb-card) ────────────── */
-/* Cards with a thick left accent border — like legal briefs */
+/* Stagger load — apply to hero children */
+.animate-stagger-1 { animation: stagger-up 0.55s ease-out 0.04s both; }
+.animate-stagger-2 { animation: stagger-up 0.55s ease-out 0.14s both; }
+.animate-stagger-3 { animation: stagger-up 0.55s ease-out 0.24s both; }
+.animate-stagger-4 { animation: stagger-up 0.55s ease-out 0.34s both; }
+.animate-stagger-5 { animation: stagger-up 0.55s ease-out 0.44s both; }
+
+/* ── Section architecture ──────────────────────── */
+
+/* Ruled: thin top rule, content below — like a brief section heading */
+.section-ruled {
+  border-top: 1px solid var(--border-hi);
+  padding-top: 28px;
+  position: relative;
+}
+
+/* Proof: premium card — use sparingly, 2-3 times max per page */
+.section-proof {
+  background:    var(--panel);
+  border-top:    1px solid var(--border);
+  border-right:  1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-left:   3px solid var(--seal);
+  border-radius: 0 10px 10px 0;
+  padding:       28px;
+  position:      relative;
+  overflow:      hidden;
+}
+.section-proof.refuse { border-left-color: var(--refuse); }
+.section-proof.clear  { border-left-color: var(--clear); }
+.section-proof.seal   { border-left-color: var(--seal); }
+
+/* Section label — tiny mono uppercase, always above the heading */
+.section-label {
+  font-family:    'Azeret Mono', monospace;
+  font-size:      9px;
+  font-weight:    500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color:          var(--muted);
+  margin-bottom:  10px;
+  display:        block;
+}
+
+/* ── Ruling card (legacy + updated) ───────────── */
 .ruling-card {
   background:    var(--panel);
   border-top:    1px solid var(--border);
@@ -123,117 +189,39 @@ code, pre {
   border-bottom: 1px solid var(--border);
   border-left:   3px solid var(--border-hi);
   border-radius: 0 8px 8px 0;
-  position: relative;
-  overflow: hidden;
+  position:      relative;
+  overflow:      hidden;
 }
+.ruling-card.pause    { border-left-color: var(--refuse); }
+.ruling-card.allocate { border-left-color: var(--clear); }
+.ruling-card.verified { border-left-color: var(--seal); }
+.ruling-card.modelled { border-left-color: var(--pending); }
+.ruling-card.auth     { border-left-color: var(--gated); }
 
-.ruling-card.pause    { border-left-color: var(--terracotta); }
-.ruling-card.allocate { border-left-color: var(--sage); }
-.ruling-card.verified { border-left-color: var(--gold); }
-.ruling-card.modelled { border-left-color: var(--gold); }
-.ruling-card.auth     { border-left-color: var(--violet); }
-
-/* Legacy bb-card → ruling-card style */
 .bb-card {
-  background:   var(--panel);
-  border:       1px solid var(--border-hi);
-  border-left:  3px solid var(--border-hi);
+  background:    var(--panel);
+  border:        1px solid var(--border-hi);
+  border-left:   3px solid var(--border-hi);
   border-radius: 0 8px 8px 0;
-  overflow: hidden;
-  position: relative;
+  overflow:      hidden;
+  position:      relative;
 }
-
 .bb-card .bb-scanline {
-  position: absolute;
+  position:   absolute;
   left: 0; right: 0;
-  height: 2px;
+  height:     2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(61,138,98,0.3) 40%,
-    rgba(61,138,98,0.5) 50%,
-    rgba(61,138,98,0.3) 60%,
+    rgba(58,155,98,0.3) 40%,
+    rgba(58,155,98,0.5) 50%,
+    rgba(58,155,98,0.3) 60%,
     transparent 100%
   );
   pointer-events: none;
   z-index: 10;
 }
 
-/* ── Telemetry rows (ledger lines) ─────────────── */
-.telemetry-row {
-  display:       flex;
-  justify-content: space-between;
-  align-items:   baseline;
-  padding:       5px 0;
-  border-bottom: 1px solid var(--border);
-  font-family:   'Azeret Mono', monospace;
-  font-size:     11px;
-  line-height:   1.4;
-}
-
-.telemetry-row:last-child { border-bottom: none; }
-
-.telemetry-label {
-  color:          var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  font-size:      10px;
-}
-
-.telemetry-value {
-  color:       var(--text);
-  font-weight: 500;
-}
-
-/* ── Verdict / decision ────────────────────────── */
-.verdict-pause    { color: var(--terracotta); }
-.verdict-allocate { color: var(--sage); }
-.verdict-hold     { color: var(--gold); }
-.verdict-reduce   { color: var(--gold); }
-
-/* legacy aliases */
-.decision-pause    { color: var(--terracotta); }
-.decision-allocate { color: var(--sage); }
-.decision-hold     { color: var(--gold); }
-.decision-reduce   { color: var(--gold); }
-
-/* ── Source badges — understated, no neon ──────── */
-.badge-live    {
-  background: rgba(61,138,98,0.1);
-  color: var(--sage);
-  border: 1px solid rgba(61,138,98,0.25);
-}
-.badge-stub    {
-  background: rgba(200,166,74,0.1);
-  color: var(--gold);
-  border: 1px solid rgba(200,166,74,0.25);
-}
-.badge-na      {
-  background: rgba(122,146,130,0.1);
-  color: var(--muted);
-  border: 1px solid rgba(122,146,130,0.2);
-}
-.badge-notexec {
-  background: rgba(124,92,252,0.1);
-  color: #9D84FF;
-  border: 1px solid rgba(124,92,252,0.25);
-}
-
-/* ── Hash display ──────────────────────────────── */
-.hash-block {
-  font-family:  'Azeret Mono', monospace;
-  font-size:    11px;
-  background:   rgba(0,0,0,0.25);
-  border:       1px solid var(--border);
-  border-radius: 4px;
-  padding:      10px 12px;
-  word-break:   break-all;
-  color:        var(--muted);
-  line-height:  1.6;
-}
-.hash-block.match    { border-color: rgba(61,138,98,0.35);  color: var(--sage); }
-.hash-block.mismatch { border-color: rgba(192,64,48,0.35);  color: var(--terracotta); }
-
-/* ── Panel / section ───────────────────────────── */
+/* Legacy bb-section */
 .bb-section {
   background:    var(--panel);
   border:        1px solid var(--border);
@@ -242,41 +230,113 @@ code, pre {
   padding:       24px;
 }
 
+/* ── Telemetry rows ────────────────────────────── */
+.telemetry-row {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     baseline;
+  padding:         5px 0;
+  border-bottom:   1px solid var(--border);
+  font-family:     'Azeret Mono', monospace;
+  font-size:       11px;
+  line-height:     1.4;
+}
+.telemetry-row:last-child { border-bottom: none; }
+
+.telemetry-label {
+  color:          var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size:      10px;
+}
+.telemetry-value {
+  color:       var(--text);
+  font-weight: 500;
+}
+
+/* ── Verdict colour helpers ────────────────────── */
+.verdict-pause    { color: var(--refuse); }
+.verdict-allocate { color: var(--clear); }
+.verdict-hold     { color: var(--seal); }
+.verdict-reduce   { color: var(--seal); }
+
+.decision-pause    { color: var(--refuse); }
+.decision-allocate { color: var(--clear); }
+.decision-hold     { color: var(--seal); }
+.decision-reduce   { color: var(--seal); }
+
+/* ── Badges ────────────────────────────────────── */
+.badge-live {
+  background: rgba(58,155,98,0.12);
+  color:      #4DB878;
+  border:     1px solid rgba(58,155,98,0.3);
+}
+.badge-stub {
+  background: rgba(212,160,64,0.12);
+  color:      #D4A040;
+  border:     1px solid rgba(212,160,64,0.3);
+}
+.badge-na {
+  background: rgba(122,107,88,0.12);
+  color:      var(--muted);
+  border:     1px solid rgba(122,107,88,0.22);
+}
+.badge-notexec {
+  background: rgba(120,104,212,0.12);
+  color:      #9B8FE8;
+  border:     1px solid rgba(120,104,212,0.28);
+}
+
+/* ── Hash display ──────────────────────────────── */
+.hash-block {
+  font-family:   'Azeret Mono', monospace;
+  font-size:     11px;
+  background:    rgba(0,0,0,0.28);
+  border:        1px solid var(--border);
+  border-radius: 4px;
+  padding:       10px 12px;
+  word-break:    break-all;
+  color:         var(--muted);
+  line-height:   1.6;
+}
+.hash-block.match    { border-color: rgba(58,155,98,0.4);  color: var(--clear); }
+.hash-block.mismatch { border-color: rgba(209,64,64,0.4);  color: var(--refuse); }
+
 /* ── Nav link ──────────────────────────────────── */
 .nav-link {
   color:       var(--muted);
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Instrument Sans', sans-serif;
   transition:  color 0.15s, background 0.15s;
 }
 .nav-link:hover {
   color:      var(--text);
-  background: rgba(148,180,148,0.06);
+  background: rgba(200,168,110,0.06);
 }
 
 /* ── Timeline connector ────────────────────────── */
 .timeline-connector {
   width:      1px;
-  background: linear-gradient(180deg, var(--sage) 0%, var(--border) 100%);
+  background: linear-gradient(180deg, var(--clear) 0%, var(--border) 100%);
   margin:     0 auto;
 }
 
-/* ── Fraunces display helper ───────────────────── */
+/* ── Cormorant display helper ──────────────────── */
 .font-display {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
 }
 
 /* ── Exhibit corner marks ──────────────────────── */
 .exhibit-corner::before,
 .exhibit-corner::after {
-  content:    '';
-  position:   absolute;
-  width:      12px;
-  height:     12px;
+  content:      '';
+  position:     absolute;
+  width:        12px;
+  height:       12px;
   border-color: var(--border-hi);
   border-style: solid;
 }
 .exhibit-corner::before {
-  top:  8px; left: 8px;
+  top: 8px; left: 8px;
   border-width: 1px 0 0 1px;
 }
 .exhibit-corner::after {

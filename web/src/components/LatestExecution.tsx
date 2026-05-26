@@ -31,12 +31,14 @@ function CopyButton({ value }: { value: string }) {
           setTimeout(() => setCopied(false), 1500);
         } catch { /* clipboard unavailable */ }
       }}
-      className="rounded px-2 py-0.5 text-[9px] font-medium transition-all shrink-0"
+      className="rounded px-2 py-0.5 shrink-0 transition-all"
       style={{
         fontFamily: "'Azeret Mono', monospace",
-        background: copied ? "rgba(61,138,98,0.15)" : "rgba(255,255,255,0.04)",
-        border: `1px solid ${copied ? "rgba(61,138,98,0.3)" : "rgba(148,180,148,0.1)"}`,
-        color: copied ? "var(--sage)" : "var(--muted)",
+        fontSize: "9px",
+        fontWeight: 500,
+        background: copied ? "rgba(58,155,98,0.15)" : "rgba(255,255,255,0.04)",
+        border: `1px solid ${copied ? "rgba(58,155,98,0.3)" : "rgba(200,168,110,0.1)"}`,
+        color: copied ? "var(--clear)" : "var(--muted)",
       }}
     >
       {copied ? "copied" : "copy"}
@@ -46,50 +48,32 @@ function CopyButton({ value }: { value: string }) {
 
 export function LatestExecution() {
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        background: "var(--panel)",
-        border: "1px solid var(--border)",
-        borderLeft: "3px solid var(--sage)",
-        borderRadius: "0 10px 10px 0",
-        padding: "24px",
-      }}
-    >
+    <section className="section-proof seal relative overflow-hidden">
       {/* Corner mark */}
-      <div
-        className="absolute pointer-events-none"
-        style={{ top: 8, right: 8, width: 10, height: 10, borderTop: "1px solid var(--border-hi)", borderRight: "1px solid var(--border-hi)" }}
-      />
+      <div className="absolute pointer-events-none" style={{ top: 8, right: 8, width: 10, height: 10, borderTop: "1px solid var(--border-hi)", borderRight: "1px solid var(--border-hi)" }} />
 
       {/* Header */}
-      <div className="mb-5">
-        <p
-          className="text-[9px] font-medium uppercase tracking-widest mb-1"
-          style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--sage)" }}
-        >
-          CERTIFIED EXECUTION RECORD
-        </p>
-        {/* Fraunces italic for key headline */}
+      <div className="mb-6">
+        <p className="section-label" style={{ color: "var(--seal)" }}>CERTIFIED EXECUTION RECORD</p>
         <h2
-          className="text-xl italic"
-          style={{ fontFamily: "'Fraunces', Georgia, serif", color: "var(--text)", fontWeight: 600, letterSpacing: "-0.01em" }}
+          className="italic"
+          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.4rem", fontWeight: 600, color: "var(--text)", letterSpacing: "-0.01em" }}
         >
           Real ALLOCATE settled on Fluxion V3
         </h2>
         <p
-          className="mt-1 text-xs"
-          style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
+          className="mt-1"
+          style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "11px", color: "var(--muted)" }}
         >
           Mantle mainnet · USDC→mETH→USDC round-trip · demo wallet stays solvent
         </p>
-        <p className="mt-2 text-xs leading-relaxed" style={{ color: "rgba(122,146,130,0.7)" }}>
+        <p className="mt-2 text-xs leading-relaxed" style={{ color: "rgba(144,126,108,0.65)", fontFamily: "'Instrument Sans', sans-serif" }}>
           Two verified Fluxion V3 swaps. Click{" "}
           <em>Run + execute on Mantle</em> above to produce a fresh pair.
         </p>
       </div>
 
-      {/* Exhibit legs */}
+      {/* Legs */}
       <div className="space-y-2">
         {LEGS.map((leg) => (
           <div
@@ -98,15 +82,20 @@ export function LatestExecution() {
             style={{ background: "rgba(0,0,0,0.2)", border: "1px solid var(--border)" }}
           >
             <span
-              className="text-[9px] font-mono font-medium uppercase"
-              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(122,146,130,0.4)", minWidth: 36 }}
+              className="uppercase"
+              style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", fontWeight: 500, color: "rgba(144,126,108,0.4)", minWidth: 36, letterSpacing: "0.1em" }}
             >
               LEG {leg.n}
             </span>
-            <span className="text-sm font-medium" style={{ color: "var(--text)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <span
+              className="text-sm font-semibold"
+              style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
+            >
               {leg.swap}
             </span>
-            <span className="text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(122,146,130,0.4)" }}>
+            <span
+              style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", color: "rgba(144,126,108,0.4)" }}
+            >
               block {leg.block}
             </span>
             <div className="ml-auto flex items-center gap-2 min-w-0">
@@ -115,7 +104,7 @@ export function LatestExecution() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-mono text-xs truncate transition-opacity hover:opacity-70"
-                style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--sage)", maxWidth: 320 }}
+                style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--seal)", maxWidth: 300 }}
               >
                 {leg.tx}
               </a>
@@ -125,7 +114,7 @@ export function LatestExecution() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs shrink-0 transition-opacity hover:opacity-70"
-                style={{ color: "rgba(61,138,98,0.5)" }}
+                style={{ color: "rgba(212,160,64,0.5)" }}
               >
                 ↗
               </a>
@@ -134,10 +123,10 @@ export function LatestExecution() {
         ))}
       </div>
 
-      {/* Footer note — RFQ */}
+      {/* RFQ note */}
       <div
-        className="mt-4 rounded px-3 py-2 text-[10px]"
-        style={{ fontFamily: "'Azeret Mono', monospace", background: "rgba(124,92,252,0.05)", border: "1px solid rgba(124,92,252,0.15)", color: "rgba(157,132,255,0.6)" }}
+        className="mt-4 rounded px-3 py-2"
+        style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", background: "rgba(120,104,212,0.05)", border: "1px solid rgba(120,104,212,0.15)", color: "rgba(155,143,232,0.6)" }}
       >
         xChange / Atomic RFQ not executed — institutional channel requiring API key + registered wallet
       </div>

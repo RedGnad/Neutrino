@@ -52,30 +52,24 @@ const DEFAULT_STEPS: TimelineStep[] = [
   },
 ];
 
-const STATE_STYLE: Record<StepState, { dot: string; line: string; badge: string; label: string }> = {
-  live:     { dot: "var(--sage)",       line: "var(--sage)",       badge: "badge-live",    label: "LIVE" },
-  modelled: { dot: "var(--gold)",       line: "var(--gold)",       badge: "badge-stub",    label: "MODELLED" },
-  blocked:  { dot: "var(--violet)",     line: "var(--violet)",     badge: "badge-notexec", label: "AUTH GATED" },
-  verified: { dot: "var(--sage)",       line: "var(--sage)",       badge: "badge-live",    label: "VERIFIED" },
-  pending:  { dot: "var(--muted)",      line: "var(--muted)",      badge: "badge-na",      label: "PENDING" },
+const STATE_STYLE: Record<StepState, { dot: string; badge: string; label: string }> = {
+  live:     { dot: "var(--clear)",   badge: "badge-live",    label: "LIVE" },
+  modelled: { dot: "var(--seal)",    badge: "badge-stub",    label: "MODELLED" },
+  blocked:  { dot: "var(--gated)",   badge: "badge-notexec", label: "AUTH GATED" },
+  verified: { dot: "var(--clear)",   badge: "badge-live",    label: "VERIFIED" },
+  pending:  { dot: "var(--muted)",   badge: "badge-na",      label: "PENDING" },
 };
 
 export function DecisionTimeline({ steps = DEFAULT_STEPS }: DecisionTimelineProps) {
   return (
     <section className="bb-section">
-      {/* Section label */}
-      <p
-        className="text-[9px] font-medium uppercase tracking-widest mb-5"
-        style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
-      >
-        AGENT PIPELINE · DECISION FLOW
-      </p>
+      <p className="section-label">AGENT PIPELINE · DECISION FLOW</p>
 
       <div className="relative">
-        {/* Vertical rule — like a legal document margin line */}
+        {/* Vertical rule */}
         <div
           className="absolute left-[11px] top-3 bottom-3"
-          style={{ width: "1px", background: "linear-gradient(180deg, var(--sage) 0%, var(--border) 100%)" }}
+          style={{ width: "1px", background: "linear-gradient(180deg, var(--clear) 0%, var(--border) 100%)" }}
         />
 
         <div className="space-y-0">
@@ -85,13 +79,13 @@ export function DecisionTimeline({ steps = DEFAULT_STEPS }: DecisionTimelineProp
 
             return (
               <div key={step.id} className={`relative flex gap-5 ${isLast ? "" : "pb-5"}`}>
-                {/* Node dot */}
+                {/* Node */}
                 <div className="relative z-10 mt-0.5 shrink-0">
                   <div
                     className="h-5 w-5 rounded-full flex items-center justify-center"
                     style={{
-                      background: `${style.dot}16`,
-                      border: `1.5px solid ${style.dot}50`,
+                      background: `${style.dot}14`,
+                      border: `1.5px solid ${style.dot}48`,
                     }}
                   >
                     <div className="h-1.5 w-1.5 rounded-full" style={{ background: style.dot }} />
@@ -108,19 +102,19 @@ export function DecisionTimeline({ steps = DEFAULT_STEPS }: DecisionTimelineProp
                       {step.label}
                     </p>
                     <span
-                      className={`${style.badge} inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-widest`}
-                      style={{ fontFamily: "'Azeret Mono', monospace" }}
+                      className={`${style.badge} inline-flex items-center rounded px-1.5 py-0.5`}
+                      style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}
                     >
                       {style.label}
                     </span>
                   </div>
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>
+                  <p className="text-xs" style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}>
                     {step.sub}
                   </p>
                   {step.detail && (
                     <p
-                      className="mt-0.5 text-[10px]"
-                      style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(122,146,130,0.55)" }}
+                      className="mt-0.5"
+                      style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", color: "rgba(144,126,108,0.5)" }}
                     >
                       {step.detail}
                     </p>
@@ -132,13 +126,13 @@ export function DecisionTimeline({ steps = DEFAULT_STEPS }: DecisionTimelineProp
         </div>
       </div>
 
-      {/* Footer footnote */}
       <div
-        className="mt-5 pt-4 text-[10px]"
+        className="mt-5 pt-4"
         style={{
           borderTop: "1px solid var(--border)",
           fontFamily: "'Azeret Mono', monospace",
-          color: "rgba(122,146,130,0.45)",
+          fontSize: "10px",
+          color: "rgba(144,126,108,0.45)",
         }}
       >
         * spread and liquidity signals are modelled — xStocks public API does not expose order-book microstructure

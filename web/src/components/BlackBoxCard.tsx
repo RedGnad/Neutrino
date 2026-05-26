@@ -32,20 +32,17 @@ const DEMO_DATA: BlackBoxData = {
   live: false,
 };
 
-// Verdict colour per action
 function verdictStyle(action: string): { text: string; border: string; bg: string } {
   if (action === "PAUSE" || action === "REDUCE")
-    return { text: "var(--terracotta)", border: "rgba(192,64,48,0.4)", bg: "rgba(192,64,48,0.06)" };
+    return { text: "var(--refuse)", border: "rgba(209,64,64,0.35)", bg: "rgba(209,64,64,0.06)" };
   if (action === "ALLOCATE")
-    return { text: "var(--sage)", border: "rgba(61,138,98,0.4)", bg: "rgba(61,138,98,0.06)" };
-  return { text: "var(--gold)", border: "rgba(200,166,74,0.4)", bg: "rgba(200,166,74,0.06)" };
+    return { text: "var(--clear)", border: "rgba(58,155,98,0.35)", bg: "rgba(58,155,98,0.06)" };
+  return { text: "var(--seal)", border: "rgba(212,160,64,0.35)", bg: "rgba(212,160,64,0.06)" };
 }
 
 export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", className = "" }: BlackBoxCardProps) {
   const [tick, setTick] = useState(0);
-  const cardRef = useRef<HTMLDivElement>(null);
 
-  // Re-trigger verdict stamp animation every 6s
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 6000);
     return () => clearInterval(id);
@@ -63,7 +60,6 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
 
   return (
     <div
-      ref={cardRef}
       className={`relative select-none ${className}`}
       style={{
         minWidth: 280,
@@ -74,15 +70,9 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
         borderRadius: "0 10px 10px 0",
       }}
     >
-      {/* Corner crop marks — exhibit aesthetic */}
-      <div
-        className="absolute pointer-events-none"
-        style={{ top: 8, right: 8, width: 10, height: 10, borderTop: "1px solid var(--border-hi)", borderRight: "1px solid var(--border-hi)" }}
-      />
-      <div
-        className="absolute pointer-events-none"
-        style={{ bottom: 8, left: 8, width: 10, height: 10, borderBottom: "1px solid var(--border-hi)", borderLeft: "1px solid var(--border-hi)" }}
-      />
+      {/* Corner crop marks */}
+      <div className="absolute pointer-events-none" style={{ top: 8, right: 8, width: 10, height: 10, borderTop: "1px solid var(--border-hi)", borderRight: "1px solid var(--border-hi)" }} />
+      <div className="absolute pointer-events-none" style={{ bottom: 8, left: 8, width: 10, height: 10, borderBottom: "1px solid var(--border-hi)", borderLeft: "1px solid var(--border-hi)" }} />
 
       {/* Top bar */}
       <div
@@ -92,18 +82,17 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
         <div className="flex items-center gap-2">
           <span
             className="h-1.5 w-1.5 rounded-full animate-live"
-            style={{ background: data.live ? "var(--sage)" : "var(--muted)" }}
+            style={{ background: data.live ? "var(--clear)" : "var(--muted)" }}
           />
           <span
-            className="text-[9px] font-medium uppercase tracking-widest"
-            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
+            className="uppercase tracking-widest"
+            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", fontWeight: 500, color: "var(--muted)" }}
           >
             {label}
           </span>
         </div>
         <span
-          className="text-[9px]"
-          style={{ fontFamily: "'Azeret Mono', monospace", color: data.live ? "var(--sage)" : "rgba(122,146,130,0.4)" }}
+          style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", color: data.live ? "var(--clear)" : "rgba(144,126,108,0.4)" }}
         >
           {data.live ? "● LIVE" : "● PREVIEW"}
         </span>
@@ -119,36 +108,31 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
         ))}
       </div>
 
-      {/* Verdict — the centrepiece. PAUSE renders as a heavy ruling stamp. */}
+      {/* Verdict — prints left-to-right each cycle */}
       <div
         key={`verdict-${tick}`}
-        className="mx-4 mb-3 rounded animate-seal"
-        style={{
-          background: vs.bg,
-          border: `1px solid ${vs.border}`,
-          padding: "12px 16px",
-        }}
+        className="mx-4 mb-3 rounded animate-verdict"
+        style={{ background: vs.bg, border: `1px solid ${vs.border}`, padding: "12px 16px" }}
       >
         <p
-          className="text-[9px] font-medium uppercase tracking-widest mb-1"
-          style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
+          className="uppercase tracking-widest mb-1"
+          style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", fontWeight: 500, color: "var(--muted)" }}
         >
           AGENT VERDICT
         </p>
-        {/* Fraunces italic for the verdict — the "unexpected" moment */}
         <p
-          className="text-3xl italic leading-none tracking-tight"
-          style={{ fontFamily: "'Fraunces', Georgia, serif", color: vs.text, fontWeight: 600 }}
+          className="italic leading-none tracking-tight"
+          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "2rem", color: vs.text, fontWeight: 600 }}
         >
           {action === "PAUSE" ? "Refused." : action === "ALLOCATE" ? "Cleared." : action}
         </p>
         {action === "PAUSE" && (
-          <p className="mt-1 text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(192,64,48,0.5)" }}>
+          <p style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", color: "rgba(209,64,64,0.55)", marginTop: "4px" }}>
             after-hours equity · execution blocked
           </p>
         )}
         {action === "ALLOCATE" && (
-          <p className="mt-1 text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(61,138,98,0.5)" }}>
+          <p style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", color: "rgba(58,155,98,0.55)", marginTop: "4px" }}>
             risk within policy · execution permitted
           </p>
         )}
@@ -159,8 +143,7 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
         <div className="telemetry-row">
           <span className="telemetry-label">RECEIPT</span>
           <span
-            className="text-[11px] font-mono"
-            style={{ color: "var(--muted)", fontFamily: "'Azeret Mono', monospace", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "11px", color: "var(--muted)", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
           >
             {data.receiptHash ?? "—"}
           </span>
@@ -174,7 +157,7 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
             <span className="telemetry-label">VERIFIED</span>
             <span
               className="telemetry-value font-semibold"
-              style={{ color: data.verified ? "var(--sage)" : "var(--muted)" }}
+              style={{ color: data.verified ? "var(--clear)" : "var(--muted)" }}
             >
               {data.verified === true ? "✓ MATCH" : "—"}
             </span>

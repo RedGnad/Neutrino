@@ -10,12 +10,13 @@ const NAV = [
 
 export function ClientNav() {
   return (
-    <nav className="flex items-center gap-1 text-sm">
+    <nav className="flex items-center gap-1">
       {NAV.map((item) => (
         <Link
           key={item.href}
           href={item.href}
-          className="nav-link rounded-md px-3 py-1.5 text-sm transition-colors"
+          className="nav-link rounded px-3 py-1.5 transition-colors"
+          style={{ fontSize: '13px' }}
         >
           {item.label}
         </Link>
@@ -24,8 +25,12 @@ export function ClientNav() {
         href="https://github.com/RedGnad/Neutrino"
         target="_blank"
         rel="noopener noreferrer"
-        className="ml-2 rounded px-2 py-1 text-xs font-mono nav-link transition-colors"
-        style={{ border: "1px solid rgba(148,180,148,0.12)", fontFamily: "'Azeret Mono', monospace" }}
+        className="ml-2 nav-link rounded px-2.5 py-1 transition-colors"
+        style={{
+          fontSize: '11px',
+          fontFamily: "'Azeret Mono', monospace",
+          border: '1px solid var(--border-hi)',
+        }}
       >
         GitHub
       </a>
