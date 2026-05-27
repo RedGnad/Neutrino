@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   title: 'Neutrino — Risk judgment layer for Mantle RWA agents',
   description:
     "Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the autonomous risk-judgment layer that decides when execution is safe and writes a verifiable receipt on Mantle.",
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -23,16 +27,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           <div className="mx-auto flex h-13 max-w-6xl items-center justify-between px-6">
             <Link href="/" className="flex items-center gap-3">
-              <span className="relative flex h-4 w-4 items-center justify-center">
-                <span
-                  className="absolute h-3 w-3 rounded-full animate-live"
-                  style={{ background: 'rgba(58,155,98,0.2)' }}
-                />
-                <span
-                  className="relative h-1.5 w-1.5 rounded-full"
-                  style={{ background: 'var(--clear)' }}
-                />
-              </span>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 32 32"
+                aria-hidden="true"
+                style={{ display: 'block', flexShrink: 0 }}
+              >
+                <rect width="32" height="32" rx="6" fill="#080705"/>
+                <rect x="1" y="1" width="30" height="30" rx="5" fill="none" stroke="#C8A86E" strokeOpacity="0.28" strokeWidth="1.5"/>
+                <path d="M8 25 L8 8 C8 6 24 6 24 14 L24 25" fill="none" stroke="#D4A040" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
               <span
                 className="italic"
                 style={{
