@@ -21,7 +21,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 | | |
 |---|---|
 | **Live app** | **https://neutrino-fawn.vercel.app** |
-| **Demo video** | *pending recording — script in `docs/RECORDING.md`* |
+| **Demo video** | youtube.com/watch?v=mKJ9H6le5xY |
 | **GitHub repo** | https://github.com/RedGnad/Neutrino |
 | **RWAAgent** (verified) | [`0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96`](https://mantlescan.xyz/address/0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96#code) — Source Code Verified on Mantlescan |
 | **RWADecisionLogger** (verified) | [`0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2`](https://mantlescan.xyz/address/0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2#code) — Source Code Verified on Mantlescan |
