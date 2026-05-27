@@ -33,12 +33,13 @@ export default function Home() {
 
 async function Hero() {
   const allDecisions = await fetchRecentDecisions(100).catch(() => []);
-  // Deduplicate: keep only the latest decision per asset (array is already most-recent-first)
-  const seenAssets = new Set<string>();
+  // Deduplicate by canonical symbol (not address) — each asset has both a legacy
+  // placeholder address and a real Mantle address; keying by address lets both through.
+  const seenSymbols = new Set<string>();
   const decisions = allDecisions.filter((d) => {
-    const key = d.assetAddress.toLowerCase();
-    if (seenAssets.has(key)) return false;
-    seenAssets.add(key);
+    const sym = resolveAsset(d.assetAddress).symbol;
+    if (seenSymbols.has(sym)) return false;
+    seenSymbols.add(sym);
     return true;
   });
 
