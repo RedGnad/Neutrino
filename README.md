@@ -44,6 +44,122 @@ A real `ALLOCATE` executed end-to-end on Fluxion V3 (Mantle mainnet). Demo round
 
 ---
 
+## DoraHacks Deployment Award — Submission Checklist
+
+Mapping each "20 Project Deployment Award" requirement to direct, verifiable evidence.
+
+| Requirement | Evidence | Status |
+|---|---|---|
+| Smart contract deployed on Mantle Mainnet | `RWADecisionLogger` @ [`0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2`](https://mantlescan.xyz/address/0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2) · `RWAAgent` @ [`0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96`](https://mantlescan.xyz/address/0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96) · both on Mantle Mainnet (chainId 5000) | ✅ |
+| Contract verified on Mantle Explorer | Both contracts verified on **Sourcify** with "perfect" match (trustless, open verification). Sourcify links below. Mantlescan native verification pending API key. | ✅ |
+| AI-powered callable on-chain function | `RWADecisionLogger.logDecision(agentId, asset, action, riskScore, reasonHash, policyHash)` — commits the AI/agent decision result on Mantle. See first proof tx: [`0xa09b1576…`](https://mantlescan.xyz/tx/0xa09b1576df102dbf2a062b72ca6097907a37b2c362e954de5bca4dd0e7ef51d8) | ✅ |
+| Frontend demo publicly accessible | **https://neutrino-fawn.vercel.app** — live, returns 200 OK, no localhost dependency | ✅ |
+| Deployment address in submission | Both addresses listed above and in this README | ✅ |
+| Demo video ≥ 2 minutes | Script below — pending recording | ⚠️ |
+| Open-source GitHub repo + README | **https://github.com/RedGnad/Neutrino** | ✅ |
+| README: setup instructions | See "Reproduce in 5 minutes" section below | ✅ |
+| README: architecture overview | See "Repo layout" and "Stack" sections below | ✅ |
+| README: deployed contract addresses | `RWADecisionLogger`: `0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2` · `RWAAgent`: `0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96` | ✅ |
+
+### AI-powered callable on-chain function — precise statement
+
+The Neutrino AI/RWA agent runs **off-chain**. It evaluates live xStocks signals (price, trading-halt status) using a deterministic risk engine, generates a canonical decision receipt (JSON, schema `neutrino.decision.v2`), and commits the final `action`, `riskScore`, `reasonHash`, and `policyHash` on Mantle through `logDecision()`.
+
+```
+RWADecisionLogger.logDecision(
+  uint256 agentId,     // ERC-8004 agent identity NFT id
+  address asset,       // xStock or yield token contract address
+  Action  action,      // PAUSE / ALLOCATE / HOLD / REDUCE / …
+  uint16  riskScore,   // 0–1000 from deterministic engine
+  bytes32 reasonHash,  // keccak256(canonical audit JSON)
+  bytes32 policyHash   // keccak256(active policy JSON)
+)
+```
+
+`reasonHash = keccak256(JSON.stringify(auditPayload))` — byte-stable, recomputable client-side or with `cast keccak`.
+
+**LLM inference does not run on-chain.** Claude Haiku 4.5 only narrates the decision after it has been made by the deterministic engine. `llmControlsAction = false` in every receipt.
+
+### Contract verification — status and links
+
+Both contracts are verified on **Sourcify** with "perfect" match (byte-for-byte source ↔ bytecode):
+
+| Contract | Sourcify link | Status |
+|---|---|---|
+| `RWADecisionLogger` | [repo.sourcify.dev / 5000 / 0xeA72…68Ef2](https://repo.sourcify.dev/contracts/full_match/5000/0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2/) | ✅ perfect |
+| `RWAAgent` | [repo.sourcify.dev / 5000 / 0x6eF0…4C96](https://repo.sourcify.dev/contracts/full_match/5000/0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96/) | ✅ perfect |
+
+A "perfect" Sourcify match means the compiled bytecode from the source files is bit-identical to what is deployed on chain. Judges can download the source, recompile, and verify the hash themselves.
+
+**Mantlescan native verification** (optional, shows green "Verified" badge in the Explorer UI) requires a `MANTLESCAN_API_KEY`. Get a free key at [mantlescan.xyz/myapikey](https://mantlescan.xyz/myapikey), add it to `.env`, then run:
+
+```bash
+cd contracts
+
+# 1. RWADecisionLogger
+forge verify-contract \
+  --chain 5000 \
+  --verifier etherscan \
+  --verifier-url https://api.mantlescan.xyz/api \
+  --etherscan-api-key $MANTLESCAN_API_KEY \
+  --constructor-args $(cast abi-encode "constructor(address)" "0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96") \
+  0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2 \
+  src/RWADecisionLogger.sol:RWADecisionLogger
+
+# 2. RWAAgent
+forge verify-contract \
+  --chain 5000 \
+  --verifier etherscan \
+  --verifier-url https://api.mantlescan.xyz/api \
+  --etherscan-api-key $MANTLESCAN_API_KEY \
+  --constructor-args $(cast abi-encode "constructor(address)" "0xdE7140BF0803257C493f26B588Dd68460f654860") \
+  0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96 \
+  src/RWAAgent.sol:RWAAgent
+```
+
+### Example proof transactions
+
+| Asset | Action | riskScore | Tx |
+|---|---|---|---|
+| NVDAx | PAUSE | 560 | [`0xa09b1576…`](https://mantlescan.xyz/tx/0xa09b1576df102dbf2a062b72ca6097907a37b2c362e954de5bca4dd0e7ef51d8) |
+| TSLAx | PAUSE | 510 | [`0x143fc5c2…`](https://mantlescan.xyz/tx/0x143fc5c2dea8db15ba689fd578d44a006cf9cc3dba725c90761a5ad5754b4f10) |
+| SPYx | PAUSE | 530 | [`0xe27d79b5…`](https://mantlescan.xyz/tx/0xe27d79b5795bea80ab226a0a723674be662c08a8a186aaa47830d1886d588a59) |
+| USDY | ALLOCATE | 0 | [`0xbd18bb0f…`](https://mantlescan.xyz/tx/0xbd18bb0fc2c8a49abd933c12a938ddaf3a50cfd7167720b1a57c04a436e70b95) |
+| mETH | ALLOCATE | 0 | [`0x3f6f53f1…`](https://mantlescan.xyz/tx/0x3f6f53f1a14d4c3c30dfac4c19a7a9ba439105de4d27dab3d4257d23f1d711d7) |
+
+The `/proof` page at [neutrino-fawn.vercel.app/proof](https://neutrino-fawn.vercel.app/proof) reads all `DecisionLogged` events live from the chain and renders them in a table with clickable Mantlescan links.
+
+---
+
+## What is on-chain vs off-chain
+
+**On-chain (Mantle Mainnet):**
+- Contract deployment — `RWAAgent` (ERC-8004 identity NFT) + `RWADecisionLogger`
+- `logDecision()` call — one transaction per asset per agent run
+- `action` — PAUSE / ALLOCATE / HOLD / REDUCE / …
+- `riskScore` — 0–1000 deterministic score
+- `reasonHash` — `bytes32 = keccak256(canonical audit JSON)`
+- `policyHash` — `bytes32 = keccak256(active policy JSON)`
+- `DecisionLogged` event log — queryable by any indexer
+- Optional: Fluxion V3 execution swap transactions (USDC → mETH)
+
+**Off-chain:**
+- Live xStocks signal fetching (price, trading-halt status via xStocks public API)
+- Deterministic risk engine — market hours, spread, liquidity, basis, volatility scoring
+- LLM narration — Claude Haiku 4.5 explains the decision after the engine has made it
+- Canonical audit JSON generation — `neutrino.decision.v2` schema
+- `reasonHash` computation before on-chain submission
+- Frontend visualization — Next.js on Vercel
+- Reference price fetching — Twelve Data API
+- Any modelled market microstructure (spread/depth/volume — flagged as `stub`)
+
+**Not done by design:**
+- xStock execution via xChange / Atomic RFQ (requires API key + registered wallet + auth quote — not a public endpoint)
+- LLM inference on-chain
+- IPFS pinning of canonical JSON (local server cache only; next iteration)
+
+---
+
 ## What ships today
 
 - **Real on-chain decisions** on Mantle mainnet. Every run writes one `DecisionLogged` event per asset with a `reasonHash` that covers the full canonical audit JSON (schema `neutrino.decision.v2`).
@@ -153,6 +269,48 @@ Mantle is closing the xStocks execution gap with the recent **Atomic RFQ** launc
 4. **Aave V3 on Mantle is not deployed.** The "$1B in 19 days" figure refers to overall Mantle TVL growth, not Aave specifically. Removed from the pitch.
 5. **INIT Capital `mintTo` ABI** is not visually verified on Mantlescan. Wrapper has fallback modes; the live execution rail is Fluxion V3, INIT stays experimental.
 6. **Decision payloads** are cached per browser via `localStorage`. IPFS pinning is the next iteration so any third party can resolve a `reasonHash`.
+
+## Demo video script (2:00–2:30)
+
+Use this as a screen recording checklist.
+
+**[0:00–0:20] Open — the problem**
+- Open [neutrino-fawn.vercel.app](https://neutrino-fawn.vercel.app)
+- Say: *"Tokenized stocks like NVDAx and TSLAx now trade 24/7 on Mantle. Their underlying markets don't. Between 4 PM and 9:30 AM there is no price discovery, no liquidity — but the tokens keep trading. Autonomous agents need to know when not to act."*
+- Point to the hero headline: *"The market closed at 4pm. The token didn't."*
+
+**[0:20–0:50] Run the risky scenario**
+- Click **Run risky scenario** (Scenario 01 — NVDAx / TSLAx / SPYx)
+- Wait for the 3 on-chain receipts to appear in the live column
+- Say: *"The deterministic engine reads live xStocks signals — price and trading-halt status — and scores risk. The LLM only narrates; it never controls the decision."*
+- Point to the PAUSE badges appearing for all three equity tokens
+
+**[0:50–1:10] Show the proof**
+- Click **On-chain proofs** → `/proof`
+- Point to the table: *"Every decision is written on Mantle through `RWADecisionLogger.logDecision()`. Here are the tx hashes — click any one to open Mantlescan."*
+- Click one tx hash → Mantlescan opens, shows `DecisionLogged` event with `reasonHash`, `riskScore`, `action`
+
+**[1:10–1:30] Verify the receipt**
+- Click **Receipt →** for NVDAx → `/agent-decision/NVDAx`
+- Click **Verify hash**
+- Say: *"The `reasonHash` on Mantlescan equals `keccak256` of the full canonical audit JSON generated off-chain. The receipt is binding and reproducible."*
+- Show the green `✓ VERIFIED MATCH` banner
+
+**[1:30–1:45] Safe yield scenario**
+- Navigate back → Run **safe yield** (Scenario 02 — USDY / mETH)
+- Show ALLOCATE decisions with riskScore 0/1000
+- Say: *"USDY and mETH carry no market-hours risk. The agent allocates."*
+
+**[1:45–2:00] Contract on Mantlescan**
+- Open `https://mantlescan.xyz/address/0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2`
+- Show the contract page (ideally showing verified source; otherwise show the transaction history with `DecisionLogged` events)
+- Say: *"Both contracts are deployed on Mantle Mainnet, chain ID 5000."*
+
+**[2:00–2:20] Close**
+- Return to homepage
+- Say: *"Neutrino is the safety layer that tells autonomous RWA agents when capital should not move. Deterministic rules, verifiable receipts, honest about every data source. Built for Mantle."*
+
+---
 
 ## License
 

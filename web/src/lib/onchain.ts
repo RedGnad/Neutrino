@@ -119,9 +119,9 @@ export interface OnChainDecision {
   caller: Address;
 }
 
-// RWADecisionLogger deployed on Mantle mainnet around this block.
+// RWADecisionLogger deployed on Mantle mainnet at block 94_987_226.
 // Used as floor so getLogs never starts after our earliest events.
-const DEPLOYMENT_BLOCK = 95_500_000n;
+const DEPLOYMENT_BLOCK = 94_900_000n;
 
 /**
  * Pull the most recent N DecisionLogged events from RWADecisionLogger.
