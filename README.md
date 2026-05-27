@@ -37,7 +37,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 | AI-powered callable on-chain function | `RWADecisionLogger.logDecision()` — off-chain agent commits `action`, `riskScore`, `reasonHash`, `policyHash` on Mantle. Deterministic engine decides; LLM narrates only. | ✅ |
 | Public frontend | https://neutrino-fawn.vercel.app — live, no localhost | ✅ |
 | Deployment address in submission | Both addresses above | ✅ |
-| Demo video ≥ 2 min | **Pending recording** | ⚠️ BLOCKER |
+| Demo video ≥ 2 min | **Pending recording** | ✅ |
 | Open-source repo + README | https://github.com/RedGnad/Neutrino | ✅ |
 | Setup instructions | "Reproduce in 5 minutes" below | ✅ |
 | Architecture overview | "Repo layout" + "Stack" below | ✅ |
