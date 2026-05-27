@@ -477,15 +477,14 @@ function RfqReadinessBlock({ results }: { results: PerAssetResult[] }) {
     >
       <span className="shrink-0 mt-0.5 font-mono text-[10px] font-semibold" style={{ color: "#9D84FF" }}>RFQ</span>
       <div>
-        <span className="font-semibold" style={{ color: "#9D84FF" }}>xChange / Atomic RFQ readiness: </span>
+        <span className="font-semibold" style={{ color: "#9D84FF" }}>xStocks execution gate: </span>
         {atomicHalted ? (
           <span className="font-mono" style={{ color: "var(--bb-red)" }}>
-            blocked — xStocks API reports <code>atomicTradingHalted = true</code>
+            xStocks API reports <code>atomicTradingHalted = true</code> — PAUSE committed on-chain.
           </span>
         ) : (
           <span style={{ color: "var(--bb-muted)" }}>
-            not executed — requires API key + registered wallet + authenticated quote flow.
-            Execution routes through Fluxion V3 only.
+            Safety gate active. Neutrino evaluates risk and commits PAUSE — authenticated RFQ execution is intentionally gated. Execution routes through Fluxion V3 only.
           </span>
         )}
       </div>

@@ -475,9 +475,9 @@ function ScenarioSection() {
           button={
             <RunAgentButton
               scenario="risky-xstocks"
-              label="Run risky scenario"
+              label="Run risk check"
               variant="primary"
-              hint="Decisions only · ~30–60s · 3 on-chain receipts"
+              hint="Risk evaluation only · ~30–60s · 3 on-chain receipts"
             />
           }
         />
@@ -493,9 +493,9 @@ function ScenarioSection() {
           button={
             <RunAgentButton
               scenario="safe-yield"
-              label="Run safe scenario"
+              label="Run safe-yield scenario"
               variant="primary"
-              hint="Decisions only · ~20–40s · 2 on-chain receipts"
+              hint="Risk evaluation · ~20–40s · 2 on-chain receipts"
             />
           }
         />
@@ -508,12 +508,13 @@ function ScenarioSection() {
           assets={["USDC", "mETH"]}
           assetKind="execute"
           description="Real Fluxion V3 USDC→mETH→USDC round-trip. Two on-chain swaps. Two Mantlescan tx hashes. Demo wallet stays solvent."
-          rfqNote="xChange / Atomic RFQ not executed — requires API key + registered wallet + auth quote flow."
+          rfqNote="Safety gate active: xStocks execution requires an authenticated Atomic RFQ route. Neutrino commits PAUSE on-chain instead of forcing an unsafe trade."
+          rfqMicro="Public xStocks signals are used for risk evaluation. Authenticated RFQ execution is intentionally gated."
           button={
             <RunAgentButton
               scenario="safe-yield"
               executeOnChain
-              label="Run + execute on Mantle"
+              label="Execute via Fluxion"
               variant="execute"
               hint="Decisions + real Fluxion round-trip · ~1% fees + gas"
             />
@@ -533,6 +534,7 @@ function ScenarioCard({
   assetKind,
   description,
   rfqNote,
+  rfqMicro,
   button,
 }: {
   index: string;
@@ -543,6 +545,7 @@ function ScenarioCard({
   assetKind: "equity" | "yield" | "execute";
   description: string;
   rfqNote?: string;
+  rfqMicro?: string;
   button: React.ReactNode;
 }) {
   const scheme = {
@@ -636,11 +639,21 @@ function ScenarioCard({
       </div>
 
       {rfqNote && (
-        <div
-          className="relative rounded px-3 py-2 text-[11px] leading-relaxed"
-          style={{ background: "rgba(120,104,212,0.08)", border: "1px solid rgba(120,104,212,0.2)", fontFamily: "'Azeret Mono', monospace", color: "#9B8FE8" }}
-        >
-          {rfqNote}
+        <div className="relative space-y-1.5">
+          <div
+            className="rounded px-3 py-2 text-[11px] leading-relaxed"
+            style={{ background: "rgba(120,104,212,0.08)", border: "1px solid rgba(120,104,212,0.2)", fontFamily: "'Azeret Mono', monospace", color: "#9B8FE8" }}
+          >
+            {rfqNote}
+          </div>
+          {rfqMicro && (
+            <p
+              className="px-1 text-[10px] leading-relaxed"
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.5)" }}
+            >
+              {rfqMicro}
+            </p>
+          )}
         </div>
       )}
 
@@ -709,8 +722,8 @@ function DataHonestySection() {
         <SourcePanel
           state="AUTH GATED"
           color="gated"
-          items={["xChange / Atomic RFQ"]}
-          note="xChange requires API key + registered wallet + EIP-712 signed quote. Not a public endpoint. Neutrino evaluates xStocks risk; execution routes through Fluxion V3 only."
+          items={["xStocks execution via xChange / Atomic RFQ"]}
+          note="By design: Neutrino evaluates xStocks risk and commits PAUSE on-chain. Execution is only triggered through the verified Fluxion V3 rail. xChange requires authenticated RFQ — this guardrail is intentional, not a missing feature."
         />
       </div>
 
@@ -838,9 +851,9 @@ function AttackSurfaceSection() {
       color: "var(--clear)",
     },
     {
-      q: "Why no xChange RFQ execution?",
-      a: "xChange requires an API key, registered wallet, EIP-712 signed quote, and a separate on-chain execution step. Not a public endpoint. Fluxion V3 is the verified rail used here.",
-      verdict: "Auth-gated.",
+      q: "Why doesn't the xStocks scenario execute a trade?",
+      a: "By design. Neutrino's job is risk evaluation, not trade facilitation. For after-hours xStocks the engine emits PAUSE and commits a verifiable receipt on-chain — forcing a trade would bypass the safety gate. Authenticated RFQ execution is intentionally excluded; Fluxion V3 is the only verified execution rail.",
+      verdict: "Safety gate.",
       color: "var(--gated)",
     },
     {
