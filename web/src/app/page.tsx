@@ -32,7 +32,15 @@ export default function Home() {
 /* ─── Hero ─────────────────────────────────────────────────────────── */
 
 async function Hero() {
-  const decisions = await fetchRecentDecisions(7).catch(() => []);
+  const allDecisions = await fetchRecentDecisions(100).catch(() => []);
+  // Deduplicate: keep only the latest decision per asset (array is already most-recent-first)
+  const seenAssets = new Set<string>();
+  const decisions = allDecisions.filter((d) => {
+    const key = d.assetAddress.toLowerCase();
+    if (seenAssets.has(key)) return false;
+    seenAssets.add(key);
+    return true;
+  });
 
   return (
     <section
@@ -174,7 +182,7 @@ async function Hero() {
               paddingLeft: "28px",
             }}
           >
-            <p className="section-label mb-4">LATEST JUDGMENTS · LIVE</p>
+            <p className="section-label mb-4">LATEST STATE · LIVE</p>
 
             {decisions.length === 0 ? (
               <p
@@ -233,7 +241,7 @@ async function Hero() {
               style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px" }}
             >
               <span style={{ color: "rgba(144,126,108,0.4)" }}>
-                {decisions.length} decision{decisions.length !== 1 ? "s" : ""} · {NETWORK_LABEL}
+                5 assets · latest decision per asset · Mantle Mainnet
               </span>
               <Link
                 href="/proof"
@@ -445,6 +453,14 @@ function ScenarioSection() {
           <span style={{ color: "var(--muted)", fontSize: "13px" }}>explains the decision — never controls it</span>
         </span>
       </div>
+
+      {/* Agent wallet note */}
+      <p
+        className="text-[11px] leading-relaxed"
+        style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.55)" }}
+      >
+        Transactions are signed by a controlled agent wallet. No user wallet connection is required — this demonstrates autonomous agent execution, not a user custody flow.
+      </p>
 
       <div className="grid gap-5 lg:grid-cols-3">
         <ScenarioCard
