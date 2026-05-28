@@ -30,7 +30,7 @@ export default async function MarketMapPage() {
           className="text-2xl font-semibold tracking-tight"
           style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
         >
-          Latest agent decision per asset
+          Latest policy outcome per asset
         </h1>
         <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--bb-muted)" }}>
           Read live from{' '}

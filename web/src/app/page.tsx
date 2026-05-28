@@ -2,6 +2,7 @@ import Link from "next/link";
 import { RunAgentButton } from "@/components/RunAgentButton";
 import { LatestExecution } from "@/components/LatestExecution";
 import { DecisionTimeline } from "@/components/DecisionTimeline";
+import { PolicyTemplates } from "@/components/PolicyTemplates";
 import {
   NETWORK_LABEL,
   LOGGER_ADDRESS,
@@ -19,6 +20,8 @@ export default function Home() {
     <div className="space-y-14">
       <Hero />
       <JudgeModeGuide />
+      <BuilderIntegrationSection />
+      <PolicyTemplates compact />
       <LatestExecution />
       <DecisionTimeline />
       <ScenarioSection />
@@ -133,6 +136,18 @@ async function Hero() {
                 }}
               >
                 On-chain proofs
+              </Link>
+              <Link
+                href="/integrate"
+                className="inline-flex h-10 items-center rounded px-5 text-sm font-medium transition-colors"
+                style={{
+                  background: "rgba(200,168,110,0.06)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border-hi)",
+                  fontFamily: "'Instrument Sans', sans-serif",
+                }}
+              >
+                Integrate your agent
               </Link>
             </div>
 
@@ -301,7 +316,7 @@ function JudgeModeGuide() {
       n: "01",
       label: "Run risky xStocks",
       sub: "Scenario 01 below",
-      action: "PAUSE expected",
+      action: "Current policy outcome",
       color: "var(--refuse)",
       href: "#scenarios",
     },
@@ -317,7 +332,7 @@ function JudgeModeGuide() {
       n: "03",
       label: "Run safe yield",
       sub: "Scenario 02 below",
-      action: "ALLOCATE expected",
+      action: "Policy outcome if allowed",
       color: "var(--clear)",
       href: "#scenarios",
     },
@@ -359,7 +374,7 @@ function JudgeModeGuide() {
       <div className="grid gap-0 sm:grid-cols-4 sm:divide-x"
         style={{ borderColor: "var(--border)" }}
       >
-        {steps.map((s, i) => (
+        {steps.map((s) => (
           <a
             key={s.n}
             href={s.href}
@@ -391,6 +406,98 @@ function JudgeModeGuide() {
             </p>
           </a>
         ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Builder Integration ───────────────────────────────────────────── */
+
+function BuilderIntegrationSection() {
+  const uses = [
+    ["RWA agent builders", "Add policy guardrails before execution."],
+    ["Vault / treasury builders", "Prove why an agent allocated, paused, or required review."],
+    ["xStocks apps", "Check market and execution conditions before capital moves."],
+    ["Mantle protocols", "Generate public decision receipts for autonomous workflows."],
+  ] as const;
+
+  return (
+    <section className="section-ruled space-y-6">
+      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+        <div>
+          <span className="section-label">USE NEUTRINO IN YOUR AGENT</span>
+          <h2
+            className="italic"
+            style={{
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontSize: "1.75rem",
+              fontWeight: 600,
+              color: "var(--text)",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            A policy layer between market signals and capital movement.
+          </h2>
+          <p
+            className="mt-2 max-w-2xl text-sm leading-relaxed"
+            style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
+          >
+            Send market signals and execution intent; receive an AI proposal, policy review,
+            final action, reasonHash, and Mantle receipt. The AI proposes. Policy validates.
+            Mantle verifies.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href="/integrate"
+              className="inline-flex h-10 items-center rounded px-5 text-sm font-semibold transition-opacity hover:opacity-85"
+              style={{ background: "var(--clear)", color: "#060504", fontFamily: "'Instrument Sans', sans-serif" }}
+            >
+              View integration guide
+            </Link>
+            <Link
+              href="/proof"
+              className="inline-flex h-10 items-center rounded px-5 text-sm font-medium transition-colors"
+              style={{
+                background: "rgba(200,168,110,0.06)",
+                color: "var(--text)",
+                border: "1px solid var(--border-hi)",
+                fontFamily: "'Instrument Sans', sans-serif",
+              }}
+            >
+              Live proof registry
+            </Link>
+          </div>
+        </div>
+
+        <div
+          className="rounded-lg p-5"
+          style={{ background: "var(--panel)", border: "1px solid var(--border-hi)" }}
+        >
+          <p
+            className="mb-4 text-[10px] font-medium uppercase tracking-widest"
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--seal)" }}
+          >
+            WHO USES NEUTRINO?
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {uses.map(([title, body]) => (
+              <div key={title}>
+                <p
+                  className="text-sm font-semibold"
+                  style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
+                >
+                  {title}
+                </p>
+                <p
+                  className="mt-1 text-xs leading-relaxed"
+                  style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
+                >
+                  {body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -468,10 +575,9 @@ function ScenarioSection() {
           index="01"
           colorKey="refuse"
           title="After-hours xStock exposure"
-          subtitle="Expected: PAUSE"
+          subtitle="CURRENT POLICY OUTCOME"
           assets={["NVDAx", "TSLAx", "SPYx"]}
-          assetKind="equity"
-          description="Live xStocks price + trading-halt status. Market-hours, spread, basis penalties push toward PAUSE under active policy."
+          description="Live xStocks price + trading-halt status. xStocks can be paused when execution conditions are unsafe under the active policy."
           button={
             <RunAgentButton
               scenario="risky-xstocks"
@@ -486,10 +592,9 @@ function ScenarioSection() {
           index="02"
           colorKey="clear"
           title="Safe on-chain RWA yield"
-          subtitle="Expected: ALLOCATE"
+          subtitle="POLICY OUTCOME IF ALLOWED"
           assets={["USDY", "mETH"]}
-          assetKind="yield"
-          description="USDY (Ondo T-bills) and mETH (Mantle LST). No market-hours exposure. xStock signals are n/a — no hidden stubs."
+          description="USDY and mETH can be allocated when policy allows. No market-hours exposure. xStock signals are n/a — no hidden stubs."
           button={
             <RunAgentButton
               scenario="safe-yield"
@@ -506,9 +611,8 @@ function ScenarioSection() {
           title="Verified Mantle execution"
           subtitle="ROUND-TRIP ON MAINNET"
           assets={["USDC", "mETH"]}
-          assetKind="execute"
           description="Real Fluxion V3 USDC→mETH→USDC round-trip. Two on-chain swaps. Two Mantlescan tx hashes. Demo wallet stays solvent."
-          rfqNote="Safety gate active: xStocks execution requires an authenticated Atomic RFQ route. Neutrino commits PAUSE on-chain instead of forcing an unsafe trade."
+          rfqNote="Safety gate active: xStocks execution requires an authenticated Atomic RFQ route. Neutrino can commit PAUSE on-chain instead of forcing an unsafe trade."
           rfqMicro="Public xStocks signals are used for risk evaluation. Authenticated RFQ execution is intentionally gated."
           button={
             <RunAgentButton
@@ -531,7 +635,6 @@ function ScenarioCard({
   title,
   subtitle,
   assets,
-  assetKind,
   description,
   rfqNote,
   rfqMicro,
@@ -542,7 +645,6 @@ function ScenarioCard({
   title: string;
   subtitle: string;
   assets: string[];
-  assetKind: "equity" | "yield" | "execute";
   description: string;
   rfqNote?: string;
   rfqMicro?: string;
@@ -723,7 +825,7 @@ function DataHonestySection() {
           state="AUTH GATED"
           color="gated"
           items={["xStocks execution via xChange / Atomic RFQ"]}
-          note="By design: Neutrino evaluates xStocks risk and commits PAUSE on-chain. Execution is only triggered through the verified Fluxion V3 rail. xChange requires authenticated RFQ — this guardrail is intentional, not a missing feature."
+          note="By design: Neutrino evaluates xStocks risk and can commit PAUSE on-chain when execution conditions are unsafe. Execution is only triggered through the verified Fluxion V3 rail. xChange requires authenticated RFQ — this guardrail is intentional, not a missing feature."
         />
       </div>
 
@@ -852,7 +954,7 @@ function AttackSurfaceSection() {
     },
     {
       q: "Why doesn't the xStocks scenario execute a trade?",
-      a: "By design. Neutrino's job is risk evaluation, not trade facilitation. For after-hours xStocks the engine emits PAUSE and commits a verifiable receipt on-chain — forcing a trade would bypass the safety gate. Authenticated RFQ execution is intentionally excluded; Fluxion V3 is the only verified execution rail.",
+      a: "By design. Neutrino's job is risk evaluation, not trade facilitation. When current xStocks execution conditions are unsafe, policy can emit PAUSE and commit a verifiable receipt on-chain — forcing a trade would bypass the safety gate. Authenticated RFQ execution is intentionally excluded; Fluxion V3 is the only verified execution rail.",
       verdict: "Safety gate.",
       color: "var(--gated)",
     },

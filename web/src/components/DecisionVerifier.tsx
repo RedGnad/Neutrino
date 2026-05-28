@@ -6,12 +6,16 @@ import { keccak256, stringToBytes, type Hex } from "viem";
 interface Props {
   txHash: Hex;
   reasonHash: Hex;
+  policyHash: Hex;
 }
 
 type CacheEntry = { canonicalJson: string };
 type SourceState = "live" | "stub" | "simulated" | "n/a";
 
 interface ParsedDecision {
+  schema: string;
+  agentId: string;
+  timestamp: number;
   asset: {
     symbol: string;
     kind: string;
@@ -103,7 +107,56 @@ function CopyBtn({ value }: { value: string }) {
   );
 }
 
-export function DecisionVerifier({ txHash, reasonHash }: Props) {
+function ExportCopyButton({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(value);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        } catch { /* ignore */ }
+      }}
+      className="rounded-lg px-3 py-2 text-xs font-mono font-medium transition-all"
+      style={{
+        background: copied ? "rgba(45,212,165,0.15)" : "rgba(255,255,255,0.04)",
+        border: `1px solid ${copied ? "rgba(45,212,165,0.3)" : "rgba(255,255,255,0.08)"}`,
+        color: copied ? "var(--bb-teal)" : "var(--bb-text)",
+      }}
+    >
+      {copied ? "Copied" : label}
+    </button>
+  );
+}
+
+function DownloadJsonButton({ filename, value }: { filename: string; value: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const blob = new Blob([value], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }}
+      className="rounded-lg px-3 py-2 text-xs font-mono font-medium transition-all"
+      style={{
+        background: "rgba(45,212,165,0.08)",
+        border: "1px solid rgba(45,212,165,0.2)",
+        color: "var(--bb-teal)",
+      }}
+    >
+      Download receipt JSON
+    </button>
+  );
+}
+
+export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
   const [cache, setCache] = useState<CacheEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState<null | "ok" | "mismatch">(null);
@@ -133,6 +186,43 @@ export function DecisionVerifier({ txHash, reasonHash }: Props) {
     try { return JSON.parse(cache.canonicalJson) as ParsedDecision; }
     catch { return null; }
   }, [cache]);
+
+  const receiptExport = useMemo(() => {
+    if (!parsed || !cache) return null;
+    return {
+      asset: parsed.asset.symbol,
+      aiProposal: parsed.aiProposal ?? null,
+      policyReview: parsed.policyReview ?? null,
+      finalAction: parsed.policyReview?.finalAction ?? parsed.action,
+      riskScore: parsed.riskScore,
+      reasonHash,
+      policyHash,
+      txHash,
+      timestamp: parsed.timestamp ?? null,
+      canonicalReceipt: parsed,
+      canonicalJson: cache.canonicalJson,
+    };
+  }, [cache, parsed, policyHash, reasonHash, txHash]);
+
+  const integrationPayload = useMemo(() => {
+    if (!parsed) return null;
+    return {
+      agentId: parsed.agentId,
+      asset: parsed.asset.symbol,
+      intent: "rebalance",
+      aiProposal: parsed.aiProposal ?? null,
+      policyReview: parsed.policyReview ?? null,
+      finalAction: parsed.policyReview?.finalAction ?? parsed.action,
+      riskScore: parsed.riskScore,
+      reasonHash,
+      policyHash,
+      txHash,
+      timestamp: parsed.timestamp ?? null,
+    };
+  }, [parsed, policyHash, reasonHash, txHash]);
+
+  const receiptExportJson = receiptExport ? JSON.stringify(receiptExport, null, 2) : "";
+  const integrationPayloadJson = integrationPayload ? JSON.stringify(integrationPayload, null, 2) : "";
 
   function verify() {
     if (!recomputed) return;
@@ -415,6 +505,36 @@ export function DecisionVerifier({ txHash, reasonHash }: Props) {
             >
               The AI proposes. Policy validates. Mantle verifies.
             </p>
+          </div>
+        </div>
+      )}
+
+      {receiptExport && integrationPayload && (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p
+                className="text-[10px] font-medium uppercase tracking-widest"
+                style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+              >
+                RECEIPT EXPORTS
+              </p>
+              <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--bb-muted)" }}>
+                Reuse this decision in an agent log, governance post, GitHub issue, or downstream
+                policy system.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <ExportCopyButton label="Copy canonical receipt" value={receiptExportJson} />
+              <ExportCopyButton label="Copy integration payload" value={integrationPayloadJson} />
+              <DownloadJsonButton
+                filename={`neutrino-${receiptExport.asset}-${reasonHash.slice(2, 10)}.json`}
+                value={receiptExportJson}
+              />
+            </div>
           </div>
         </div>
       )}

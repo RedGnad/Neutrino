@@ -74,15 +74,66 @@ Real `ALLOCATE` end-to-end on Fluxion V3 (Mantle mainnet):
 ## What ships today
 
 - **Real on-chain decisions** on Mantle mainnet. Every run writes one `DecisionLogged` event per asset with a `reasonHash` that covers the full canonical audit JSON (schema `neutrino.decision.v2`).
-- **Live xStocks public-API integration.** For every tokenized equity the agent reads the issuer's **indicative price** (`/public/assets/{symbol}/price-data`) and the official **trading-halt status** (`/public/system/status/{symbol}`) — unauthenticated public endpoints, verified 2026-05-21. An `isMarketTradingHalted` / `isAtomicTradingHalted` flag forces `PAUSE`. xStock token contract addresses on Mantle are resolved from the same API and verified on-chain.
+- **Live xStocks public-API integration.** For every tokenized equity the agent reads the issuer's **indicative price** (`/public/assets/{symbol}/price-data`) and the official **trading-halt status** (`/public/system/status/{symbol}`) — unauthenticated public endpoints, verified 2026-05-21. An `isMarketTradingHalted` / `isAtomicTradingHalted` flag produces a policy PAUSE outcome. xStock token contract addresses on Mantle are resolved from the same API and verified on-chain.
 - **Verifiable local receipts** — after a run, the `/agent-decision/[asset]` page reads the on-chain reason hash and lets you re-compute `keccak256` on the audit JSON cached by that browser to confirm a match.
 - **Live freshness flags** in every result panel: market hours, reference prices (Twelve Data), xStock price (xStocks API), xStock trading status (xStocks API), LLM reasoning (Claude Haiku 4.5), on-chain write, on-chain execution. `live` / `stub` / `n/a` is shown per signal, never hidden.
 - **Two judge-ready scenarios** on the home page:
-  - *Risky xStocks* (NVDAx / TSLAx / SPYx) — typically PAUSE outside market hours.
-  - *Safe yield* (USDY / mETH) — typically ALLOCATE.
+  - *Risky xStocks* (NVDAx / TSLAx / SPYx) — policy can pause when execution conditions are unsafe.
+  - *Safe yield* (USDY / mETH) — policy can allocate when freshness and risk checks pass.
 - **Optional real Fluxion execution** behind an opt-in button: the execution demo performs a real USDC → mETH allocation on Fluxion V3. Receipt-only runs remain the default for safe judging.
 
 > **Demo safety mode:** the execution demo runs a USDC → mETH → USDC round-trip so the shared demo wallet stays solvent across judge clicks. Both legs are real Fluxion V3 swaps on Mantle mainnet. Set `EXECUTE_ROUNDTRIP=false` in `web/.env.local` to hold the mETH position instead.
+
+## Builder integration
+
+Neutrino is a policy layer for RWA agents. Send market signals + execution intent, receive an AI proposal, policy review, final action, reasonHash, and Mantle receipt.
+
+Flow:
+
+`market signals -> AI proposal -> policy review -> final on-chain receipt -> optional execution if allowed`
+
+The hosted demo uses the existing `/api/run-agent` endpoint. A builder-facing API or SDK can keep the same envelope:
+
+```ts
+const res = await fetch("/api/run-agent", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    agentId: "demo-agent",
+    assets: ["TSLAx", "NVDAx", "SPYx", "USDY", "mETH"],
+    policy: "conservative-rwa",
+    intent: "rebalance",
+    scenario: "default"
+  })
+});
+
+const run = await res.json();
+const decision = run.results[0];
+```
+
+Example receipt shape for downstream systems:
+
+```json
+{
+  "asset": "TSLAx",
+  "aiProposal": {
+    "proposedAction": "REVIEW",
+    "confidence": 0.55,
+    "model": "claude-haiku-4-5"
+  },
+  "policyReview": {
+    "decision": "OVERRIDE",
+    "finalAction": "PAUSE",
+    "reason": "Execution conditions unsafe under current policy"
+  },
+  "onchainCommitment": {
+    "reasonHash": "0x...",
+    "txHash": "0x..."
+  }
+}
+```
+
+Policy templates now visible in the app: Conservative RWA, Balanced Agent, and Yield-seeking. Outputs are policy outcomes, not fixed asset labels. Neutrino reevaluates live signals on every run.
 
 ## What's modelled / not done (and labelled as such)
 
@@ -112,7 +163,7 @@ pnpm install
 pnpm dev                        # → http://localhost:3000
 ```
 
-Click **Run risky xStock scenario** on the home page. Within ~30s you'll have 3 PAUSE decisions on Mantle mainnet, each with a clickable Mantlescan link. In the same browser, visit `/agent-decision/NVDAx` and click **Verify hash** to confirm the on-chain hash matches `keccak256` of the cached audit JSON.
+Click **Run risky xStock scenario** on the home page. Within ~30s you'll have policy-reviewed decisions on Mantle mainnet, each with a clickable Mantlescan link. In the same browser, visit `/agent-decision/NVDAx` and click **Verify hash** to confirm the on-chain hash matches `keccak256` of the cached audit JSON.
 
 ## Repo layout
 

@@ -208,7 +208,11 @@ export default async function AgentDecisionPage({ params }: Props) {
       ) : null}
 
       {latest ? (
-        <DecisionVerifier txHash={latest.txHash} reasonHash={latest.reasonHash} />
+        <DecisionVerifier
+          txHash={latest.txHash}
+          reasonHash={latest.reasonHash}
+          policyHash={latest.policyHash}
+        />
       ) : null}
 
       <p
