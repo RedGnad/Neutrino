@@ -94,11 +94,11 @@ async function Hero() {
                 className="text-base leading-relaxed"
                 style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
               >
-                Neutrino reads live xStocks signals, scores risk with
-                deterministic rules, writes a verifiable receipt on Mantle,
-                and executes only through a verified rail.{" "}
+                Neutrino reads live RWA and xStocks signals, lets the AI
+                propose an action, lets policy validate or override it, then
+                commits the final decision to Mantle.{" "}
                 <span style={{ color: "var(--text)" }}>
-                  The engine decides. The LLM explains.
+                  The AI proposes. Policy validates. Mantle verifies.
                 </span>
               </p>
             </div>
@@ -840,7 +840,7 @@ function AttackSurfaceSection() {
   const qa = [
     {
       q: "Is the AI deciding?",
-      a: "No. A deterministic rules engine picks the action and risk score. Claude Haiku 4.5 only narrates the decision. llmControlsAction = false in every receipt.",
+      a: "The AI scores live signals and proposes an action. Policy then validates or overrides it. Claude Haiku 4.5 narrates the rationale — policy and risk rules determine the final decision, not the LLM. llmControlsAction = false in every receipt.",
       verdict: "No.",
       color: "var(--clear)",
     },
@@ -974,8 +974,8 @@ function WhyMantleSection() {
       <div className="grid gap-5 sm:grid-cols-3">
         {[
           {
-            title: "Engine separated from narration",
-            body: "The deterministic rules engine picks the action. Claude Haiku 4.5 only explains. Decisions are reproducible from the receipt without LLM nondeterminism.",
+            title: "AI proposes, policy validates",
+            body: "The AI scores risk and proposes an action. Policy approves or overrides it. Claude Haiku 4.5 narrates the rationale. The full loop — proposal, review, final decision — is committed in the reasonHash.",
             accent: "var(--muted)",
           },
           {

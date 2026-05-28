@@ -217,7 +217,9 @@ export default async function AgentDecisionPage({ params }: Props) {
       >
         Decision receipts cover schema neutrino.decision.v2: agent identity, asset metadata, market
         snapshot, live xStocks public-API data, source-freshness flags, risk breakdown, policy,
-        action, score, narration metadata. The on-chain reasonHash = keccak256(canonicalJson).
+        AI proposal, policy review, action, score, narration metadata.{" "}
+        The reasonHash covers the full loop — AI proposal, policy review, and final on-chain commitment.{" "}
+        keccak256(canonicalJson) = on-chain reasonHash.
       </p>
     </div>
   );

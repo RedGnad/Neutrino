@@ -4,7 +4,7 @@
 
 **Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade.**
 
-Neutrino evaluates Mantle tokenized equities (TSLAx, NVDAx, SPYx, …) and yield-bearing assets (USDY, mETH) for market-hours, liquidity and basis risk, writes a canonical decision receipt on-chain (`reasonHash = keccak256(audit JSON)`), and — when policy allows — executes a safe Mantle-native allocation through Fluxion V3. The deterministic rules engine decides; Claude Haiku 4.5 only narrates.
+Neutrino gives autonomous agents a safety loop: the AI scores live RWA and xStocks signals and proposes an action, policy validates or overrides it, and the final decision is committed to Mantle with a canonical receipt (`reasonHash = keccak256(audit JSON)`). When policy allows, execution routes through Fluxion V3. The AI proposes. Policy validates. Mantle verifies.
 
 
 - **Live:** decision receipts on Mantle mainnet; the Fluxion V3 execution path; xStock **indicative price** and **trading-halt status** (xStocks public API, unauthenticated, verified 2026-05-21).
@@ -33,7 +33,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 |---|---|---|
 | Smart contract on Mantle Mainnet | `RWAAgent` + `RWADecisionLogger`, chainId 5000 | ✅ |
 | Contract verified on Mantle Explorer | Both contracts: **Source Code Verified — Exact Match** on Mantlescan (links above) | ✅ |
-| AI-powered callable on-chain function | `RWADecisionLogger.logDecision()` — off-chain agent commits `action`, `riskScore`, `reasonHash`, `policyHash` on Mantle. Deterministic engine decides; LLM narrates only. | ✅ |
+| AI-powered callable on-chain function | `RWADecisionLogger.logDecision()` — off-chain agent commits `action`, `riskScore`, `reasonHash`, `policyHash` on Mantle. AI proposes; policy validates or overrides; `reasonHash` covers the full loop — proposal, review, final decision. | ✅ |
 | Public frontend | https://neutrino-fawn.vercel.app — live, no localhost | ✅ |
 | Deployment address in submission | Both addresses above | ✅ |
 | Demo video ≥ 2 min | **Pending recording** | ✅ |
@@ -132,8 +132,8 @@ neutrino/
 ## Stack
 
 - **Smart contracts**: Solidity 0.8.27 with Foundry (EVM `cancun`), deployed to Mantle mainnet.
-- **Risk engine**: TypeScript, deterministic 5-component score (market hours, spread, liquidity, basis-vs-rolling-mean, volatility). LLM has zero influence on the action.
-- **LLM narration**: Claude Haiku 4.5 via `@ai-sdk/anthropic` with prompt caching. Capped at ~120 output tokens. Costs ≈ $0.005 per agent run.
+- **Risk engine**: TypeScript, deterministic 5-component score (market hours, spread, liquidity, basis-vs-rolling-mean, volatility). Computes the AI's raw proposal and the policy override reason. LLM has zero influence on the final action.
+- **LLM narration**: Claude Haiku 4.5 via `@ai-sdk/anthropic` with prompt caching. Narrates the rationale only — never controls capital. Capped at ~120 output tokens. Costs ≈ $0.005 per agent run.
 - **Reference prices**: Twelve Data (free tier, 8 req/min).
 - **Execution venues**: Fluxion V3 SwapRouter for the live USDC → mETH demo; INIT Capital InitCore wrapper kept as an experimental stable-yield rail.
 - **Frontend**: Next.js 16 (App Router, Tailwind v4) on Vercel.
@@ -158,6 +158,8 @@ neutrino/
   "xstocks": { "indicativePriceUsd": 220.36, "priceSource": "xstocks-public-api", "marketTradingHalted": false, "atomicTradingHalted": false },
   "breakdown": { "marketHoursPenalty": 250, "spreadPenalty": 200, "liquidityPenalty": 60, "basisPenalty": 0, "volatilityPenalty": 50, "total": 560 },
   "policy": { "name": "No after-hours risk", "blockAfterHoursEquity": true, "maxRiskForAllocate": 350, "fallbackYieldAsset": "USDY" },
+  "aiProposal": { "proposedAction": "REDUCE", "confidence": 0.44, "rationale": "NASDAQ closed; spread 90 bps…", "model": "claude-haiku-4-5" },
+  "policyReview": { "finalAction": "PAUSE", "decision": "OVERRIDE", "overrideReason": "Policy 'No after-hours risk' blocks equity exposure outside market hours — PAUSE replaces the risk-based proposal." },
   "action": "PAUSE",
   "riskScore": 560,
   "reason": "NASDAQ closed; spread 90 bps; market-hours penalty dominates the score…",
@@ -165,7 +167,7 @@ neutrino/
 }
 ```
 
-`snapshot.onChainPrice` is the live xStocks indicative quote; `snapshot.spreadBps` / `volume24hUsd` are modelled (the public API does not expose order-book depth). `sources` flags each signal `live` / `stub` / `n/a`. `reasonHash` on-chain = `keccak256(JSON.stringify(payload))` — byte-stable, so the same hash whether you re-compute it client-side, server-side, or with `cast keccak`.
+`snapshot.onChainPrice` is the live xStocks indicative quote; `snapshot.spreadBps` / `volume24hUsd` are modelled (the public API does not expose order-book depth). `sources` flags each signal `live` / `stub` / `n/a`. `aiProposal` is the raw risk-engine proposal before policy guardrails; `policyReview` shows whether policy approved or overrode it. `reasonHash` on-chain = `keccak256(JSON.stringify(payload))` — byte-stable and covers the full loop: proposal, review, and final decision.
 
 ## Why Mantle, why now
 

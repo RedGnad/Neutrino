@@ -10,7 +10,7 @@ Screen-record in one take. No edits needed if you follow this order.
 **[0:20–0:50] Run risky xStocks scenario**
 - Click **Run risky scenario** (Scenario 01 — NVDAx / TSLAx / SPYx).
 - Wait for the 3 on-chain receipts in the live hero column.
-- Say: *"The deterministic engine reads live xStocks signals and scores risk. The LLM only narrates — it never controls the decision."*
+- Say: *"The AI reads live xStocks signals, scores risk, and proposes an action. Policy then validates or overrides it. Claude Haiku 4.5 only narrates the rationale — it never controls capital."*
 - Point to the PAUSE badges.
 
 **[0:50–1:10] Show the proof**
@@ -36,4 +36,4 @@ Screen-record in one take. No edits needed if you follow this order.
 
 **[2:00–2:20] Close**
 - Return to homepage.
-- Say: *"Neutrino is the safety layer that tells autonomous RWA agents when capital should not move. Deterministic rules, verifiable receipts, honest about every data source. Built for Mantle."*
+- Say: *"Neutrino is the safety loop for autonomous RWA agents: the AI proposes, policy validates, Mantle verifies. Every decision is reproducible from the on-chain receipt. Built for Mantle."*

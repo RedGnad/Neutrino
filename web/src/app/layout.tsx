@@ -6,7 +6,7 @@ import { ClientNav } from '@/components/ClientNav';
 export const metadata: Metadata = {
   title: 'Neutrino — Risk judgment layer for Mantle RWA agents',
   description:
-    "Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the autonomous risk-judgment layer that decides when execution is safe and writes a verifiable receipt on Mantle.",
+    "Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino gives autonomous agents a safety loop: the AI proposes an action, policy validates or overrides it, and Mantle verifies the final decision.",
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',

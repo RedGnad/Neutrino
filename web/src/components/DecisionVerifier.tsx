@@ -459,7 +459,7 @@ export function DecisionVerifier({ txHash, reasonHash }: Props) {
                     {parsed.reason}
                   </p>
                   <p className="mt-2 text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
-                    LLM narrates · deterministic engine decides · llmControlsAction = false
+                    AI proposes · policy validates · Mantle verifies · llmControlsAction = false
                   </p>
                 </div>
               </div>
@@ -530,7 +530,7 @@ export function DecisionVerifier({ txHash, reasonHash }: Props) {
                     ["blockAfterHours", String(parsed.policy.blockAfterHoursEquity)],
                     ["maxAllocateRisk", String(parsed.policy.maxRiskForAllocate)],
                     ["fallback", parsed.policy.fallbackYieldAsset],
-                    ["llmControls", "false"],
+                    ["llmControlsAction", "false"],
                   ]}
                 />
               </div>
