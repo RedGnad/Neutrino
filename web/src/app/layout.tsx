@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               >
                 <rect width="32" height="32" rx="6" fill="#080705"/>
                 <rect x="1" y="1" width="30" height="30" rx="5" fill="none" stroke="#C8A86E" strokeOpacity="0.28" strokeWidth="1.5"/>
-                <path d="M8 25 L8 8 C8 6 24 6 24 14 L24 25" fill="none" stroke="#D4A040" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8 24 L8 8 L24 24 L24 8" fill="none" stroke="#D4A040" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <span
                 className="italic"

@@ -1,10 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Background: warm void -->
   <rect width="32" height="32" rx="6" fill="#080705"/>
-  <!-- Border: warm amber, low opacity -->
   <rect x="1" y="1" width="30" height="30" rx="5" fill="none" stroke="#C8A86E" stroke-opacity="0.28" stroke-width="1.5"/>
-  <!-- Letter n: aged gold, geometric, linecap round for softness at small sizes -->
-  <path d="M8 25 L8 8 C8 6 24 6 24 14 L24 25"
+  <path d="M8 24 L8 8 L24 24 L24 8"
         fill="none"
         stroke="#D4A040"
         stroke-width="2.8"
