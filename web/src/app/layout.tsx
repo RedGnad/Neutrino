@@ -36,9 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               >
                 <rect width="32" height="32" rx="6" fill="#080705"/>
                 <rect x="1" y="1" width="30" height="30" rx="5" fill="none" stroke="#C8A86E" strokeOpacity="0.2" strokeWidth="1.2"/>
-                <line x1="9" y1="8" x2="9" y2="24" stroke="#907E6C" strokeWidth="1.4" strokeLinecap="round"/>
-                <polygon points="9,8 13,8 23,24 19,24" fill="#C8A86E"/>
-                <line x1="23" y1="8" x2="23" y2="24" stroke="#907E6C" strokeWidth="1.4" strokeLinecap="round"/>
+                <path d="M8 25 L8 8 C8 6 24 6 24 14 L24 25" fill="none" stroke="#3A9B62" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <span
                 className="italic"
