@@ -24,7 +24,7 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { mantle } from 'viem/chains';
 import type { AssetMetadata, AssetSymbol, Decision, UserPolicy } from './types';
-import { decide } from './decision/decide';
+import { decide, buildAgentReceiptData } from './decision/decide';
 import {
   buildCanonicalDecision,
   type CanonicalDecision,
@@ -269,12 +269,25 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
       onChainWrite: 'live',
     };
 
+    const { aiProposal, policyReview } = buildAgentReceiptData({
+      meta,
+      snapshot,
+      policy: DEFAULT_POLICY,
+      riskScore: plan.riskScore,
+      finalAction: plan.action,
+      reason: plan.reason,
+      reasonFromLlm,
+      narrationModel: reasonFromLlm ? NARRATION_MODEL : null,
+    });
+
     const canonical = buildCanonicalDecision({
       agentId: cfg.agentId,
       meta,
       snapshot,
       breakdown: plan.breakdown,
       policy: DEFAULT_POLICY,
+      aiProposal,
+      policyReview,
       action: plan.action,
       riskScore: plan.riskScore,
       reason: plan.reason,

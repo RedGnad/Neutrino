@@ -36,6 +36,17 @@ const BASE_EQUITY_INPUT: CanonicalBuildInput = {
     maxRiskForAllocate: 350,
     fallbackYieldAsset: 'USDY',
   },
+  aiProposal: {
+    proposedAction: 'REDUCE',
+    confidence: 0.6,
+    rationale: 'PAUSE — after-hours equity, risk 400/1000.',
+    model: 'deterministic',
+  },
+  policyReview: {
+    finalAction: 'PAUSE',
+    decision: 'OVERRIDE',
+    overrideReason: 'Policy "No after-hours risk" blocks equity exposure outside market hours — PAUSE replaces the risk-based proposal.',
+  },
   action: 'PAUSE',
   riskScore: 400,
   reason: 'PAUSE — after-hours equity, risk 400/1000.',

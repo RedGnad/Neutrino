@@ -21,6 +21,7 @@
 
 import { keccak256, stringToBytes, type Hex } from 'viem';
 import type { Action, AssetMetadata, MarketSnapshot, RiskBreakdown, UserPolicy } from '../types';
+import type { AiProposalData, PolicyReviewData } from './decide';
 
 export type SourceState = 'live' | 'stub' | 'simulated' | 'n/a';
 
@@ -46,6 +47,9 @@ export interface CanonicalXStocks {
   marketTradingHalted: boolean | null;
   atomicTradingHalted: boolean | null;
 }
+
+// Re-export so callers can reference the receipt types without importing decide.ts.
+export type { AiProposalData as AiProposal, PolicyReviewData as PolicyReview };
 
 export interface CanonicalDecision {
   schema: 'neutrino.decision.v2';
@@ -83,6 +87,17 @@ export interface CanonicalDecision {
     maxRiskForAllocate: number;
     fallbackYieldAsset: string;
   };
+  aiProposal: {
+    proposedAction: Action;
+    confidence: number;
+    rationale: string;
+    model: string;
+  };
+  policyReview: {
+    finalAction: Action;
+    decision: 'APPROVE' | 'OVERRIDE';
+    overrideReason?: string;
+  };
   action: Action;
   riskScore: number;
   reason: string;
@@ -98,6 +113,8 @@ export interface CanonicalBuildInput {
   snapshot: MarketSnapshot;
   breakdown: RiskBreakdown;
   policy: UserPolicy;
+  aiProposal: AiProposalData;
+  policyReview: PolicyReviewData;
   action: Action;
   riskScore: number;
   reason: string;
@@ -157,6 +174,17 @@ export function buildCanonicalDecision(input: CanonicalBuildInput): {
       blockAfterHoursEquity: input.policy.blockAfterHoursEquity,
       maxRiskForAllocate: input.policy.maxRiskForAllocate,
       fallbackYieldAsset: input.policy.fallbackYieldAsset,
+    },
+    aiProposal: {
+      proposedAction: input.aiProposal.proposedAction,
+      confidence: input.aiProposal.confidence,
+      rationale: input.aiProposal.rationale,
+      model: input.aiProposal.model,
+    },
+    policyReview: {
+      finalAction: input.policyReview.finalAction,
+      decision: input.policyReview.decision,
+      ...(input.policyReview.overrideReason ? { overrideReason: input.policyReview.overrideReason } : {}),
     },
     action: input.action,
     riskScore: input.riskScore,

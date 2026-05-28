@@ -2,8 +2,93 @@
 // produces a fallback reason string. Does NOT compute the on-chain hash —
 // that is the canonical builder's job (see canonical.ts) so the hash covers
 // the full audit payload, not just the bits this function sees.
-import type { Action, AssetMetadata, DecisionPlan, MarketSnapshot, UserPolicy } from '../types';
+import type { Action, AssetKind, AssetMetadata, DecisionPlan, MarketSnapshot, UserPolicy } from '../types';
 import { computeRiskScore, type BasisStats } from '../scoring/risk-score';
+
+// ---------- Agent Responsibility Receipt helpers ----------
+
+export interface AiProposalData {
+  proposedAction: Action;
+  /** 0–1 linear complement of riskScore: 1 = fully confident, 0 = maximum risk. */
+  confidence: number;
+  /** Final reason text (LLM narration if available, deterministic fallback otherwise). */
+  rationale: string;
+  /** Model identifier, or "deterministic" when the LLM was unavailable. */
+  model: string;
+}
+
+export interface PolicyReviewData {
+  finalAction: Action;
+  decision: 'APPROVE' | 'OVERRIDE';
+  /** Present only when decision = 'OVERRIDE'. */
+  overrideReason?: string;
+}
+
+/**
+ * Builds the aiProposal + policyReview blocks for the canonical receipt.
+ *
+ * The AI proposal is what the risk-score engine would suggest with no
+ * policy guardrails (no halt signals, no after-hours block). The policy
+ * review either approves that proposal or explains the override.
+ */
+export function buildAgentReceiptData(params: {
+  meta: AssetMetadata;
+  snapshot: MarketSnapshot;
+  policy: UserPolicy;
+  riskScore: number;
+  finalAction: Action;
+  reason: string;
+  reasonFromLlm: boolean;
+  narrationModel: string | null;
+}): { aiProposal: AiProposalData; policyReview: PolicyReviewData } {
+  const { meta, snapshot, policy, riskScore, finalAction, reason, reasonFromLlm, narrationModel } = params;
+  const proposedAction = computeRawAction(riskScore, meta.kind, policy);
+  const confidence = parseFloat((1 - riskScore / 1000).toFixed(2));
+  const isOverride = proposedAction !== finalAction;
+
+  let overrideReason: string | undefined;
+  if (isOverride) {
+    if (meta.kind === 'tokenized_equity' && (snapshot.tradingHalted || snapshot.atomicTradingHalted)) {
+      overrideReason =
+        `xStocks API reports trading halted (marketTradingHalted=${snapshot.tradingHalted ?? 'n/a'}, ` +
+        `atomicTradingHalted=${snapshot.atomicTradingHalted ?? 'n/a'}) — PAUSE is mandatory.`;
+    } else if (meta.kind === 'tokenized_equity' && !snapshot.marketOpen && policy.blockAfterHoursEquity) {
+      overrideReason =
+        `Policy "${policy.name}" blocks equity exposure outside market hours — ` +
+        `PAUSE replaces the risk-based proposal.`;
+    } else {
+      overrideReason = `Risk score ${riskScore}/1000 and policy rules require ${finalAction} instead of the risk-based proposal.`;
+    }
+  }
+
+  return {
+    aiProposal: {
+      proposedAction,
+      confidence,
+      rationale: reason,
+      model: reasonFromLlm && narrationModel ? narrationModel : 'deterministic',
+    },
+    policyReview: {
+      finalAction,
+      decision: isOverride ? 'OVERRIDE' : 'APPROVE',
+      ...(overrideReason ? { overrideReason } : {}),
+    },
+  };
+}
+
+/**
+ * Risk-score-only action — no halt signals, no after-hours policy block.
+ * This is the "AI raw proposal" before the policy guardrails are applied.
+ */
+function computeRawAction(riskScore: number, kind: AssetKind, policy: UserPolicy): Action {
+  if (riskScore >= 800) return 'REQUIRE_HUMAN_CONFIRMATION';
+  if (riskScore >= 600) return kind === 'tokenized_equity' ? 'PAUSE' : 'REDUCE';
+  if (riskScore >= 400) return 'REDUCE';
+  if (riskScore >= policy.maxRiskForAllocate) return 'HOLD';
+  return 'ALLOCATE';
+}
+
+// ----------------------------------------------------------
 
 export interface DecideInput {
   meta: AssetMetadata;

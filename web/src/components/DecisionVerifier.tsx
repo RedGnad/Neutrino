@@ -40,6 +40,17 @@ interface ParsedDecision {
     model: string | null;
     fromLlm: boolean;
   };
+  aiProposal?: {
+    proposedAction: string;
+    confidence: number;
+    rationale: string;
+    model: string;
+  } | null;
+  policyReview?: {
+    finalAction: string;
+    decision: 'APPROVE' | 'OVERRIDE';
+    overrideReason?: string;
+  } | null;
 }
 
 const STORAGE_PREFIX = "neutrino:decision:";
@@ -261,6 +272,152 @@ export function DecisionVerifier({ txHash, reasonHash }: Props) {
           )}
         </div>
       </div>
+
+      {/* Agent Responsibility Receipt — three-panel summary */}
+      {parsed?.aiProposal && parsed?.policyReview && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          {/* Panel 1 — AI Proposal */}
+          <div
+            className="rounded-xl p-4 space-y-3"
+            style={{ background: "rgba(120,104,212,0.07)", border: "1px solid rgba(120,104,212,0.2)" }}
+          >
+            <p
+              className="text-[9px] font-medium uppercase tracking-widest"
+              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(155,143,232,0.7)" }}
+            >
+              AI Proposal
+            </p>
+            <div className="flex items-center gap-2">
+              <ActionPill action={parsed.aiProposal.proposedAction} />
+              <span
+                className="text-[10px] tabular-nums"
+                style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(155,143,232,0.6)" }}
+              >
+                {Math.round(parsed.aiProposal.confidence * 100)}% conf.
+              </span>
+            </div>
+            <p
+              className="text-[10px] leading-relaxed line-clamp-4"
+              style={{ color: "rgba(235,229,215,0.55)" }}
+            >
+              {parsed.aiProposal.rationale}
+            </p>
+            <p
+              className="text-[9px]"
+              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(155,143,232,0.4)" }}
+            >
+              model: {parsed.aiProposal.model}
+            </p>
+          </div>
+
+          {/* Panel 2 — Policy Review */}
+          <div
+            className="rounded-xl p-4 space-y-3"
+            style={{
+              background: parsed.policyReview.decision === 'OVERRIDE'
+                ? "rgba(255,107,53,0.06)"
+                : "rgba(45,212,165,0.05)",
+              border: `1px solid ${parsed.policyReview.decision === 'OVERRIDE' ? "rgba(255,107,53,0.2)" : "rgba(45,212,165,0.18)"}`,
+            }}
+          >
+            <p
+              className="text-[9px] font-medium uppercase tracking-widest"
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                color: parsed.policyReview.decision === 'OVERRIDE'
+                  ? "rgba(255,107,53,0.7)"
+                  : "rgba(45,212,165,0.6)",
+              }}
+            >
+              Policy Review
+            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className="rounded px-2 py-0.5 text-[10px] font-semibold font-mono uppercase tracking-wide"
+                style={{
+                  background: parsed.policyReview.decision === 'OVERRIDE'
+                    ? "rgba(255,107,53,0.15)"
+                    : "rgba(45,212,165,0.12)",
+                  color: parsed.policyReview.decision === 'OVERRIDE'
+                    ? "var(--bb-orange)"
+                    : "var(--bb-teal)",
+                }}
+              >
+                {parsed.policyReview.decision}
+              </span>
+              <ActionPill action={parsed.policyReview.finalAction} />
+            </div>
+            {parsed.policyReview.overrideReason ? (
+              <p
+                className="text-[10px] leading-relaxed"
+                style={{
+                  color: "rgba(235,229,215,0.55)",
+                }}
+              >
+                {parsed.policyReview.overrideReason}
+              </p>
+            ) : (
+              <p
+                className="text-[10px]"
+                style={{ color: "rgba(45,212,165,0.5)", fontFamily: "'IBM Plex Mono', monospace" }}
+              >
+                Risk-based proposal accepted.
+              </p>
+            )}
+          </div>
+
+          {/* Panel 3 — On-chain Commitment */}
+          <div
+            className="rounded-xl p-4 space-y-3"
+            style={{ background: "rgba(45,212,165,0.04)", border: "1px solid rgba(45,212,165,0.15)" }}
+          >
+            <p
+              className="text-[9px] font-medium uppercase tracking-widest"
+              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(45,212,165,0.55)" }}
+            >
+              On-chain Commitment
+            </p>
+            <ActionPill action={parsed.action} />
+            <div className="space-y-1.5">
+              <div className="flex justify-between gap-2">
+                <span className="text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
+                  riskScore
+                </span>
+                <span className="text-[10px] tabular-nums" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(235,229,215,0.6)" }}>
+                  {parsed.riskScore}<span style={{ color: "rgba(138,148,166,0.35)" }}>/1000</span>
+                </span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span className="text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
+                  reasonHash
+                </span>
+                <span className="text-[10px] font-mono truncate max-w-[120px]" style={{ color: "rgba(45,212,165,0.55)" }}>
+                  {reasonHash.slice(0, 10)}…
+                </span>
+              </div>
+            </div>
+            <a
+              href={`${EXPLORER_TX}/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-[10px] font-mono transition-opacity hover:opacity-80"
+              style={{ color: "var(--bb-teal)" }}
+            >
+              {txHash.slice(0, 10)}…{txHash.slice(-4)} ↗ Mantlescan
+            </a>
+            <p
+              className="text-[9px] leading-relaxed pt-1"
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                color: "rgba(45,212,165,0.35)",
+                borderTop: "1px solid rgba(45,212,165,0.1)",
+              }}
+            >
+              The AI proposes. Policy validates. Mantle verifies.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Two-column body */}
       <div className="grid gap-5 lg:grid-cols-2">
@@ -562,6 +719,23 @@ export function DecisionVerifier({ txHash, reasonHash }: Props) {
         trading status (shown as live), not order-book microstructure. Every field is covered by the on-chain reasonHash.
       </p>
     </section>
+  );
+}
+
+function ActionPill({ action }: { action: string }) {
+  const color =
+    action === "PAUSE" ? "var(--bb-orange)"
+    : action === "ALLOCATE" ? "var(--bb-teal)"
+    : action === "REDUCE" ? "var(--bb-amber)"
+    : action === "HOLD" ? "var(--bb-amber)"
+    : "var(--bb-muted)";
+  return (
+    <span
+      className="inline-block rounded px-2 py-0.5 text-[10px] font-semibold font-mono uppercase tracking-wide"
+      style={{ background: `${color}18`, border: `1px solid ${color}45`, color }}
+    >
+      {action}
+    </span>
   );
 }
 
