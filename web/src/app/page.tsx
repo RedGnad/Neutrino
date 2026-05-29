@@ -444,7 +444,7 @@ function BuilderIntegrationSection() {
           >
             Send market signals and execution intent; receive an AI proposal, policy review,
             final action, reasonHash, and Mantle receipt. The AI proposes. Policy validates.
-            Mantle verifies.
+            Mantle verifies. AI proposal → policy review → on-chain receipt.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link

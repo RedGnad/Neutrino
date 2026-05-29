@@ -112,8 +112,8 @@ export default function IntegratePage() {
             className="text-[11px] leading-relaxed"
             style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}
           >
-            market signals -&gt; AI proposal -&gt; policy review -&gt; final on-chain receipt -&gt;
-            optional execution if allowed
+            market signals → AI proposal → policy review → on-chain receipt → optional execution
+            if allowed
           </p>
         </div>
 
