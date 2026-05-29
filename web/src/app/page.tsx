@@ -332,7 +332,7 @@ function JudgeModeGuide() {
       n: "03",
       label: "Run safe yield",
       sub: "Scenario 02 below",
-      action: "Policy outcome if allowed",
+      action: "Policy outcome under current conditions",
       color: "var(--clear)",
       href: "#scenarios",
     },
@@ -547,18 +547,18 @@ function ScenarioSection() {
             className="rounded px-2 py-0.5"
             style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", background: "rgba(255,255,255,0.06)", color: "var(--text)", letterSpacing: "0.08em" }}
           >
-            DETERMINISTIC ENGINE
+            AI PROPOSAL
           </span>
-          <span style={{ color: "var(--muted)", fontSize: "13px" }}>decides action + risk score</span>
+          <span style={{ color: "var(--muted)", fontSize: "13px" }}>scores signals + drafts intent</span>
         </span>
         <span className="flex items-center gap-2">
           <span
             className="rounded px-2 py-0.5"
             style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", background: "rgba(120,104,212,0.14)", color: "#9B8FE8", letterSpacing: "0.08em" }}
           >
-            LLM NARRATES
+            POLICY REVIEW
           </span>
-          <span style={{ color: "var(--muted)", fontSize: "13px" }}>explains the decision — never controls it</span>
+          <span style={{ color: "var(--muted)", fontSize: "13px" }}>approves or overrides before on-chain receipt</span>
         </span>
       </div>
 
@@ -592,7 +592,7 @@ function ScenarioSection() {
           index="02"
           colorKey="clear"
           title="Safe on-chain RWA yield"
-          subtitle="POLICY OUTCOME IF ALLOWED"
+          subtitle="POLICY OUTCOME UNDER CURRENT CONDITIONS"
           assets={["USDY", "mETH"]}
           description="USDY and mETH can be allocated when policy allows. No market-hours exposure. xStock signals are n/a — no hidden stubs."
           button={
@@ -612,7 +612,7 @@ function ScenarioSection() {
           subtitle="ROUND-TRIP ON MAINNET"
           assets={["USDC", "mETH"]}
           description="Real Fluxion V3 USDC→mETH→USDC round-trip. Two on-chain swaps. Two Mantlescan tx hashes. Demo wallet stays solvent."
-          rfqNote="Safety gate active: xStocks execution requires an authenticated Atomic RFQ route. Neutrino can commit PAUSE on-chain instead of forcing an unsafe trade."
+          rfqNote="Safety gate active: xStocks execution is gated unless an authenticated RFQ route is verified. Neutrino can record a PAUSE receipt instead of forcing an unsafe trade."
           rfqMicro="Public xStocks signals are used for risk evaluation. Authenticated RFQ execution is intentionally gated."
           button={
             <RunAgentButton
