@@ -25,14 +25,14 @@ const DEFAULT_STEPS: TimelineStep[] = [
   {
     id: "risk",
     label: "02  RISK ENGINE",
-    sub: "Deterministic scoring",
+    sub: "Signal scoring with policy guardrails",
     state: "live",
     detail: "market-hours · spread* · liquidity* · basis · volatility",
   },
   {
     id: "policy",
     label: "03  POLICY VERDICT",
-    sub: "Explicit rules, no LLM",
+    sub: "Rules validate the AI proposal",
     state: "live",
     detail: "blockAfterHoursEquity · maxRiskForAllocate · fallback",
   },
@@ -46,16 +46,16 @@ const DEFAULT_STEPS: TimelineStep[] = [
   {
     id: "execution",
     label: "05  EXECUTION GATE",
-    sub: "Fluxion V3 · xChange RFQ auth-gated",
+    sub: "Fluxion V3 · xStocks via verified rails",
     state: "blocked",
-    detail: "Fluxion: live · xChange: requires API key + registered wallet",
+    detail: "Fluxion: live · xStocks execution waits for verified RFQ rails",
   },
 ];
 
 const STATE_STYLE: Record<StepState, { dot: string; badge: string; label: string }> = {
   live:     { dot: "var(--clear)",   badge: "badge-live",    label: "LIVE" },
   modelled: { dot: "var(--seal)",    badge: "badge-stub",    label: "MODELLED" },
-  blocked:  { dot: "var(--gated)",   badge: "badge-notexec", label: "AUTH GATED" },
+  blocked:  { dot: "var(--gated)",   badge: "badge-notexec", label: "VERIFIED RAILS" },
   verified: { dot: "var(--clear)",   badge: "badge-live",    label: "VERIFIED" },
   pending:  { dot: "var(--muted)",   badge: "badge-na",      label: "PENDING" },
 };

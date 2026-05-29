@@ -9,7 +9,7 @@ Neutrino gives autonomous agents a safety loop: the AI scores live RWA and xStoc
 
 - **Live:** decision receipts on Mantle mainnet; the Fluxion V3 execution path; xStock **indicative price** and **trading-halt status** (xStocks public API, unauthenticated, verified 2026-05-21).
 - **Modelled (flagged):** xStock order-book microstructure — spread, depth, 24h volume. The xStocks public API does not expose it, so the risk engine models it and the receipt marks those fields with `*`.
-- **Not done (by design):** xStock **execution**. xChange / Atomic RFQ is an authenticated, issuer-direct channel — Neutrino *risk-evaluates* xStocks and routes execution only through the verified Mantle-native rail (Fluxion V3). Neutrino does not "trade xStocks".
+- **Not done (by design):** xStock **execution**. xStocks execution requires verified issuer RFQ rails — Neutrino *risk-evaluates* xStocks and routes execution only through the verified Mantle-native rail (Fluxion V3). Neutrino does not "trade xStocks".
 
 Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantleturingtesthackathon2026) — Phase 2 "AI Awakening" — track **AI x RWA**.
 
@@ -138,7 +138,7 @@ Policy templates now visible in the app: Conservative RWA, Balanced Agent, and Y
 ## What's modelled / not done (and labelled as such)
 
 - **xStock order-book microstructure** — spread, depth, 24h volume — is **modelled**, not live. The xStocks public API exposes the indicative price and trading status (both live, see above) but not order-book depth. The risk engine models those fields and the receipt marks them with `*`. They are a secondary input; the dominant penalty for the risky scenario is market-hours / halt status, which is live.
-- **xStock execution / xChange Atomic RFQ** is **not performed**. xChange RFQ is an authenticated, issuer-direct channel (API key + registered wallet + EIP-712 quote). Neutrino *risk-evaluates* xStocks and executes only through the verified Mantle-native rail (Fluxion V3 USDC → mETH). This is a deliberate execution-readiness guardrail, not a missing feature.
+- **xStock execution / xChange Atomic RFQ** is **not performed**. xStocks execution requires verified issuer RFQ rails before capital can move. Neutrino *risk-evaluates* xStocks and executes only through the verified Mantle-native rail (Fluxion V3 USDC → mETH). This is a deliberate execution-readiness guardrail, not a missing feature.
 - **INIT Capital `mintTo` ABI** has not been visually verified on a contract page; the wrapper supports three call shapes (default, with-amount, transfer-then-mint) so a smoke test can flip without rewriting the call site. INIT is an experimental rail — the live execution path is Fluxion.
 
 ## Reproduce in 5 minutes
@@ -228,7 +228,7 @@ Mantle is closing the xStocks execution gap with the recent **Atomic RFQ** launc
 
 1. **xStock token addresses.** For NVDAx / TSLAx / SPYx the Mantle token addresses are resolved from the xStocks public API (`/public/assets/{symbol}`, `deployments[network=Mantle]`) and pinned only after on-chain `symbol()` / `decimals()` verification. Other xStocks stay disabled until verified the same way.
 2. **xStock order-book microstructure is modelled.** The xStocks public API exposes the indicative price and trading-halt status (both `live` in the receipt) but not spread / depth / 24h volume. Those snapshot fields are modelled and flagged — they are a secondary input to the risk score.
-3. **xStock execution (xChange / Atomic RFQ) is not performed.** xChange requires an API key generated in the Backed app, a registered wallet, and an EIP-712-signed `executeSwap()` on the AtomicSwap contract; its developer docs list Ethereum / Ink (EVM) and Solana, not Mantle. Neutrino treats RFQ execution as unavailable unless it has an authenticated, registered, executable route — that guardrail *is* the product. xStock execution is never simulated.
+3. **xStock execution (xChange / Atomic RFQ) is not performed.** Neutrino treats RFQ execution as unavailable unless it has a verified, executable issuer route; that guardrail *is* the product. xStock execution is never simulated.
 4. **Aave V3 is now available on Mantle**, but Neutrino's current live execution demo uses Fluxion V3. Aave integration is left as a post-hackathon extension.
 5. **INIT Capital `mintTo` ABI** is not visually verified on Mantlescan. Wrapper has fallback modes; the live execution rail is Fluxion V3, INIT stays experimental.
 6. **Decision payloads** are cached per browser via `localStorage`. IPFS pinning is the next iteration so any third party can resolve a `reasonHash`.

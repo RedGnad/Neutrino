@@ -110,7 +110,7 @@ async function Hero() {
               <ProofChip label="xStocks price + status" state="LIVE" color="clear" />
               <ProofChip label="Mantle receipts" state="LIVE" color="clear" />
               <ProofChip label="Fluxion execution" state="LIVE" color="clear" />
-              <ProofChip label="xChange RFQ" state="AUTH GATED" color="gated" />
+              <ProofChip label="xStocks RFQ" state="VERIFIED RAILS" color="gated" />
             </div>
 
             <div className="animate-stagger-5 flex flex-wrap gap-3">
@@ -612,8 +612,8 @@ function ScenarioSection() {
           subtitle="ROUND-TRIP ON MAINNET"
           assets={["USDC", "mETH"]}
           description="Real Fluxion V3 USDC→mETH→USDC round-trip. Two on-chain swaps. Two Mantlescan tx hashes. Demo wallet stays solvent."
-          rfqNote="Safety gate active: xStocks execution is gated unless an authenticated RFQ route is verified. Neutrino can record a PAUSE receipt instead of forcing an unsafe trade."
-          rfqMicro="Public xStocks signals are used for risk evaluation. Authenticated RFQ execution is intentionally gated."
+          rfqNote="Safety gate active: xStocks execution waits for verified RFQ rails. Neutrino can record a PAUSE receipt instead of forcing an unsafe trade."
+          rfqMicro="Public xStocks signals are used for risk evaluation. Execution only proceeds through verified rails."
           button={
             <RunAgentButton
               scenario="safe-yield"
@@ -822,10 +822,10 @@ function DataHonestySection() {
           note="xStocks public API does not expose order-book data. Modelled and flagged as 'stub' in every receipt."
         />
         <SourcePanel
-          state="AUTH GATED"
+          state="VERIFIED RAILS"
           color="gated"
           items={["xStocks execution via xChange / Atomic RFQ"]}
-          note="By design: Neutrino evaluates xStocks risk and can commit PAUSE on-chain when execution conditions are unsafe. Execution is only triggered through the verified Fluxion V3 rail. xChange requires authenticated RFQ — this guardrail is intentional, not a missing feature."
+          note="By design: Neutrino evaluates xStocks risk and can commit PAUSE on-chain when execution conditions are unsafe. Execution only proceeds through verified rails; this guardrail is intentional, not a missing feature."
         />
       </div>
 
@@ -954,7 +954,7 @@ function AttackSurfaceSection() {
     },
     {
       q: "Why doesn't the xStocks scenario execute a trade?",
-      a: "By design. Neutrino's job is risk evaluation, not trade facilitation. When current xStocks execution conditions are unsafe, policy can emit PAUSE and commit a verifiable receipt on-chain — forcing a trade would bypass the safety gate. Authenticated RFQ execution is intentionally excluded; Fluxion V3 is the only verified execution rail.",
+      a: "By design. Neutrino's job is risk evaluation, not trade facilitation. When current xStocks execution conditions are unsafe, policy can emit PAUSE and commit a verifiable receipt on-chain — forcing a trade would bypass the safety gate. Execution only proceeds through verified rails; Fluxion V3 is the current live rail.",
       verdict: "Safety gate.",
       color: "var(--gated)",
     },

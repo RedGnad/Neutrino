@@ -19,7 +19,7 @@
   --clear:        #3A9B62;   /* deep forest   — ALLOCATE / safe */
   --seal:         #D4A040;   /* aged gold     — verified / receipt */
   --pending:      #7A6B58;   /* tobacco       — modelled / uncertain */
-  --gated:        #7868D4;   /* deep indigo   — auth-gated */
+  --gated:        #7868D4;   /* deep indigo   — verified rails */
 
   /* Shorthand aliases — existing component code unchanged */
   --terracotta:   var(--refuse);

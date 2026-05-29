@@ -5,7 +5,7 @@ const POLICIES = [
     summary: "Default guardrail profile for tokenized equity and yield agents.",
     rules: [
       "Blocks unsafe after-hours tokenized equity execution.",
-      "Requires authenticated RFQ for xStocks execution.",
+      "Requires verified RFQ rails for xStocks execution.",
       "Allows safe-yield assets only when signal freshness and risk checks pass.",
     ],
   },

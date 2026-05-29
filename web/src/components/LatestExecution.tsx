@@ -128,7 +128,7 @@ export function LatestExecution() {
         className="mt-4 rounded px-3 py-2"
         style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", background: "rgba(120,104,212,0.05)", border: "1px solid rgba(120,104,212,0.15)", color: "rgba(155,143,232,0.6)" }}
       >
-        xStocks execution remains gated until a verified authenticated RFQ route is available.
+        xStocks execution waits until a verified RFQ route is available.
       </div>
     </section>
   );

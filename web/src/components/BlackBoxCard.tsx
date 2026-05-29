@@ -23,7 +23,7 @@ interface BlackBoxCardProps {
 const DEMO_DATA: BlackBoxData = {
   asset: "TSLAx / TSLA",
   signal: "after-hours · no halt",
-  rfqReadiness: "auth-gated",
+  rfqReadiness: "verified rail required",
   score: 480,
   action: "PAUSE",
   receiptHash: "run agent to generate",
@@ -54,7 +54,7 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
   const rows = [
     { k: "ASSET",  v: data.asset ?? "—" },
     { k: "SIGNAL", v: data.signal ?? "—" },
-    { k: "RFQ",    v: data.rfqReadiness ?? "auth-gated" },
+    { k: "RFQ",    v: data.rfqReadiness ?? "verified rail required" },
     { k: "SCORE",  v: typeof data.score === "number" ? `${data.score} / 1000` : data.score ?? "—" },
   ];
 

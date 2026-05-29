@@ -484,7 +484,7 @@ function RfqReadinessBlock({ results }: { results: PerAssetResult[] }) {
           </span>
         ) : (
           <span style={{ color: "var(--bb-muted)" }}>
-            Safety gate active. Neutrino evaluates current conditions before any capital movement — authenticated RFQ execution is intentionally gated. Execution routes through Fluxion V3 only.
+            Safety gate active. Neutrino evaluates current conditions before any capital movement — execution only proceeds through verified rails. Execution routes through Fluxion V3 only.
           </span>
         )}
       </div>
