@@ -263,7 +263,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             <code className="rounded px-1 py-0.5 text-[11px]" style={{ background: "rgba(255,255,255,0.06)", color: "var(--bb-teal)" }}>
               /api/run-agent
             </code>{" "}
-            and stored per browser session. Trigger a fresh run from the home page to populate it — or in production, payloads are IPFS-pinned.
+            and stored per browser session. Fresh runs also populate the server receipt cache; when KV/Upstash env vars are configured, receipts persist durably by reasonHash.
           </p>
         </div>
         <div
@@ -835,8 +835,8 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
         className="text-[11px] leading-relaxed"
         style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.4)" }}
       >
-        * spreadBps and volume24hUsd are modelled — the xStocks public API exposes indicative price and
-        trading status (shown as live), not order-book microstructure. Every field is covered by the on-chain reasonHash.
+        * spreadBps and volume24hUsd are modelled — the xStocks public API can expose indicative price and
+        trading status, but price is marked stub when the quote is null. Every field is covered by the on-chain reasonHash.
       </p>
     </section>
   );

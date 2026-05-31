@@ -7,7 +7,7 @@
 Neutrino gives autonomous agents a safety loop: the AI scores live RWA and xStocks signals and proposes an action, policy validates or overrides it, and the final decision is committed to Mantle with a canonical receipt (`reasonHash = keccak256(audit JSON)`). When policy allows, execution routes through Fluxion V3. The AI proposes. Policy validates. Mantle verifies.
 
 
-- **Live:** decision receipts on Mantle mainnet; the Fluxion V3 execution path; xStock **indicative price** and **trading-halt status** (xStocks public API, unauthenticated, verified 2026-05-21).
+- **Live:** decision receipts on Mantle mainnet; the Fluxion V3 execution path; xStock **trading-halt status** and **indicative price when the public API returns a quote**. If the quote is null or unavailable, the receipt marks xStock price as `stub` and uses the modelled fallback.
 - **Modelled (flagged):** xStock order-book microstructure — spread, depth, 24h volume. The xStocks public API does not expose it, so the risk engine models it and the receipt marks those fields with `*`.
 - **Not done (by design):** xStock **execution**. xStocks execution requires verified issuer RFQ rails — Neutrino *risk-evaluates* xStocks and routes execution only through the verified Mantle-native rail (Fluxion V3). Neutrino does not "trade xStocks".
 
@@ -74,8 +74,8 @@ Real `ALLOCATE` end-to-end on Fluxion V3 (Mantle mainnet):
 ## What ships today
 
 - **Real on-chain decisions** on Mantle mainnet. Every run writes one `DecisionLogged` event per asset with a `reasonHash` that covers the full canonical audit JSON (schema `neutrino.decision.v2`).
-- **Live xStocks public-API integration.** For every tokenized equity the agent reads the issuer's **indicative price** (`/public/assets/{symbol}/price-data`) and the official **trading-halt status** (`/public/system/status/{symbol}`) — unauthenticated public endpoints, verified 2026-05-21. An `isMarketTradingHalted` / `isAtomicTradingHalted` flag produces a policy PAUSE outcome. xStock token contract addresses on Mantle are resolved from the same API and verified on-chain.
-- **Verifiable local receipts** — after a run, the `/agent-decision/[asset]` page reads the on-chain reason hash and lets you re-compute `keccak256` on the audit JSON cached by that browser to confirm a match.
+- **xStocks public-API integration.** For every tokenized equity the agent queries the issuer's **indicative price** (`/public/assets/{symbol}/price-data`) and the official **trading-halt status** (`/public/system/status/{symbol}`). Trading status is live when the endpoint responds; price is live only when the API returns a non-null quote. Otherwise the receipt marks xStock price as `stub` and uses the modelled fallback. An `isMarketTradingHalted` / `isAtomicTradingHalted` flag produces a policy PAUSE outcome.
+- **Verifiable receipts** — after a run, the `/agent-decision/[asset]` page reads the on-chain reason hash and lets you re-compute `keccak256` on the audit JSON. The hosted app also exposes `/api/receipts/[reasonHash]` from durable KV/Upstash when configured, with in-memory demo fallback otherwise.
 - **Live freshness flags** in every result panel: market hours, reference prices (Twelve Data), xStock price (xStocks API), xStock trading status (xStocks API), LLM reasoning (Claude Haiku 4.5), on-chain write, on-chain execution. `live` / `stub` / `n/a` is shown per signal, never hidden.
 - **Two judge-ready scenarios** on the home page:
   - *Risky xStocks* (NVDAx / TSLAx / SPYx) — policy can pause when execution conditions are unsafe.
@@ -86,7 +86,7 @@ Real `ALLOCATE` end-to-end on Fluxion V3 (Mantle mainnet):
 
 ## Builder integration
 
-Neutrino is a policy layer for RWA agents. Send market signals + execution intent, receive an AI proposal, policy review, final action, reasonHash, and Mantle receipt.
+Neutrino is a policy layer for RWA agents. The hosted demo runs named scenarios through the live policy loop and returns an AI proposal, policy review, final action, reasonHash, and Mantle receipt.
 
 Flow:
 
@@ -99,11 +99,8 @@ const res = await fetch("/api/run-agent", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    agentId: "demo-agent",
-    assets: ["TSLAx", "NVDAx", "SPYx", "USDY", "mETH"],
-    policy: "conservative-rwa",
-    intent: "rebalance",
-    scenario: "default"
+    scenario: "default",
+    execute: false
   })
 });
 
@@ -133,11 +130,11 @@ Example receipt shape for downstream systems:
 }
 ```
 
-Policy templates now visible in the app: Conservative RWA, Balanced Agent, and Yield-seeking. Outputs are policy outcomes, not fixed asset labels. Neutrino reevaluates live signals on every run.
+Policy templates are visible in the app: Conservative RWA, Balanced Agent, and Yield-seeking. The current hosted demo runtime uses the Conservative RWA-style `No after-hours risk` policy; Balanced and Yield-seeking show the builder-facing template direction. Outputs are policy outcomes, not fixed asset labels. Neutrino reevaluates live signals on every run.
 
 ## What's modelled / not done (and labelled as such)
 
-- **xStock order-book microstructure** — spread, depth, 24h volume — is **modelled**, not live. The xStocks public API exposes the indicative price and trading status (both live, see above) but not order-book depth. The risk engine models those fields and the receipt marks them with `*`. They are a secondary input; the dominant penalty for the risky scenario is market-hours / halt status, which is live.
+- **xStock order-book microstructure** — spread, depth, 24h volume — is **modelled**, not live. The xStocks public API exposes trading status and may return an indicative price; if the quote is null or unavailable, the receipt marks xStock price as `stub`. The risk engine models spread/depth/volume and the receipt marks them with `*`. They are a secondary input; the dominant penalty for the risky scenario is market-hours / halt status, which is live when the status endpoint responds.
 - **xStock execution / xChange Atomic RFQ** is **not performed**. xStocks execution requires verified issuer RFQ rails before capital can move. Neutrino *risk-evaluates* xStocks and executes only through the verified Mantle-native rail (Fluxion V3 USDC → mETH). This is a deliberate execution-readiness guardrail, not a missing feature.
 - **INIT Capital `mintTo` ABI** has not been visually verified on a contract page; the wrapper supports three call shapes (default, with-amount, transfer-then-mint) so a smoke test can flip without rewriting the call site. INIT is an experimental rail — the live execution path is Fluxion.
 
@@ -159,6 +156,8 @@ forge script script/Deploy.s.sol --rpc-url mantle --broadcast
 # 3. Web dashboard
 cd ../web
 cp ../.env.example .env.local   # fill in deployed addresses + Twelve Data + Anthropic keys
+# Optional durable receipts: add KV_REST_API_URL / KV_REST_API_TOKEN
+# or UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN.
 pnpm install
 pnpm dev                        # → http://localhost:3000
 ```
@@ -218,7 +217,7 @@ neutrino/
 }
 ```
 
-`snapshot.onChainPrice` is the live xStocks indicative quote; `snapshot.spreadBps` / `volume24hUsd` are modelled (the public API does not expose order-book depth). `sources` flags each signal `live` / `stub` / `n/a`. `aiProposal` is the raw risk-engine proposal before policy guardrails; `policyReview` shows whether policy approved or overrode it. `reasonHash` on-chain = `keccak256(JSON.stringify(payload))` — byte-stable and covers the full loop: proposal, review, and final decision.
+`snapshot.onChainPrice` is the live xStocks indicative quote when `sources.xStockPrice = "live"`; otherwise it is the modelled fallback and the receipt marks xStock price as `stub`. `snapshot.spreadBps` / `volume24hUsd` are modelled (the public API does not expose order-book depth). `sources` flags each signal `live` / `stub` / `n/a`. `aiProposal` is the raw risk-engine proposal before policy guardrails; `policyReview` shows whether policy approved or overrode it. `reasonHash` on-chain = `keccak256(JSON.stringify(payload))` — byte-stable and covers the full loop: proposal, review, and final decision.
 
 ## Why Mantle, why now
 
@@ -227,11 +226,11 @@ Mantle is closing the xStocks execution gap with the recent **Atomic RFQ** launc
 ## Honest limitations (because the jury is on-chain analytics)
 
 1. **xStock token addresses.** For NVDAx / TSLAx / SPYx the Mantle token addresses are resolved from the xStocks public API (`/public/assets/{symbol}`, `deployments[network=Mantle]`) and pinned only after on-chain `symbol()` / `decimals()` verification. Other xStocks stay disabled until verified the same way.
-2. **xStock order-book microstructure is modelled.** The xStocks public API exposes the indicative price and trading-halt status (both `live` in the receipt) but not spread / depth / 24h volume. Those snapshot fields are modelled and flagged — they are a secondary input to the risk score.
+2. **xStock order-book microstructure is modelled.** The xStocks public API exposes trading-halt status and may expose an indicative price, but it does not expose spread / depth / 24h volume. If the price quote is null or unavailable, `sources.xStockPrice` is `stub` and the modelled fallback is used. Spread / depth / volume are always modelled and flagged — they are a secondary input to the risk score.
 3. **xStock execution (xChange / Atomic RFQ) is not performed.** Neutrino treats RFQ execution as unavailable unless it has a verified, executable issuer route; that guardrail *is* the product. xStock execution is never simulated.
 4. **Aave V3 is now available on Mantle**, but Neutrino's current live execution demo uses Fluxion V3. Aave integration is left as a post-hackathon extension.
 5. **INIT Capital `mintTo` ABI** is not visually verified on Mantlescan. Wrapper has fallback modes; the live execution rail is Fluxion V3, INIT stays experimental.
-6. **Decision payloads** are cached per browser via `localStorage`. IPFS pinning is the next iteration so any third party can resolve a `reasonHash`.
+6. **Decision payloads** are cached per browser via `localStorage` and exposed server-side after fresh runs. If `KV_REST_API_URL` / `KV_REST_API_TOKEN` or `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are configured, receipts persist durably by `reasonHash`; otherwise the server uses an in-memory demo fallback.
 
 ## License
 

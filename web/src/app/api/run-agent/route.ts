@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     // canonical payload by reasonHash (not just the one that triggered the run).
     for (const r of result.results) {
       if (r.txHash && r.canonicalJson && r.canonicalHash) {
-        saveReceipt({
+        await saveReceipt({
           txHash: r.txHash,
           blockNumber: r.blockNumber ?? '0',
           agentId: BigInt(agentIdRaw),

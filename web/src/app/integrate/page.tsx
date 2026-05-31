@@ -19,11 +19,8 @@ const FETCH_SNIPPET = `const res = await fetch("/api/run-agent", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    agentId: "demo-agent",
-    assets: ["TSLAx", "NVDAx", "SPYx", "USDY", "mETH"],
-    policy: "conservative-rwa",
-    intent: "rebalance",
-    scenario: "default"
+    scenario: "default",
+    execute: false
   })
 });
 
@@ -71,9 +68,9 @@ export default function IntegratePage() {
               className="mt-4 max-w-2xl text-base leading-relaxed"
               style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
             >
-              Neutrino is a policy layer for RWA agents. Send market signals + execution
-              intent, receive an AI proposal, policy review, final action, reasonHash,
-              and Mantle receipt.
+              Neutrino is a policy layer for RWA agents. The hosted demo endpoint runs
+              named scenarios through the live policy loop and returns an AI proposal,
+              policy review, final action, reasonHash, and Mantle receipt.
             </p>
           </div>
 

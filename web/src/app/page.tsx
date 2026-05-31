@@ -107,10 +107,10 @@ async function Hero() {
             </div>
 
             <div className="animate-stagger-4 flex flex-wrap gap-2">
-              <ProofChip label="xStocks price + status" state="LIVE" color="clear" />
+              <ProofChip label="xStocks status + price check" state="LIVE/STUB" color="clear" />
               <ProofChip label="Mantle receipts" state="LIVE" color="clear" />
               <ProofChip label="Fluxion execution" state="LIVE" color="clear" />
-              <ProofChip label="xStocks RFQ" state="VERIFIED RAILS" color="gated" />
+              <ProofChip label="xStocks RFQ" state="GATED" color="gated" />
             </div>
 
             <div className="animate-stagger-5 flex flex-wrap gap-3">
@@ -442,8 +442,8 @@ function BuilderIntegrationSection() {
             className="mt-2 max-w-2xl text-sm leading-relaxed"
             style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
           >
-            Send market signals and execution intent; receive an AI proposal, policy review,
-            final action, reasonHash, and Mantle receipt. The AI proposes. Policy validates.
+            Run configured RWA scenarios through Neutrino&apos;s policy loop; receive an AI proposal,
+            policy review, final action, reasonHash, and Mantle receipt. The AI proposes. Policy validates.
             Mantle verifies. AI proposal → policy review → on-chain receipt.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
@@ -526,7 +526,7 @@ function ScenarioSection() {
           className="text-sm mt-1 max-w-xl"
           style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
         >
-          Each run fetches live xStocks signals, scores deterministically, narrates via LLM, writes one{" "}
+          Each run checks xStocks public-API signals, flags unavailable fields as stub, scores deterministically, narrates via LLM, writes one{" "}
           <code
             className="rounded px-1 py-0.5 text-xs"
             style={{ fontFamily: "'Azeret Mono', monospace", background: "rgba(255,255,255,0.05)", color: "var(--text)" }}
@@ -577,7 +577,7 @@ function ScenarioSection() {
           title="After-hours xStock exposure"
           subtitle="CURRENT POLICY OUTCOME"
           assets={["NVDAx", "TSLAx", "SPYx"]}
-          description="Live xStocks price + trading-halt status. xStocks can be paused when execution conditions are unsafe under the active policy."
+          description="Live xStocks trading-halt status plus indicative price when available. If the quote is null, the receipt marks price as stub. xStocks can be paused when execution conditions are unsafe under the active policy."
           button={
             <RunAgentButton
               scenario="risky-xstocks"
@@ -803,7 +803,7 @@ function DataHonestySection() {
           state="LIVE"
           color="clear"
           items={[
-            "xStock indicative price (xStocks public API)",
+            "xStock indicative price when API returns a quote",
             "xStock trading-halt status (xStocks public API)",
             "Mantle token addresses (verified on-chain)",
             "US market hours (evaluated at run time)",
@@ -819,13 +819,13 @@ function DataHonestySection() {
             "xStock 24h volume",
             "Order-book microstructure",
           ]}
-          note="xStocks public API does not expose order-book data. Modelled and flagged as 'stub' in every receipt."
+          note="xStocks public API does not expose order-book data. Price is flagged live only when the API returns a non-null quote; spread/depth/volume are modelled and flagged in every receipt."
         />
         <SourcePanel
-          state="VERIFIED RAILS"
+          state="GATED"
           color="gated"
-          items={["xStocks execution via xChange / Atomic RFQ"]}
-          note="By design: Neutrino evaluates xStocks risk and can commit PAUSE on-chain when execution conditions are unsafe. Execution only proceeds through verified rails; this guardrail is intentional, not a missing feature."
+          items={["xStocks execution via xChange / Atomic RFQ is not performed"]}
+          note="By design: Neutrino evaluates xStocks risk and can commit PAUSE on-chain when execution conditions are unsafe. Execution requires a verified, executable issuer route; this guardrail is intentional, not a missing feature."
         />
       </div>
 
@@ -948,7 +948,7 @@ function AttackSurfaceSection() {
     },
     {
       q: "Is the xStock price fake?",
-      a: "The xStocks public API returns a real indicative price and trading-halt status. Spread / depth / volume are modelled and flagged as 'stub' in every receipt.",
+      a: "Neutrino queries the xStocks public API for indicative price and trading-halt status. If the price quote is null or unavailable, the receipt marks xStock price as stub and uses the modelled fallback. Spread / depth / volume are modelled and flagged.",
       verdict: "No.",
       color: "var(--clear)",
     },
@@ -1082,7 +1082,7 @@ function WhyMantleSection() {
           },
           {
             title: "Source-freshness on every receipt",
-            body: "Every decision payload pins live / stub / n/a per signal. Nothing is hidden — judges see exactly which inputs were real at the moment of decision.",
+            body: "Every decision payload pins live / stub / n/a per signal. Nothing is hidden — judges see which inputs were live and which fell back at the moment of decision.",
             accent: "var(--clear)",
           },
           {

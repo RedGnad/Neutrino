@@ -35,10 +35,11 @@ export interface DecisionSources {
 }
 
 /**
- * Live xStocks public-API data captured at decision time. Present for
- * tokenized equities, null for yield/stable assets. `indicativePrice` is the
- * issuer's quote; microstructure (spread/depth) is NOT in this block because
- * the public API does not expose it — see the snapshot fields for the
+ * xStocks public-API data captured at decision time. Present for tokenized
+ * equities, null for yield/stable assets. `indicativePrice` is the issuer's
+ * quote when the API returns one; otherwise it is null and the receipt marks
+ * xStock price as `stub`. Microstructure (spread/depth) is NOT in this block
+ * because the public API does not expose it — see the snapshot fields for the
  * modelled values and their honesty flags.
  */
 export interface CanonicalXStocks {
@@ -119,7 +120,7 @@ export interface CanonicalBuildInput {
   riskScore: number;
   reason: string;
   sources: DecisionSources;
-  /** Live xStocks public-API data; null for non-equity assets. */
+  /** xStocks public-API data when available; null for non-equity assets. */
   xstocks: CanonicalXStocks | null;
   narrationModel: string | null;
   narrationFromLlm: boolean;

@@ -55,7 +55,8 @@ export function PolicyTemplates({ compact = false }: { compact?: boolean }) {
           style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
         >
           Outputs are policy outcomes, not fixed asset labels. Neutrino reevaluates live
-          signals on every run.
+          signals on every run. The hosted demo runs the Conservative RWA-style No after-hours
+          risk policy today; the other profiles show the builder template direction.
         </p>
       </div>
 

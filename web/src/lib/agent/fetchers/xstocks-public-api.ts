@@ -61,7 +61,7 @@ export interface XStockLiveData {
 }
 
 /**
- * Fetch the live indicative price and trading status for one xStock.
+ * Fetch the indicative price (when available) and live trading status for one xStock.
  * Never throws — on any failure the corresponding field is null and the
  * caller falls back to the modelled snapshot, flagged `stub`.
  */

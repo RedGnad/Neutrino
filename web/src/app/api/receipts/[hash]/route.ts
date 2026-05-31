@@ -13,7 +13,7 @@ export async function GET(
   if (!hash || !/^0x[0-9a-fA-F]{64}$/.test(hash)) {
     return NextResponse.json({ error: 'Invalid hash format' }, { status: 400 });
   }
-  const receipt = getReceiptByHash(hash);
+  const receipt = await getReceiptByHash(hash);
   if (!receipt) {
     return NextResponse.json({ error: 'Receipt not found' }, { status: 404 });
   }

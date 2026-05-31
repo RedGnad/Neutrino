@@ -18,9 +18,9 @@ const DEFAULT_STEPS: TimelineStep[] = [
   {
     id: "signal",
     label: "01  SIGNAL CAPTURED",
-    sub: "xStocks price + trading-halt status",
+    sub: "xStocks status + price availability",
     state: "live",
-    detail: "indicative price · halt flags · market hours",
+    detail: "halt flags · market hours · quote if available",
   },
   {
     id: "risk",
@@ -46,16 +46,16 @@ const DEFAULT_STEPS: TimelineStep[] = [
   {
     id: "execution",
     label: "05  EXECUTION GATE",
-    sub: "Fluxion V3 · xStocks via verified rails",
+    sub: "Fluxion V3 · xStocks execution gated",
     state: "blocked",
-    detail: "Fluxion: live · xStocks execution waits for verified RFQ rails",
+    detail: "Fluxion: live · xStocks execution not performed without verified RFQ rails",
   },
 ];
 
 const STATE_STYLE: Record<StepState, { dot: string; badge: string; label: string }> = {
   live:     { dot: "var(--clear)",   badge: "badge-live",    label: "LIVE" },
   modelled: { dot: "var(--seal)",    badge: "badge-stub",    label: "MODELLED" },
-  blocked:  { dot: "var(--gated)",   badge: "badge-notexec", label: "VERIFIED RAILS" },
+  blocked:  { dot: "var(--gated)",   badge: "badge-notexec", label: "GATED" },
   verified: { dot: "var(--clear)",   badge: "badge-live",    label: "VERIFIED" },
   pending:  { dot: "var(--muted)",   badge: "badge-na",      label: "PENDING" },
 };
