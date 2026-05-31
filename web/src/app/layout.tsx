@@ -26,26 +26,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         >
           <div className="mx-auto flex min-h-14 max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-            <Link href="/" className="flex shrink-0 items-center gap-3">
+            <Link href="/" className="brand-lockup flex shrink-0 items-center gap-3">
               <svg
+                className="brand-mark"
                 width="22"
                 height="22"
                 viewBox="0 0 32 32"
                 aria-hidden="true"
                 style={{ display: 'block', flexShrink: 0 }}
               >
-                <rect width="32" height="32" rx="2" fill="#050504"/>
-                <rect x="1" y="1" width="30" height="30" rx="1.5" fill="none" stroke="#B7A16A" strokeOpacity="0.32" strokeWidth="1.2"/>
-                <path d="M8 25 L8 8 C8 6 24 6 24 14 L24 25" fill="none" stroke="#789B7D" strokeWidth="2.8" strokeLinecap="square" strokeLinejoin="miter"/>
+                <rect className="brand-mark-base" width="32" height="32" rx="2" />
+                <rect className="brand-mark-frame" x="1" y="1" width="30" height="30" rx="1.5" fill="none" strokeWidth="1.2"/>
+                <path className="brand-mark-glyph" d="M8 25 L8 8 C8 6 24 6 24 14 L24 25" fill="none" strokeWidth="2.8" strokeLinecap="square" strokeLinejoin="miter"/>
               </svg>
               <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: '1.35rem',
-                  fontWeight: 700,
-                  color: 'var(--text)',
-                  letterSpacing: '0',
-                }}
+                className="brand-wordmark"
               >
                 Neutrino
               </span>
