@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { keccak256, stringToBytes, type Hex } from "viem";
+import { XStocksDecisionBreakdown } from "./XStocksDecisionBreakdown";
 
 interface Props {
   txHash: Hex;
@@ -24,7 +25,10 @@ interface ParsedDecision {
   };
   sources: Record<string, SourceState>;
   snapshot: Record<string, string | number | boolean | null>;
-  breakdown: { total: number };
+  breakdown: {
+    marketHoursPenalty?: number;
+    total: number;
+  };
   policy: {
     name: string;
     blockAfterHoursEquity: boolean;
@@ -503,7 +507,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                 borderTop: "1px solid rgba(45,212,165,0.1)",
               }}
             >
-              The AI proposes. Policy validates. Mantle verifies.
+              AI proposes, policy validates or overrides, Mantle verifies the final receipt.
             </p>
           </div>
         </div>
@@ -579,10 +583,12 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                     {parsed.reason}
                   </p>
                   <p className="mt-2 text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
-                    AI proposes · policy validates · Mantle verifies · llmControlsAction = false
+                    AI proposes · policy validates or overrides · Mantle verifies · llmControlsAction = false
                   </p>
                 </div>
               </div>
+
+              <XStocksDecisionBreakdown decision={parsed} />
 
               {/* Source matrix */}
               <div

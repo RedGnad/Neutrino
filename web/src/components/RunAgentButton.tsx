@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { parseXStocksDecision, XStocksDecisionBreakdown } from "./XStocksDecisionBreakdown";
 
 type Scenario = "default" | "risky-xstocks" | "safe-yield";
 type SourceState = "live" | "stub" | "simulated" | "n/a";
@@ -321,6 +322,7 @@ function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scena
 }
 
 function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) {
+  const xstocksDecision = parseXStocksDecision(r.canonicalJson);
   const actionColor =
     r.action === "PAUSE" || r.action === "REDUCE"
       ? "var(--bb-orange)"
@@ -395,6 +397,11 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
       </div>
 
       <SourceBadges sources={r.sources} />
+      {xstocksDecision ? (
+        <div className="pl-14">
+          <XStocksDecisionBreakdown decision={xstocksDecision} compact />
+        </div>
+      ) : null}
     </li>
   );
 }
@@ -484,7 +491,7 @@ function RfqReadinessBlock({ results }: { results: PerAssetResult[] }) {
           </span>
         ) : (
           <span style={{ color: "var(--bb-muted)" }}>
-            Safety gate active. Neutrino evaluates current conditions before any capital movement — execution only proceeds through verified rails. Execution routes through Fluxion V3 only.
+            Current signal may be tradable, but xStocks execution is gated because no verified RFQ rail is configured. Market context and execution readiness are evaluated separately.
           </span>
         )}
       </div>

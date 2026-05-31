@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CopyButton } from "@/components/CopyButton";
 import { PolicyTemplates } from "@/components/PolicyTemplates";
 import {
   AGENT_ADDRESS,
@@ -44,6 +45,14 @@ const RESPONSE_SNIPPET = `{
     "txHash": "0x..."
   }
 }`;
+
+const CURL_SAFE_YIELD = `curl -X POST https://neutrino-fawn.vercel.app/api/run-agent \\
+  -H "Content-Type: application/json" \\
+  -d '{"scenario":"safe-yield","execute":false}'`;
+
+const CURL_XSTOCKS = `curl -X POST https://neutrino-fawn.vercel.app/api/run-agent \\
+  -H "Content-Type: application/json" \\
+  -d '{"scenario":"risky-xstocks","execute":false}'`;
 
 export default function IntegratePage() {
   return (
@@ -156,8 +165,24 @@ export default function IntegratePage() {
       </section>
 
       <section className="section-ruled grid gap-5 lg:grid-cols-2">
-        <CodePanel title="Fetch example" code={FETCH_SNIPPET} />
+        <CodePanel title="Fetch example" code={FETCH_SNIPPET} copy />
         <CodePanel title="Example response shape" code={RESPONSE_SNIPPET} />
+      </section>
+
+      <section className="section-ruled space-y-4">
+        <div>
+          <span className="section-label">COPYABLE CURL</span>
+          <p
+            className="mt-1 max-w-2xl text-sm leading-relaxed"
+            style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
+          >
+            Receipt-only commands against the real hosted endpoint. They do not execute capital movement.
+          </p>
+        </div>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <CodePanel title="Safe-yield receipt run" code={CURL_SAFE_YIELD} copy />
+          <CodePanel title="xStocks receipt-only run" code={CURL_XSTOCKS} copy />
+        </div>
       </section>
 
       <PolicyTemplates />
@@ -189,18 +214,21 @@ export default function IntegratePage() {
   );
 }
 
-function CodePanel({ title, code }: { title: string; code: string }) {
+function CodePanel({ title, code, copy = false }: { title: string; code: string; copy?: boolean }) {
   return (
     <div
       className="rounded-lg p-4"
       style={{ background: "var(--panel)", border: "1px solid var(--border-hi)" }}
     >
-      <p
-        className="mb-3 text-[10px] font-medium uppercase tracking-widest"
-        style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--seal)" }}
-      >
-        {title}
-      </p>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p
+          className="text-[10px] font-medium uppercase tracking-widest"
+          style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--seal)" }}
+        >
+          {title}
+        </p>
+        {copy ? <CopyButton value={code} label="copy" copiedLabel="copied" /> : null}
+      </div>
       <pre
         className="overflow-x-auto rounded p-4 text-[11px] leading-relaxed"
         style={{

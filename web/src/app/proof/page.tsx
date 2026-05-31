@@ -8,6 +8,7 @@ import {
   resolveAsset,
   timeAgo,
 } from "@/lib/onchain";
+import { ReasonHashVerifier } from "@/components/ReasonHashVerifier";
 
 export const revalidate = 10;
 
@@ -46,6 +47,8 @@ export default async function ProofPage() {
 
       {/* Contract addresses */}
       <ContractCards />
+
+      <ReasonHashVerifier />
 
       {!LOGGER_ADDRESS ? (
         <Empty

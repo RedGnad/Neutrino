@@ -443,8 +443,8 @@ function BuilderIntegrationSection() {
             style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
           >
             Run configured RWA scenarios through Neutrino&apos;s policy loop; receive an AI proposal,
-            policy review, final action, reasonHash, and Mantle receipt. The AI proposes. Policy validates.
-            Mantle verifies. AI proposal → policy review → on-chain receipt.
+            policy review, final action, reasonHash, and Mantle receipt. AI proposes,
+            policy validates or overrides, Mantle verifies the final receipt. AI proposal → policy review → on-chain receipt.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
@@ -954,7 +954,7 @@ function AttackSurfaceSection() {
     },
     {
       q: "Why doesn't the xStocks scenario execute a trade?",
-      a: "By design. Neutrino's job is risk evaluation, not trade facilitation. When current xStocks execution conditions are unsafe, policy can emit PAUSE and commit a verifiable receipt on-chain — forcing a trade would bypass the safety gate. Execution only proceeds through verified rails; Fluxion V3 is the current live rail.",
+      a: "By design. Neutrino evaluates market context and execution readiness separately. An xStock can have fresher market signals while still pausing because no verified RFQ rail is configured. PAUSE means the agent refused to move capital through an unverified rail; Fluxion V3 is the current live rail.",
       verdict: "Safety gate.",
       color: "var(--gated)",
     },
