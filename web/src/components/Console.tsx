@@ -6,38 +6,38 @@ type Tone = "green" | "amber" | "blue" | "red" | "slate" | "gold" | "violet";
 const TONES: Record<Tone, { fg: string; bg: string; border: string }> = {
   green: {
     fg: "var(--clear)",
-    bg: "rgba(58,155,98,0.1)",
-    border: "rgba(58,155,98,0.26)",
+    bg: "rgba(116,154,126,0.045)",
+    border: "rgba(116,154,126,0.28)",
   },
   amber: {
-    fg: "var(--seal)",
-    bg: "rgba(212,160,64,0.1)",
-    border: "rgba(212,160,64,0.26)",
+    fg: "var(--pause)",
+    bg: "rgba(190,160,95,0.045)",
+    border: "rgba(190,160,95,0.28)",
   },
   blue: {
-    fg: "#8EA8FF",
-    bg: "rgba(90,118,210,0.11)",
-    border: "rgba(90,118,210,0.25)",
+    fg: "var(--review)",
+    bg: "rgba(128,145,166,0.045)",
+    border: "rgba(128,145,166,0.24)",
   },
   red: {
     fg: "var(--refuse)",
-    bg: "rgba(209,64,64,0.11)",
-    border: "rgba(209,64,64,0.27)",
+    bg: "rgba(190,100,92,0.05)",
+    border: "rgba(190,100,92,0.28)",
   },
   slate: {
-    fg: "rgba(242,232,213,0.68)",
-    bg: "rgba(144,126,108,0.09)",
-    border: "rgba(144,126,108,0.2)",
+    fg: "var(--muted-strong)",
+    bg: "rgba(150,143,132,0.035)",
+    border: "rgba(150,143,132,0.18)",
   },
   gold: {
     fg: "var(--seal)",
-    bg: "rgba(200,168,110,0.1)",
-    border: "rgba(200,168,110,0.24)",
+    bg: "rgba(183,161,106,0.045)",
+    border: "rgba(183,161,106,0.24)",
   },
   violet: {
-    fg: "#B8ACFF",
-    bg: "rgba(120,104,212,0.1)",
-    border: "rgba(120,104,212,0.24)",
+    fg: "var(--gated)",
+    bg: "rgba(145,136,183,0.045)",
+    border: "rgba(145,136,183,0.24)",
   },
 };
 
@@ -81,7 +81,7 @@ export function ConsoleCard({
       className={`console-card ${compact ? "console-card-compact" : ""} ${className}`}
       style={{
         borderColor: "var(--border)",
-        borderLeftColor: accentBorder,
+        ["--panel-accent" as string]: accentBorder,
         ...style,
       }}
     >
@@ -108,11 +108,13 @@ export function SectionHeader({
       <div className="min-w-0">
         <span className="section-label">{eyebrow}</span>
         <h2
-          className="font-display italic leading-tight"
+          className="leading-tight"
           style={{
             color: "var(--text)",
-            fontSize: compact ? "1.35rem" : "clamp(1.45rem, 2.6vw, 2rem)",
+            fontFamily: "'Instrument Sans', system-ui, sans-serif",
+            fontSize: compact ? "1.05rem" : "clamp(1.08rem, 1.7vw, 1.42rem)",
             fontWeight: 600,
+            letterSpacing: "0",
           }}
         >
           {title}
@@ -142,7 +144,7 @@ export function StatusPill({
   const t = TONES[tone ?? toneForStatus(value)];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${className}`}
+      className={`status-chip inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${className}`}
       style={{
         background: t.bg,
         border: `1px solid ${t.border}`,
@@ -150,7 +152,7 @@ export function StatusPill({
         fontFamily: "'Azeret Mono', monospace",
       }}
     >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.fg }} />
+      <span className="h-1 w-1 rounded-full" style={{ background: t.fg }} />
       {children ?? value}
     </span>
   );
@@ -181,8 +183,8 @@ export function RiskBar({
           </span>
         </div>
       ) : null}
-      <div className="h-1.5 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: t.fg }} />
+      <div className="h-px overflow-hidden" style={{ background: "rgba(231,223,208,0.11)" }}>
+        <div className="h-full" style={{ width: `${pct}%`, background: t.fg }} />
       </div>
     </div>
   );
@@ -198,15 +200,14 @@ export function MetricStrip({
   const grid =
     columns === 2 ? "sm:grid-cols-2" : columns === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4";
   return (
-    <div className={`grid gap-3 ${grid}`}>
+    <div className={`metric-strip grid ${grid}`}>
       {items.map((item) => {
         const t = item.tone ? TONES[item.tone] : null;
         const content = (
           <div
-            className="rounded-lg px-4 py-3"
+            className="metric-cell px-4 py-3"
             style={{
-              background: "rgba(255,255,255,0.025)",
-              border: `1px solid ${t?.border ?? "var(--border)"}`,
+              borderColor: t?.border ?? "var(--border)",
             }}
           >
             <p className="text-[9px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Azeret Mono', monospace" }}>
@@ -241,7 +242,7 @@ export function HashText({
 }) {
   const short = `${value.slice(0, chars)}...${value.slice(-6)}`;
   const content = (
-    <code className="break-all text-xs" style={{ color: href ? "var(--clear)" : "rgba(242,232,213,0.66)" }}>
+    <code className="break-all text-xs" style={{ color: href ? "var(--clear)" : "rgba(229,221,207,0.66)" }}>
       {short}
     </code>
   );

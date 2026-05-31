@@ -34,18 +34,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 aria-hidden="true"
                 style={{ display: 'block', flexShrink: 0 }}
               >
-                <rect width="32" height="32" rx="6" fill="#080705"/>
-                <rect x="1" y="1" width="30" height="30" rx="5" fill="none" stroke="#C8A86E" strokeOpacity="0.2" strokeWidth="1.2"/>
-                <path d="M8 25 L8 8 C8 6 24 6 24 14 L24 25" fill="none" stroke="#3A9B62" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
+                <rect width="32" height="32" rx="2" fill="#050504"/>
+                <rect x="1" y="1" width="30" height="30" rx="1.5" fill="none" stroke="#B7A16A" strokeOpacity="0.32" strokeWidth="1.2"/>
+                <path d="M8 25 L8 8 C8 6 24 6 24 14 L24 25" fill="none" stroke="#789B7D" strokeWidth="2.8" strokeLinecap="square" strokeLinejoin="miter"/>
               </svg>
               <span
-                className="italic"
                 style={{
                   fontFamily: "'Cormorant Garamond', Georgia, serif",
                   fontSize: '1.2rem',
                   fontWeight: 600,
                   color: 'var(--text)',
-                  letterSpacing: '-0.015em',
+                  letterSpacing: '0',
                 }}
               >
                 Neutrino
@@ -57,9 +56,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   fontSize: '9px',
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
-                  background: 'rgba(58,155,98,0.1)',
+                  background: 'rgba(120,155,125,0.055)',
                   color: 'var(--clear)',
-                  border: '1px solid rgba(58,155,98,0.2)',
+                  border: '1px solid rgba(120,155,125,0.22)',
                 }}
               >
                 mainnet

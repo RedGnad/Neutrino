@@ -67,7 +67,7 @@ async function Hero() {
               Neutrino · AI x RWA · {NETWORK_LABEL}
             </span>
             <h1
-              className="font-display italic leading-[1.03]"
+              className="font-display leading-[1.02]"
               style={{
                 color: "var(--text)",
                 fontSize: "clamp(2.8rem, 7vw, 5.4rem)",
@@ -79,8 +79,8 @@ async function Hero() {
               <span style={{ color: "rgba(242,232,213,0.58)" }}>The token didn&rsquo;t.</span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed sm:text-lg" style={{ color: "var(--muted)" }}>
-              Neutrino is the policy layer between market signals and capital movement. Signals enter,
-              AI proposes, policy validates or overrides, and Mantle verifies the final receipt.
+              Policy layer between market signals and capital movement. AI proposes, policy
+              validates or overrides, Mantle verifies.
             </p>
           </div>
 
@@ -110,10 +110,10 @@ async function Hero() {
 
           <ConsoleCard compact accent="green" className="max-w-3xl">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <EvidenceItem label="xStocks status" value="live when API responds" tone="green" />
-              <EvidenceItem label="Price quality" value="live or stub flagged" tone="amber" />
+              <EvidenceItem label="xStocks status" value="feed checked" tone="green" />
+              <EvidenceItem label="Price quality" value="quote tagged" tone="amber" />
               <EvidenceItem label="Mantle receipts" value="on-chain" tone="green" />
-              <EvidenceItem label="xStocks execution" value="verified RFQ gated" tone="violet" />
+              <EvidenceItem label="xStocks execution" value="RFQ gated" tone="violet" />
             </div>
           </ConsoleCard>
         </div>
@@ -153,7 +153,7 @@ function LatestStateCard({
             Current policy outcomes
           </h2>
           <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-            Latest decision per asset, read from Mantle.
+            Latest decision per asset.
           </p>
         </div>
         <TextLink href="/proof">All proofs</TextLink>
@@ -222,8 +222,8 @@ function ScenarioSection() {
         title="Run the full policy loop."
         body={
           <>
-            Each run evaluates current signals, creates an AI proposal, applies policy review, and
-            writes a decision receipt to Mantle. Outputs are policy outcomes, not fixed asset labels.
+            Current signals become an AI proposal, policy review, final action, and Mantle receipt.
+            Outputs are policy outcomes, not fixed asset labels.
           </>
         }
       />
@@ -232,11 +232,11 @@ function ScenarioSection() {
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <span className="flex items-center gap-2">
             <StatusPill value="AI proposal" tone="blue">AI proposal</StatusPill>
-            <span style={{ color: "var(--muted)" }}>scores signals and drafts intent</span>
+            <span style={{ color: "var(--muted)" }}>scores signals</span>
           </span>
           <span className="flex items-center gap-2">
             <StatusPill value="Policy review" tone="violet">Policy review</StatusPill>
-            <span style={{ color: "var(--muted)" }}>validates or overrides before the receipt</span>
+            <span style={{ color: "var(--muted)" }}>validates before receipt</span>
           </span>
         </div>
       </ConsoleCard>
@@ -248,7 +248,7 @@ function ScenarioSection() {
           title="After-hours xStock exposure"
           subtitle="Current policy outcome"
           assets={["NVDAx", "TSLAx", "SPYx"]}
-          description="Live xStocks trading-halt status plus indicative price when available. If the quote is null, the receipt marks price as stub. xStocks can be paused when execution conditions are unsafe under the active policy."
+          description="Checks halt status and quote availability. PAUSE can come from market context, stale quote, or unavailable execution rail."
           button={
             <RunAgentButton
               scenario="risky-xstocks"
@@ -264,7 +264,7 @@ function ScenarioSection() {
           title="Safe on-chain RWA yield"
           subtitle="Policy outcome under current conditions"
           assets={["USDY", "mETH"]}
-          description="USDY and mETH can be allocated when freshness and risk checks pass. No market-hours exposure. xStock signals are n/a."
+          description="USDY and mETH can be allocated when freshness and risk checks pass. xStock signals are n/a."
           button={
             <RunAgentButton
               scenario="safe-yield"
@@ -280,7 +280,7 @@ function ScenarioSection() {
           title="Verified Mantle execution"
           subtitle="Opt-in mainnet round trip"
           assets={["USDC", "mETH"]}
-          description="Real Fluxion V3 USDC to mETH to USDC round trip. Two on-chain swaps. Two Mantlescan tx hashes. Demo wallet stays solvent."
+          description="Real Fluxion V3 USDC to mETH to USDC round trip. Two swaps, two tx hashes."
           note="xStocks execution waits for verified RFQ rails. Neutrino can record a PAUSE receipt instead of forcing an unsafe trade."
           button={
             <RunAgentButton
@@ -347,7 +347,7 @@ function ScenarioCard({
         ))}
       </div>
       {note ? (
-        <p className="rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(120,104,212,0.08)", border: "1px solid rgba(120,104,212,0.18)", color: "#B8ACFF", fontFamily: "'Azeret Mono', monospace" }}>
+        <p className="rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(145,136,183,0.08)", border: "1px solid rgba(145,136,183,0.18)", color: "var(--gated)", fontFamily: "'Azeret Mono', monospace" }}>
           {note}
         </p>
       ) : null}
@@ -433,12 +433,11 @@ function DataHonestySection() {
         <summary>
           <div className="pr-8">
             <span className="section-label">Data transparency</span>
-            <h2 className="font-display italic text-2xl font-semibold" style={{ color: "var(--text)" }}>
+            <h2 className="text-xl font-semibold" style={{ color: "var(--text)" }}>
               Every source is explicitly labelled.
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-              Decision receipts mark signals as live, stub, modelled, or n/a so reviewers can see
-              exactly what was known at decision time.
+              Receipts mark signals as live, stub, modelled, or n/a.
             </p>
           </div>
         </summary>
@@ -573,11 +572,11 @@ function AttackSurfaceSection() {
         <summary>
           <div className="pr-8">
             <span className="section-label">Judge attack surface</span>
-            <h2 className="font-display italic text-2xl font-semibold" style={{ color: "var(--text)" }}>
+            <h2 className="text-xl font-semibold" style={{ color: "var(--text)" }}>
               The skeptical questions stay visible.
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-              Short answers for the claims judges are most likely to test.
+              Short answers for claims judges will test.
             </p>
           </div>
         </summary>

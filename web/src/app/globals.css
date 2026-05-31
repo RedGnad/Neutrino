@@ -3,24 +3,25 @@
 
 /* ── Design tokens ─────────────────────────────── */
 :root {
-  /* Warm void — black with a breath of amber, not green */
-  --bg:           #080705;
-  --panel:        #100E0B;
-  --raised:       #1A1714;
-  --border:       rgba(200, 168, 110, 0.07);
-  --border-hi:    rgba(200, 168, 110, 0.16);
+  /* Institutional dark console: low chroma, high legibility. */
+  --bg:           #050504;
+  --panel:        #0B0A08;
+  --raised:       #11100D;
+  --border:       rgba(229, 221, 207, 0.085);
+  --border-hi:    rgba(229, 221, 207, 0.17);
 
-  /* Warm parchment — not cool white */
-  --text:         #F2E8D5;
-  --muted:        #907E6C;
+  --text:         #E5DDCF;
+  --muted:        #82796D;
+  --muted-strong: #AAA194;
 
-  /* Verdict palette — authority, not decoration */
-  --refuse:       #D14040;   /* red — errors / unavailable */
-  --pause:        #D4A040;   /* amber — PAUSE / caution */
-  --clear:        #3A9B62;   /* deep forest   — ALLOCATE / safe */
-  --seal:         #D4A040;   /* aged gold     — verified / receipt */
-  --pending:      #7A6B58;   /* tobacco       — modelled / uncertain */
-  --gated:        #7868D4;   /* deep indigo   — verified rails */
+  /* Verdict palette: restrained status colors, not decoration. */
+  --refuse:       #BD6B61;   /* error / unavailable */
+  --pause:        #BFA05E;   /* PAUSE / caution */
+  --clear:        #789B7D;   /* ALLOCATE / live */
+  --review:       #8793A6;   /* REVIEW / neutral */
+  --seal:         #B7A16A;   /* receipt / verification */
+  --pending:      #8E806D;   /* modelled / uncertain */
+  --gated:        #9188B7;   /* verified rails */
 
   /* Shorthand aliases — existing component code unchanged */
   --terracotta:   var(--refuse);
@@ -40,7 +41,7 @@
   --bb-teal:      var(--clear);
   --bb-amber:     var(--seal);
   --bb-orange:    var(--pause);
-  --bb-red:       #D14040;
+  --bb-red:       var(--refuse);
   --bb-violet:    var(--gated);
 }
 
@@ -59,6 +60,8 @@ body {
   position: relative;
   line-height: 1.5;
   overflow-x: hidden;
+  font-size: 14px;
+  font-feature-settings: "ss01" 1, "cv01" 1, "tnum" 1;
 }
 
 /* Archival noise — warm grain, not cool static */
@@ -69,7 +72,7 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
-  opacity: 0.55;
+  opacity: 0.32;
 }
 
 code, pre {
@@ -77,7 +80,7 @@ code, pre {
 }
 
 ::selection {
-  background: rgba(58,155,98,0.28);
+  background: rgba(120,155,125,0.28);
   color: var(--text);
 }
 
@@ -95,7 +98,7 @@ summary:focus-visible {
 /* ── Scrollbar ─────────────────────────────────── */
 ::-webkit-scrollbar        { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track  { background: var(--panel); }
-::-webkit-scrollbar-thumb  { background: var(--border-hi); border-radius: 2px; }
+::-webkit-scrollbar-thumb  { background: var(--border-hi); border-radius: 0; }
 
 /* ── Animations ────────────────────────────────── */
 @keyframes live-blink {
@@ -143,9 +146,9 @@ summary:focus-visible {
 }
 
 @keyframes status-flash {
-  0%   { box-shadow: 0 0 0 0 rgba(58,155,98,0.4); }
-  70%  { box-shadow: 0 0 0 8px rgba(58,155,98,0); }
-  100% { box-shadow: 0 0 0 0 rgba(58,155,98,0); }
+  0%   { box-shadow: 0 0 0 0 rgba(120,155,125,0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(120,155,125,0); }
+  100% { box-shadow: 0 0 0 0 rgba(120,155,125,0); }
 }
 
 /* ── Animation helpers ─────────────────────────── */
@@ -167,33 +170,43 @@ summary:focus-visible {
 
 /* Ruled: thin top rule, content below — like a brief section heading */
 .section-ruled {
-  border-top: 1px solid var(--border-hi);
-  padding-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 30px;
   position: relative;
 }
 
 .console-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.014));
+  background: rgba(11,10,8,0.74);
   border: 1px solid var(--border);
-  border-left: 2px solid var(--border-hi);
-  border-radius: 8px;
+  border-radius: 2px;
   min-width: 0;
-  padding: 24px;
+  padding: 22px;
   position: relative;
 }
 
+.console-card::before {
+  background: var(--panel-accent, var(--border-hi));
+  content: '';
+  height: 1px;
+  left: 0;
+  opacity: 0.92;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
 .console-card-compact {
-  padding: 16px;
+  padding: 14px 16px;
 }
 
 .console-code {
-  background: rgba(0,0,0,0.34);
+  background: #060605;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  color: rgba(242,232,213,0.78);
+  border-radius: 2px;
+  color: rgba(229,221,207,0.78);
   font-family: 'Azeret Mono', monospace;
   font-size: 11px;
-  line-height: 1.7;
+  line-height: 1.65;
   overflow-x: auto;
   padding: 16px;
   max-width: 100%;
@@ -202,7 +215,7 @@ summary:focus-visible {
 .console-table-wrap {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 2px;
   overflow-x: auto;
 }
 
@@ -214,9 +227,9 @@ summary:focus-visible {
 }
 
 .console-table thead th {
-  background: rgba(0,0,0,0.22);
+  background: rgba(0,0,0,0.28);
   border-bottom: 1px solid var(--border);
-  color: rgba(144,126,108,0.7);
+  color: rgba(170,161,148,0.72);
   font-family: 'Azeret Mono', monospace;
   font-size: 9px;
   font-weight: 600;
@@ -239,13 +252,39 @@ summary:focus-visible {
 }
 
 .console-table tbody tr:hover td {
-  background: rgba(255,255,255,0.018);
+  background: rgba(229,221,207,0.018);
+}
+
+.metric-strip {
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-right: 0;
+}
+
+.metric-cell {
+  background: rgba(229,221,207,0.012);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.status-chip {
+  border-radius: 1px;
+  min-height: 20px;
+  white-space: nowrap;
+}
+
+.rounded,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl {
+  border-radius: 2px !important;
 }
 
 .quiet-details {
-  background: rgba(255,255,255,0.018);
+  background: rgba(229,221,207,0.012);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 2px;
 }
 
 .quiet-details > summary {
@@ -286,7 +325,7 @@ summary:focus-visible {
   border-right:  1px solid var(--border);
   border-bottom: 1px solid var(--border);
   border-left:   3px solid var(--seal);
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 2px 2px 0;
   padding:       28px;
   position:      relative;
   overflow:      hidden;
@@ -302,7 +341,7 @@ summary:focus-visible {
   font-weight:    500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color:          var(--muted);
+  color:          rgba(170,161,148,0.64);
   margin-bottom:  10px;
   display:        block;
 }
@@ -314,7 +353,7 @@ summary:focus-visible {
   border-right:  1px solid var(--border);
   border-bottom: 1px solid var(--border);
   border-left:   3px solid var(--border-hi);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 2px 2px 0;
   position:      relative;
   overflow:      hidden;
 }
@@ -328,7 +367,7 @@ summary:focus-visible {
   background:    var(--panel);
   border:        1px solid var(--border-hi);
   border-left:   3px solid var(--border-hi);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 2px 2px 0;
   overflow:      hidden;
   position:      relative;
 }
@@ -338,9 +377,9 @@ summary:focus-visible {
   height:     2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(58,155,98,0.3) 40%,
-    rgba(58,155,98,0.5) 50%,
-    rgba(58,155,98,0.3) 60%,
+    rgba(120,155,125,0.3) 40%,
+    rgba(120,155,125,0.5) 50%,
+    rgba(120,155,125,0.3) 60%,
     transparent 100%
   );
   pointer-events: none;
@@ -393,24 +432,24 @@ summary:focus-visible {
 
 /* ── Badges ────────────────────────────────────── */
 .badge-live {
-  background: rgba(58,155,98,0.12);
-  color:      #4DB878;
-  border:     1px solid rgba(58,155,98,0.3);
+  background: rgba(120,155,125,0.055);
+  color:      var(--clear);
+  border:     1px solid rgba(120,155,125,0.24);
 }
 .badge-stub {
-  background: rgba(212,160,64,0.12);
-  color:      #D4A040;
-  border:     1px solid rgba(212,160,64,0.3);
+  background: rgba(191,160,94,0.055);
+  color:      var(--pause);
+  border:     1px solid rgba(191,160,94,0.24);
 }
 .badge-na {
-  background: rgba(122,107,88,0.12);
+  background: rgba(142,128,109,0.055);
   color:      var(--muted);
-  border:     1px solid rgba(122,107,88,0.22);
+  border:     1px solid rgba(142,128,109,0.2);
 }
 .badge-notexec {
-  background: rgba(120,104,212,0.12);
-  color:      #9B8FE8;
-  border:     1px solid rgba(120,104,212,0.28);
+  background: rgba(145,136,183,0.055);
+  color:      var(--gated);
+  border:     1px solid rgba(145,136,183,0.24);
 }
 
 /* ── Hash display ──────────────────────────────── */
@@ -419,13 +458,13 @@ summary:focus-visible {
   font-size:     11px;
   background:    rgba(0,0,0,0.28);
   border:        1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 2px;
   padding:       10px 12px;
   word-break:    break-all;
   color:         var(--muted);
   line-height:   1.6;
 }
-.hash-block.match    { border-color: rgba(58,155,98,0.4);  color: var(--clear); }
+.hash-block.match    { border-color: rgba(120,155,125,0.4);  color: var(--clear); }
 .hash-block.mismatch { border-color: rgba(209,64,64,0.4);  color: var(--refuse); }
 
 /* ── Nav link ──────────────────────────────────── */
@@ -436,7 +475,7 @@ summary:focus-visible {
 }
 .nav-link:hover {
   color:      var(--text);
-  background: rgba(200,168,110,0.06);
+  background: rgba(229,221,207,0.045);
 }
 
 /* ── Timeline connector ────────────────────────── */

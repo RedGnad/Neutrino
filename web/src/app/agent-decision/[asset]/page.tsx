@@ -53,8 +53,14 @@ export default async function AgentDecisionPage({ params }: Props) {
               <span className="section-label">Decision receipt</span>
               <div className="flex flex-wrap items-baseline gap-3">
                 <h1
-                  className="font-display italic leading-none"
-                  style={{ color: "var(--text)", fontSize: "clamp(2.6rem, 6vw, 4.4rem)", fontWeight: 600 }}
+                  className="leading-none"
+                  style={{
+                    color: "var(--text)",
+                    fontFamily: "'Azeret Mono', monospace",
+                    fontSize: "clamp(2rem, 5vw, 3.3rem)",
+                    fontWeight: 600,
+                    letterSpacing: "0",
+                  }}
                 >
                   {asset.symbol}
                 </h1>
@@ -65,8 +71,8 @@ export default async function AgentDecisionPage({ params }: Props) {
                 ) : null}
               </div>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                AI proposes, policy validates or overrides, Mantle verifies the final receipt. The
-                reasonHash covers the full loop and can be recomputed from canonical JSON.
+                AI proposal, policy review, and final on-chain commitment. reasonHash can be
+                recomputed from canonical JSON.
               </p>
             </div>
             <StatusPill value={latest?.action ?? "N/A"} className="self-start">

@@ -71,19 +71,20 @@ export default function IntegratePage() {
             <div>
               <span className="section-label">Builder integration</span>
               <h1
-                className="font-display italic leading-tight"
+                className="leading-tight"
                 style={{
                   color: "var(--text)",
-                  fontSize: "clamp(2.35rem, 5vw, 4rem)",
+                  fontFamily: "'Instrument Sans', system-ui, sans-serif",
+                  fontSize: "clamp(2rem, 4.2vw, 3.25rem)",
                   fontWeight: 600,
+                  letterSpacing: "0",
                 }}
               >
                 Use Neutrino in your agent.
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-relaxed" style={{ color: "var(--muted)" }}>
-                Neutrino is a policy layer for RWA agents. Send market context and execution
-                intent, receive an AI proposal, policy review, final action, reasonHash, and
-                Mantle receipt.
+                Send market context and execution intent. Receive proposal, policy review,
+                final action, reasonHash, and Mantle receipt.
               </p>
             </div>
 
@@ -123,7 +124,7 @@ export default function IntegratePage() {
               <ContractLink label="RWAAgent" address={AGENT_ADDRESS} />
             </div>
             <p className="text-[11px] leading-relaxed" style={{ color: "rgba(144,126,108,0.64)", fontFamily: "'Azeret Mono', monospace" }}>
-              AI inference is off-chain. Mantle stores the final decision receipt commitment.
+              AI inference is off-chain. Mantle stores the final receipt commitment.
             </p>
           </ConsoleCard>
         </div>
@@ -133,7 +134,7 @@ export default function IntegratePage() {
         <SectionHeader
           eyebrow="Quickstart"
           title="Run a receipt-only policy evaluation."
-          body="These commands hit the real hosted demo endpoint and do not execute capital movement."
+          body="Real hosted endpoint. Receipt-only. No capital movement."
         />
         <div className="grid gap-5 lg:grid-cols-2">
           <CodePanel title="Safe-yield receipt run" code={CURL_SAFE_YIELD} copy />
@@ -150,7 +151,7 @@ export default function IntegratePage() {
         <SectionHeader
           eyebrow="Flow"
           title="AI proposal -> policy review -> on-chain receipt."
-          body="Optional execution is allowed only when the policy outcome and verified execution rail permit it."
+          body="Optional execution requires both policy approval and a verified rail."
         />
         <div className="grid gap-3 md:grid-cols-5">
           {[

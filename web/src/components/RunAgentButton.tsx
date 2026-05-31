@@ -248,7 +248,7 @@ function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scena
       {/* Engine / LLM split */}
       <div
         className="rounded-md px-4 py-2.5 text-xs flex flex-wrap gap-x-6 gap-y-1"
-        style={{ background: "rgba(124,92,252,0.08)", border: "1px solid rgba(124,92,252,0.15)" }}
+        style={{ background: "rgba(145,136,183,0.08)", border: "1px solid rgba(145,136,183,0.15)" }}
       >
         <span>
           <span className="font-semibold" style={{ color: "var(--bb-text)" }}>Policy review</span>
@@ -257,7 +257,7 @@ function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scena
         <span>
           <span
             className="font-semibold"
-            style={{ color: result.inputs.llmReasoning === "live" ? "#9D84FF" : "var(--bb-muted)" }}
+            style={{ color: result.inputs.llmReasoning === "live" ? "var(--gated)" : "var(--bb-muted)" }}
           >
             {result.inputs.llmReasoning === "live"
               ? `AI narration (${result.narrationModel ?? "claude-haiku"}) attached`
@@ -384,7 +384,7 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
           className="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-widest"
           style={
             r.reasonFromLlm
-              ? { background: "rgba(124,92,252,0.15)", color: "#9D84FF", border: "1px solid rgba(124,92,252,0.25)" }
+              ? { background: "rgba(145,136,183,0.15)", color: "var(--gated)", border: "1px solid rgba(145,136,183,0.25)" }
               : { background: "rgba(255,255,255,0.05)", color: "var(--bb-muted)", border: "1px solid rgba(255,255,255,0.07)" }
           }
           title={r.reasonFromLlm ? "Narrated by Claude Haiku 4.5" : "Deterministic fallback"}
@@ -463,7 +463,7 @@ function sourceDotClass(s: SourceState | FlagState): string {
   switch (s) {
     case "live":      return "bg-[var(--bb-teal)]";
     case "stub":      return "bg-[var(--bb-amber)]";
-    case "simulated": return "bg-[#9D84FF]";
+    case "simulated": return "bg-[var(--gated)]";
     default:          return "bg-[var(--bb-muted)]";
   }
 }
@@ -480,11 +480,11 @@ function RfqReadinessBlock({ results }: { results: PerAssetResult[] }) {
   return (
     <div
       className="rounded-md px-4 py-3 text-xs leading-relaxed flex items-start gap-2"
-      style={{ background: "rgba(124,92,252,0.06)", border: "1px solid rgba(124,92,252,0.2)" }}
+      style={{ background: "rgba(145,136,183,0.06)", border: "1px solid rgba(145,136,183,0.2)" }}
     >
-      <span className="shrink-0 mt-0.5 font-mono text-[10px] font-semibold" style={{ color: "#9D84FF" }}>RFQ</span>
+      <span className="shrink-0 mt-0.5 font-mono text-[10px] font-semibold" style={{ color: "var(--gated)" }}>RFQ</span>
       <div>
-        <span className="font-semibold" style={{ color: "#9D84FF" }}>xStocks execution gate: </span>
+        <span className="font-semibold" style={{ color: "var(--gated)" }}>xStocks execution gate: </span>
         {atomicHalted ? (
           <span className="font-mono" style={{ color: "var(--bb-red)" }}>
             xStocks API reports <code>atomicTradingHalted = true</code> — current policy outcome is PAUSE.
@@ -503,7 +503,7 @@ function ExecutionBlock({ execution, explorerTx }: { execution: ExecutionResult;
   return (
     <div
       className="rounded-md px-4 py-3 text-sm space-y-2"
-      style={{ background: "rgba(45,212,165,0.06)", border: "1px solid rgba(45,212,165,0.25)" }}
+      style={{ background: "rgba(120,155,125,0.06)", border: "1px solid rgba(120,155,125,0.25)" }}
     >
       <p
         className="text-[10px] font-mono font-semibold uppercase tracking-widest"

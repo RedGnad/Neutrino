@@ -37,8 +37,8 @@ function CopyButton({ value }: { value: string }) {
       className="rounded-md px-2 py-1 text-[10px] font-semibold transition-all"
       style={{
         fontFamily: "'Azeret Mono', monospace",
-        background: copied ? "rgba(58,155,98,0.15)" : "rgba(255,255,255,0.045)",
-        border: `1px solid ${copied ? "rgba(58,155,98,0.3)" : "var(--border)"}`,
+        background: copied ? "rgba(120,155,125,0.15)" : "rgba(255,255,255,0.045)",
+        border: `1px solid ${copied ? "rgba(120,155,125,0.3)" : "var(--border)"}`,
         color: copied ? "var(--clear)" : "var(--muted)",
       }}
     >
@@ -88,7 +88,7 @@ export function LatestExecution() {
           ))}
         </div>
 
-        <p className="rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(120,104,212,0.08)", border: "1px solid rgba(120,104,212,0.18)", color: "#B8ACFF", fontFamily: "'Azeret Mono', monospace" }}>
+        <p className="rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(145,136,183,0.08)", border: "1px solid rgba(145,136,183,0.18)", color: "var(--gated)", fontFamily: "'Azeret Mono', monospace" }}>
           Public xStocks signals can be evaluated for risk. xStocks execution is not performed
           without a verified issuer RFQ route.
         </p>

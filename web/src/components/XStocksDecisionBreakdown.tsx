@@ -108,13 +108,13 @@ export function XStocksDecisionBreakdown({
   return (
     <div
       className={`rounded-lg ${compact ? "p-3" : "p-4"} space-y-3`}
-      style={{ background: "rgba(120,104,212,0.055)", border: "1px solid rgba(120,104,212,0.18)" }}
+      style={{ background: "rgba(145,136,183,0.055)", border: "1px solid rgba(145,136,183,0.18)" }}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p
             className="text-[10px] font-medium uppercase tracking-widest"
-            style={{ fontFamily: "'Azeret Mono', monospace", color: "#9B8FE8" }}
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--gated)" }}
           >
             xStocks decision breakdown
           </p>
@@ -124,7 +124,7 @@ export function XStocksDecisionBreakdown({
         </div>
         <span
           className="rounded px-2 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wider"
-          style={{ background: "rgba(120,104,212,0.12)", border: "1px solid rgba(120,104,212,0.25)", color: "#B8ACFF" }}
+          style={{ background: "rgba(145,136,183,0.12)", border: "1px solid rgba(145,136,183,0.25)", color: "var(--gated)" }}
         >
           xStock
         </span>
@@ -178,7 +178,7 @@ export function XStocksDecisionBreakdown({
         className="rounded-md px-3 py-2 text-[11px] leading-relaxed"
         style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", color: "rgba(138,148,166,0.72)" }}
       >
-        <span className="font-mono uppercase tracking-wider" style={{ color: "#B8ACFF" }}>
+        <span className="font-mono uppercase tracking-wider" style={{ color: "var(--gated)" }}>
           Preview only:
         </span>{" "}
         Hypothetical if a verified RFQ rail existed: {previewLabel(decision)}. Not executed. Not

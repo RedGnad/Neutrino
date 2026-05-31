@@ -101,8 +101,8 @@ function CopyBtn({ value }: { value: string }) {
       }}
       className="rounded px-2 py-0.5 text-[10px] font-mono transition-all shrink-0"
       style={{
-        background: copied ? "rgba(45,212,165,0.15)" : "rgba(255,255,255,0.05)",
-        border: `1px solid ${copied ? "rgba(45,212,165,0.3)" : "rgba(255,255,255,0.08)"}`,
+        background: copied ? "rgba(120,155,125,0.15)" : "rgba(255,255,255,0.05)",
+        border: `1px solid ${copied ? "rgba(120,155,125,0.3)" : "rgba(255,255,255,0.08)"}`,
         color: copied ? "var(--bb-teal)" : "var(--bb-muted)",
       }}
     >
@@ -125,8 +125,8 @@ function ExportCopyButton({ label, value }: { label: string; value: string }) {
       }}
       className="rounded-lg px-3 py-2 text-xs font-mono font-medium transition-all"
       style={{
-        background: copied ? "rgba(45,212,165,0.15)" : "rgba(255,255,255,0.04)",
-        border: `1px solid ${copied ? "rgba(45,212,165,0.3)" : "rgba(255,255,255,0.08)"}`,
+        background: copied ? "rgba(120,155,125,0.15)" : "rgba(255,255,255,0.04)",
+        border: `1px solid ${copied ? "rgba(120,155,125,0.3)" : "rgba(255,255,255,0.08)"}`,
         color: copied ? "var(--bb-teal)" : "var(--bb-text)",
       }}
     >
@@ -150,8 +150,8 @@ function DownloadJsonButton({ filename, value }: { filename: string; value: stri
       }}
       className="rounded-lg px-3 py-2 text-xs font-mono font-medium transition-all"
       style={{
-        background: "rgba(45,212,165,0.08)",
-        border: "1px solid rgba(45,212,165,0.2)",
+        background: "rgba(120,155,125,0.08)",
+        border: "1px solid rgba(120,155,125,0.2)",
         color: "var(--bb-teal)",
       }}
     >
@@ -305,11 +305,11 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
         className="rounded-xl px-6 py-5 flex flex-wrap items-center gap-4"
         style={{
           background: verified === "ok"
-            ? "rgba(45,212,165,0.06)"
+            ? "rgba(120,155,125,0.06)"
             : verified === "mismatch"
               ? "rgba(232,72,85,0.06)"
               : "var(--bb-panel)",
-          border: `1px solid ${verified === "ok" ? "rgba(45,212,165,0.25)" : verified === "mismatch" ? "rgba(232,72,85,0.25)" : "rgba(255,255,255,0.08)"}`,
+          border: `1px solid ${verified === "ok" ? "rgba(120,155,125,0.25)" : verified === "mismatch" ? "rgba(232,72,85,0.25)" : "rgba(255,255,255,0.08)"}`,
           transition: "all 0.3s ease",
         }}
       >
@@ -331,7 +331,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                 : "RECEIPT LOADED"}
           </p>
           {verified === "ok" && (
-            <p className="mt-1 text-xs" style={{ color: "rgba(45,212,165,0.6)" }}>
+            <p className="mt-1 text-xs" style={{ color: "rgba(120,155,125,0.6)" }}>
               keccak256(canonicalJson) = on-chain reasonHash — receipt is authentic
             </p>
           )}
@@ -373,7 +373,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
           {/* Panel 1 — AI Proposal */}
           <div
             className="rounded-xl p-4 space-y-3"
-            style={{ background: "rgba(120,104,212,0.07)", border: "1px solid rgba(120,104,212,0.2)" }}
+            style={{ background: "rgba(145,136,183,0.07)", border: "1px solid rgba(145,136,183,0.2)" }}
           >
             <p
               className="text-[9px] font-medium uppercase tracking-widest"
@@ -410,8 +410,8 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             style={{
               background: parsed.policyReview.decision === 'OVERRIDE'
                 ? "rgba(255,107,53,0.06)"
-                : "rgba(45,212,165,0.05)",
-              border: `1px solid ${parsed.policyReview.decision === 'OVERRIDE' ? "rgba(255,107,53,0.2)" : "rgba(45,212,165,0.18)"}`,
+                : "rgba(120,155,125,0.05)",
+              border: `1px solid ${parsed.policyReview.decision === 'OVERRIDE' ? "rgba(255,107,53,0.2)" : "rgba(120,155,125,0.18)"}`,
             }}
           >
             <p
@@ -420,7 +420,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                 fontFamily: "'Azeret Mono', monospace",
                 color: parsed.policyReview.decision === 'OVERRIDE'
                   ? "rgba(255,107,53,0.7)"
-                  : "rgba(45,212,165,0.6)",
+                  : "rgba(120,155,125,0.6)",
               }}
             >
               Policy Review
@@ -431,7 +431,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                 style={{
                   background: parsed.policyReview.decision === 'OVERRIDE'
                     ? "rgba(255,107,53,0.15)"
-                    : "rgba(45,212,165,0.12)",
+                    : "rgba(120,155,125,0.12)",
                   color: parsed.policyReview.decision === 'OVERRIDE'
                     ? "var(--bb-orange)"
                     : "var(--bb-teal)",
@@ -453,7 +453,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             ) : (
               <p
                 className="text-[10px]"
-                style={{ color: "rgba(45,212,165,0.5)", fontFamily: "'Azeret Mono', monospace" }}
+                style={{ color: "rgba(120,155,125,0.5)", fontFamily: "'Azeret Mono', monospace" }}
               >
                 Risk-based proposal accepted.
               </p>
@@ -463,11 +463,11 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
           {/* Panel 3 — On-chain Commitment */}
           <div
             className="rounded-xl p-4 space-y-3"
-            style={{ background: "rgba(45,212,165,0.04)", border: "1px solid rgba(45,212,165,0.15)" }}
+            style={{ background: "rgba(120,155,125,0.04)", border: "1px solid rgba(120,155,125,0.15)" }}
           >
             <p
               className="text-[9px] font-medium uppercase tracking-widest"
-              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(45,212,165,0.55)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(120,155,125,0.55)" }}
             >
               On-chain Commitment
             </p>
@@ -485,7 +485,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                 <span className="text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
                   reasonHash
                 </span>
-                <span className="text-[10px] font-mono truncate max-w-[120px]" style={{ color: "rgba(45,212,165,0.55)" }}>
+                <span className="text-[10px] font-mono truncate max-w-[120px]" style={{ color: "rgba(120,155,125,0.55)" }}>
                   {reasonHash.slice(0, 10)}…
                 </span>
               </div>
@@ -503,8 +503,8 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               className="text-[9px] leading-relaxed pt-1"
               style={{
                 fontFamily: "'Azeret Mono', monospace",
-                color: "rgba(45,212,165,0.35)",
-                borderTop: "1px solid rgba(45,212,165,0.1)",
+                color: "rgba(120,155,125,0.35)",
+                borderTop: "1px solid rgba(120,155,125,0.1)",
               }}
             >
               AI proposes, policy validates or overrides, Mantle verifies the final receipt.
@@ -702,8 +702,8 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               <div
                 className="rounded-lg px-3 py-2 flex items-start gap-2"
                 style={{
-                  background: verified === "ok" ? "rgba(45,212,165,0.06)" : verified === "mismatch" ? "rgba(232,72,85,0.06)" : "rgba(255,255,255,0.03)",
-                  border: `1px solid ${verified === "ok" ? "rgba(45,212,165,0.2)" : verified === "mismatch" ? "rgba(232,72,85,0.2)" : "rgba(255,255,255,0.06)"}`,
+                  background: verified === "ok" ? "rgba(120,155,125,0.06)" : verified === "mismatch" ? "rgba(232,72,85,0.06)" : "rgba(255,255,255,0.03)",
+                  border: `1px solid ${verified === "ok" ? "rgba(120,155,125,0.2)" : verified === "mismatch" ? "rgba(232,72,85,0.2)" : "rgba(255,255,255,0.06)"}`,
                   transition: "all 0.3s ease",
                 }}
               >
@@ -780,7 +780,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             <ol className="space-y-3">
               {[
                 ["01", "Click View canonical JSON and copy the raw string (no re-formatting)."],
-                ["02", <>Compute{" "}<code style={{ background: "rgba(45,212,165,0.1)", color: "var(--bb-teal)", borderRadius: 3, padding: "0 4px" }}>keccak256(stringToBytes(json))</code>{" "}using viem, ethers.js, or cast.</>],
+                ["02", <>Compute{" "}<code style={{ background: "rgba(120,155,125,0.1)", color: "var(--bb-teal)", borderRadius: 3, padding: "0 4px" }}>keccak256(stringToBytes(json))</code>{" "}using viem, ethers.js, or cast.</>],
                 ["03", <>Compare result against the on-chain <code style={{ background: "rgba(255,255,255,0.06)", color: "var(--bb-muted)", borderRadius: 3, padding: "0 4px" }}>reasonHash</code> in the <code style={{ background: "rgba(255,255,255,0.06)", color: "var(--bb-muted)", borderRadius: 3, padding: "0 4px" }}>DecisionLogged</code> event on Mantlescan.</>],
                 ["04", <>Re-run: <code style={{ background: "rgba(255,255,255,0.06)", color: "var(--bb-muted)", borderRadius: 3, padding: "0 4px", fontSize: 10 }}>git clone … && cd web && cp .env.example .env.local && pnpm dev</code></>],
               ].map(([n, text]) => (
@@ -811,7 +811,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
       {showJson && (
         <div
           className="rounded-xl p-4 space-y-3"
-          style={{ background: "var(--bb-panel)", border: "1px solid rgba(45,212,165,0.15)" }}
+          style={{ background: "var(--bb-panel)", border: "1px solid rgba(120,155,125,0.15)" }}
         >
           <div className="flex items-center justify-between">
             <p
