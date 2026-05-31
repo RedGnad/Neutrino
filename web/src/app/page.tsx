@@ -353,11 +353,11 @@ function ScenarioCard({
 
 function JudgeModeGuide() {
   const steps = [
-    ["Market signals", "Live, stub, or n/a inputs are labelled."],
-    ["AI proposal", "The model proposes a candidate action."],
-    ["Policy review", "Rules approve or override before capital moves."],
-    ["Mantle receipt", "reasonHash commits the canonical loop."],
-    ["Optional execution", "Only verified rails can move capital."],
+    ["Signals", "Label input quality."],
+    ["AI proposal", "Suggest action."],
+    ["Policy review", "Approve or override."],
+    ["Receipt", "Commit reasonHash."],
+    ["Execution", "Verified rails only."],
   ] as const;
 
   return (
@@ -365,7 +365,7 @@ function JudgeModeGuide() {
       <SectionHeader
         eyebrow="Judge flow"
         title="Signals are not decisions."
-        body="Current signals plus policy plus AI proposal become a reviewed decision and an on-chain receipt."
+        body="Signals enter. Policy reviews. Mantle verifies."
       >
         <TextLink href="/proof">Open registry</TextLink>
       </SectionHeader>
@@ -390,28 +390,31 @@ function JudgeModeGuide() {
 
 function BuilderIntegrationSection() {
   const uses = [
-    ["RWA agent builders", "Add policy guardrails before execution."],
-    ["Vault / treasury builders", "Prove why an agent allocated, paused, or required review."],
-    ["xStocks apps", "Check market and execution conditions before capital moves."],
-    ["Mantle protocols", "Generate public decision receipts for autonomous workflows."],
+    ["RWA agents", "Policy before execution.", "green"],
+    ["Treasuries", "Allocation rationale.", "gold"],
+    ["xStocks apps", "Market + rail checks.", "violet"],
+    ["Mantle protocols", "Public decision receipts.", "blue"],
   ] as const;
 
   return (
     <section className="section-ruled space-y-5">
       <SectionHeader
         eyebrow="Use Neutrino in your agent"
-        title="Builder-facing policy infrastructure."
-        body="Send market context and execution intent into the policy loop, receive an AI proposal, policy review, final action, reasonHash, and Mantle receipt."
+        title="A policy check before capital moves."
+        body="Send intent in. Get proposal, review, final action, reasonHash, receipt."
       >
         <TextLink href="/integrate">Integration guide</TextLink>
       </SectionHeader>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {uses.map(([title, body]) => (
-          <ConsoleCard key={title} compact surface="ledger" accent="slate">
-            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+      <div className="landing-brief-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {uses.map(([title, body, tone]) => (
+          <ConsoleCard key={title} compact surface="ledger" accent={tone} className="landing-brief-card">
+            <StatusPill value={tone === "green" ? "guardrail" : tone === "gold" ? "proof" : tone === "violet" ? "gate" : "receipt"} tone={tone}>
+              {tone === "green" ? "guardrail" : tone === "gold" ? "proof" : tone === "violet" ? "gate" : "receipt"}
+            </StatusPill>
+            <p className="landing-card-title">
               {title}
             </p>
-            <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p className="landing-card-copy">
               {body}
             </p>
           </ConsoleCard>
@@ -429,10 +432,10 @@ function DataHonestySection() {
           <div className="pr-8">
             <span className="section-label">Data transparency</span>
             <h2 className="text-xl font-semibold" style={{ color: "var(--text)" }}>
-              Every source is explicitly labelled.
+              Live, modelled, gated.
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-              Receipts mark signals as live, stub, modelled, or n/a.
+              Every receipt labels input quality.
             </p>
           </div>
         </summary>
@@ -443,24 +446,30 @@ function DataHonestySection() {
               state="LIVE"
               tone="green"
               items={[
-                "xStock indicative price when the API returns a non-null quote",
-                "xStock trading-halt status when endpoint responds",
-                "Mantle token addresses and decision receipts",
-                "US market-hours check at run time",
-                "Fluxion V3 execution when explicitly selected",
+                ["Price", "Only if public quote is non-null."],
+                ["Halt", "Live when endpoint responds."],
+                ["Receipt", "Mantle event + tx hash."],
+                ["Hours", "Checked at run time."],
               ]}
             />
             <SourcePanel
               state="MODELLED"
               tone="amber"
-              items={["xStock spread / depth", "xStock 24h volume", "Order-book microstructure"]}
-              note="Price is flagged live only when the public API returns a non-null quote. Spread, depth, and volume are modelled and flagged."
+              items={[
+                ["Spread", "Modelled and flagged."],
+                ["Depth", "Modelled and flagged."],
+                ["Volume", "Modelled when unavailable."],
+              ]}
+              note="Price is never called live when the quote is null."
             />
             <SourcePanel
               state="GATED"
               tone="violet"
-              items={["xStocks execution via verified issuer RFQ rails is not performed"]}
-              note="Neutrino evaluates xStocks risk and can commit PAUSE on-chain when execution readiness is unavailable."
+              items={[
+                ["xStocks", "No execution without verified RFQ rails."],
+                ["Outcome", "PAUSE can be committed before movement."],
+              ]}
+              note="Market context and execution readiness stay separate."
             />
           </div>
 
@@ -503,19 +512,20 @@ function SourcePanel({
 }: {
   state: string;
   tone: "green" | "amber" | "violet";
-  items: string[];
+  items: ReadonlyArray<readonly [string, string]>;
   note?: string;
 }) {
   return (
-    <ConsoleCard compact surface="ledger" accent={tone}>
+    <ConsoleCard compact surface="ledger" accent={tone} className="claim-card">
       <StatusPill value={state} tone={tone}>{state}</StatusPill>
-      <ul className="mt-4 space-y-2">
-        {items.map((item) => (
-          <li key={item} className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-            {item}
-          </li>
+      <div className="landing-fact-list">
+        {items.map(([label, value]) => (
+          <div key={label} className="landing-fact-row">
+            <span className="landing-fact-key">{label}</span>
+            <span className="landing-fact-value">{value}</span>
+          </div>
         ))}
-      </ul>
+      </div>
       {note ? (
         <p className="mt-4 rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(0,0,0,0.18)", color: "rgba(242,232,213,0.62)", fontFamily: "'Azeret Mono', monospace" }}>
           {note}
@@ -536,26 +546,26 @@ const TOKEN_METADATA = [
 function AttackSurfaceSection() {
   const qa = [
     {
-      q: "Is the AI deciding?",
-      a: "The AI scores live signals and proposes an action. Policy validates or overrides it. The final decision comes from policy and risk rules, not LLM control.",
+      q: "AI decides?",
+      a: "No. AI proposes; policy owns the final action.",
       verdict: "No",
       tone: "green" as const,
     },
     {
-      q: "Is the xStock price fake?",
-      a: "Neutrino queries the xStocks public API for indicative price and trading-halt status. If the quote is null or unavailable, the receipt marks price as stub and uses a modelled fallback.",
+      q: "xStock price?",
+      a: "Live only when the public quote is non-null.",
       verdict: "Flagged",
       tone: "amber" as const,
     },
     {
-      q: "Why doesn't the xStocks scenario execute a trade?",
-      a: "Market context and execution readiness are evaluated separately. PAUSE means the agent refused to move capital through an unverified rail.",
+      q: "Why PAUSE?",
+      a: "Execution rail unavailable; capital does not move.",
       verdict: "Safety gate",
       tone: "violet" as const,
     },
     {
-      q: "Is the hash verifiable?",
-      a: "Yes. keccak256(canonicalJson) must equal the bytes32 reasonHash in the DecisionLogged event on Mantle.",
+      q: "Hash proof?",
+      a: "keccak256(canonicalJson) matches Mantle reasonHash.",
       verdict: "Yes",
       tone: "gold" as const,
     },
@@ -568,21 +578,21 @@ function AttackSurfaceSection() {
           <div className="pr-8">
             <span className="section-label">Judge attack surface</span>
             <h2 className="text-xl font-semibold" style={{ color: "var(--text)" }}>
-              The skeptical questions stay visible.
+              Skeptical checks.
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-              Short answers for claims judges will test.
+              Short answers for the claims judges test.
             </p>
           </div>
         </summary>
         <div className="grid gap-4 border-t p-5 md:grid-cols-2" style={{ borderColor: "var(--border)" }}>
           {qa.map(({ q, a, verdict, tone }) => (
-            <ConsoleCard key={q} compact surface="ledger" accent={tone}>
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{q}</p>
+            <ConsoleCard key={q} compact surface="ledger" accent={tone} className="claim-card">
+              <div className="claim-card-head">
+                <p className="landing-card-title">{q}</p>
                 <StatusPill value={verdict} tone={tone}>{verdict}</StatusPill>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>{a}</p>
+              <p className="landing-card-copy">{a}</p>
             </ConsoleCard>
           ))}
         </div>
@@ -596,35 +606,30 @@ function WhyMantleSection() {
     <section className="section-ruled space-y-6">
       <SectionHeader
         eyebrow="Why this matters for Mantle"
-        title="Autonomous capital needs a policy receipt."
-        body={
-          <>
-            Mantle has RWA rails, yield assets, and execution venues. Neutrino focuses on the layer
-            before movement: trustworthy autonomous judgment.
-          </>
-        }
+        title="Policy before movement."
+        body="Mantle agents need receipts for autonomous judgment, not just execution."
       />
       <div className="grid gap-4 sm:grid-cols-3">
         {[
           {
-            title: "AI proposes, policy validates",
-            body: "The full loop is committed in the reasonHash: AI proposal, policy review, and final action.",
+            title: "Loop committed",
+            body: "AI proposal + policy review + final action.",
             tone: "blue" as const,
           },
           {
-            title: "Source freshness per receipt",
-            body: "Each payload labels live, stub, modelled, and n/a inputs so the decision can be inspected.",
+            title: "Inputs labelled",
+            body: "Live, stub, modelled, or n/a.",
             tone: "green" as const,
           },
           {
-            title: "Verifiable by re-hash",
-            body: "The byte-stable canonical JSON hashes to the bytes32 reasonHash emitted on Mantle.",
+            title: "Re-hashable",
+            body: "Canonical JSON equals on-chain reasonHash.",
             tone: "gold" as const,
           },
         ].map((card) => (
-          <ConsoleCard key={card.title} surface="ledger" accent={card.tone}>
-            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{card.title}</p>
-            <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>{card.body}</p>
+          <ConsoleCard key={card.title} surface="ledger" accent={card.tone} className="landing-brief-card">
+            <StatusPill value={card.title} tone={card.tone}>{card.title}</StatusPill>
+            <p className="landing-card-copy">{card.body}</p>
           </ConsoleCard>
         ))}
       </div>

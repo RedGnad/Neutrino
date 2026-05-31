@@ -411,6 +411,74 @@ summary:focus-visible {
   padding-top: 16px;
 }
 
+.landing-brief-grid {
+  align-items: stretch;
+}
+
+.landing-brief-card {
+  display: grid;
+  gap: 10px;
+  min-height: 118px;
+}
+
+.landing-card-title {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.landing-card-copy {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  max-width: 34ch;
+}
+
+.landing-fact-list {
+  display: grid;
+  gap: 0;
+}
+
+.landing-fact-row {
+  border-bottom: 1px solid rgba(237,231,218,0.07);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(82px, 0.42fr) minmax(0, 1fr);
+  padding: 9px 0;
+}
+
+.landing-fact-row:last-child {
+  border-bottom: 0;
+}
+
+.landing-fact-key {
+  color: var(--text-tertiary);
+  font-family: 'Azeret Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.landing-fact-value {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.claim-card {
+  display: grid;
+  gap: 10px;
+}
+
+.claim-card-head {
+  align-items: start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
 .hero-console {
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);

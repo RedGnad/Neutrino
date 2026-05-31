@@ -52,8 +52,8 @@ export function LatestExecution() {
     <section className="section-ruled space-y-5">
       <SectionHeader
         eyebrow="Certified execution record"
-        title="Real ALLOCATE settled on Fluxion V3."
-        body="Two verified Mantle mainnet swaps from a controlled demo wallet. xStocks execution remains gated until verified RFQ rails are available."
+        title="ALLOCATE settled on Fluxion V3."
+        body="Two Mantle mainnet swaps. xStocks execution remains RFQ-gated."
       >
         <StatusPill value="verified" tone="green">verified</StatusPill>
       </SectionHeader>
@@ -89,8 +89,7 @@ export function LatestExecution() {
         </div>
 
         <p className="rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(145,136,183,0.08)", border: "1px solid rgba(145,136,183,0.18)", color: "var(--gated)", fontFamily: "'Azeret Mono', monospace" }}>
-          Public xStocks signals can be evaluated for risk. xStocks execution is not performed
-          without a verified issuer RFQ route.
+          xStocks: evaluate signals, do not execute without verified issuer RFQ.
         </p>
       </ConsoleCard>
     </section>
