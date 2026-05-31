@@ -1,10 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#080705"/>
-  <rect x="1" y="1" width="30" height="30" rx="5" fill="none" stroke="#C8A86E" stroke-opacity="0.2" stroke-width="1.2"/>
+  <defs>
+    <filter id="neutrino-glow" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="1.25" result="blur"/>
+      <feColorMatrix
+        in="blur"
+        result="glow"
+        type="matrix"
+        values="0 0 0 0 0.18
+                0 0 0 0 0.92
+                0 0 0 0 0.48
+                0 0 0 0.62 0"
+      />
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="32" height="32" rx="2" fill="#020403"/>
+  <rect x="1" y="1" width="30" height="30" rx="1.5" fill="none" stroke="#72F49C" stroke-opacity="0.58" stroke-width="1.2"/>
   <path d="M8 25 L8 8 C8 6 24 6 24 14 L24 25"
         fill="none"
-        stroke="#3A9B62"
+        stroke="#42FF94"
         stroke-width="2.8"
-        stroke-linecap="round"
-        stroke-linejoin="round"/>
+        stroke-linecap="square"
+        stroke-linejoin="miter"
+        filter="url(#neutrino-glow)"/>
 </svg>
