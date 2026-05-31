@@ -7,38 +7,38 @@ type Surface = "ledger" | "command" | "evidence";
 const TONES: Record<Tone, { fg: string; bg: string; border: string }> = {
   green: {
     fg: "var(--clear)",
-    bg: "color-mix(in srgb, var(--clear) 14%, transparent)",
-    border: "color-mix(in srgb, var(--clear) 44%, transparent)",
+    bg: "color-mix(in srgb, var(--clear) 18%, transparent)",
+    border: "color-mix(in srgb, var(--clear) 58%, transparent)",
   },
   amber: {
     fg: "var(--pause)",
-    bg: "color-mix(in srgb, var(--pause) 14%, transparent)",
-    border: "color-mix(in srgb, var(--pause) 44%, transparent)",
+    bg: "color-mix(in srgb, var(--pause) 18%, transparent)",
+    border: "color-mix(in srgb, var(--pause) 58%, transparent)",
   },
   blue: {
     fg: "var(--review)",
-    bg: "color-mix(in srgb, var(--review) 13%, transparent)",
-    border: "color-mix(in srgb, var(--review) 40%, transparent)",
+    bg: "color-mix(in srgb, var(--review) 17%, transparent)",
+    border: "color-mix(in srgb, var(--review) 54%, transparent)",
   },
   red: {
     fg: "var(--refuse)",
-    bg: "color-mix(in srgb, var(--refuse) 14%, transparent)",
-    border: "color-mix(in srgb, var(--refuse) 42%, transparent)",
+    bg: "color-mix(in srgb, var(--refuse) 18%, transparent)",
+    border: "color-mix(in srgb, var(--refuse) 56%, transparent)",
   },
   slate: {
     fg: "var(--muted-strong)",
-    bg: "color-mix(in srgb, var(--muted-strong) 8%, transparent)",
-    border: "color-mix(in srgb, var(--muted-strong) 26%, transparent)",
+    bg: "color-mix(in srgb, var(--muted-strong) 11%, transparent)",
+    border: "color-mix(in srgb, var(--muted-strong) 34%, transparent)",
   },
   gold: {
     fg: "var(--seal)",
-    bg: "color-mix(in srgb, var(--seal) 14%, transparent)",
-    border: "color-mix(in srgb, var(--seal) 38%, transparent)",
+    bg: "color-mix(in srgb, var(--seal) 18%, transparent)",
+    border: "color-mix(in srgb, var(--seal) 52%, transparent)",
   },
   violet: {
     fg: "var(--gated)",
-    bg: "color-mix(in srgb, var(--gated) 13%, transparent)",
-    border: "color-mix(in srgb, var(--gated) 40%, transparent)",
+    bg: "color-mix(in srgb, var(--gated) 17%, transparent)",
+    border: "color-mix(in srgb, var(--gated) 54%, transparent)",
   },
 };
 

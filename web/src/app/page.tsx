@@ -236,7 +236,7 @@ function ScenarioSection() {
         </div>
       </ConsoleCard>
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="scenario-grid grid gap-5 lg:grid-cols-3">
         <ScenarioCard
           index="01"
           tone="amber"
@@ -317,16 +317,16 @@ function ScenarioCard({
   button: React.ReactNode;
 }) {
   return (
-    <ConsoleCard surface="command" accent={tone} className="flex min-h-[340px] flex-col gap-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+    <ConsoleCard surface="command" accent={tone} className="scenario-card">
+      <div className="scenario-card-head">
+        <span className="scenario-card-index">
           Scenario {index}
         </span>
-        <StatusPill value={subtitle} tone={tone}>
+        <StatusPill value={subtitle} tone={tone} className="scenario-card-status">
           {subtitle}
         </StatusPill>
       </div>
-      <div>
+      <div className="scenario-card-body">
         <h3 className="text-lg font-semibold leading-snug" style={{ color: "var(--text)" }}>
           {title}
         </h3>
@@ -334,19 +334,19 @@ function ScenarioCard({
           {description}
         </p>
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="scenario-card-tags flex flex-wrap gap-1.5">
         {assets.map((asset) => (
-          <span key={asset} className="rounded-md px-2 py-1 text-[10px] font-semibold" style={{ background: "rgba(255,255,255,0.045)", color: "rgba(242,232,213,0.78)", fontFamily: "'Azeret Mono', monospace" }}>
+          <span key={asset} className="scenario-chip">
             {asset}
           </span>
         ))}
       </div>
       {note ? (
-        <p className="rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(145,136,183,0.08)", border: "1px solid rgba(145,136,183,0.18)", color: "var(--gated)", fontFamily: "'Azeret Mono', monospace" }}>
+        <p className="scenario-card-note">
           {note}
         </p>
       ) : null}
-      <div className="mt-auto">{button}</div>
+      <div className="scenario-card-action">{button}</div>
     </ConsoleCard>
   );
 }

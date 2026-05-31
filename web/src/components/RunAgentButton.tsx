@@ -162,7 +162,7 @@ export function RunAgentButton({
         type="button"
         onClick={run}
         disabled={disabled}
-      className="inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-all"
+        className="console-action inline-flex h-10 items-center justify-center gap-2 rounded-md px-5 text-sm font-semibold"
         style={{ ...btnStyle, ...(disabled ? btnDisabledStyle : {}) }}
       >
         {running ? <><Spinner /> Running…</> : label}
@@ -174,7 +174,7 @@ export function RunAgentButton({
         </p>
       ) : null}
       {hint ? (
-        <p className="text-[11px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.5)" }}>
+        <p className="text-[11px] leading-relaxed" style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--text-tertiary)" }}>
           {hint}
         </p>
       ) : null}

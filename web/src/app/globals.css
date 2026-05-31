@@ -5,21 +5,21 @@
 :root {
   --surface:          #050706;
   --surface-raised:   #0B0E0B;
-  --surface-command:  #10110B;
+  --surface-command:  #10140E;
   --surface-evidence: #070A08;
-  --border-subtle:    rgba(237, 231, 218, 0.11);
-  --border-strong:    rgba(237, 231, 218, 0.24);
+  --border-subtle:    rgba(237, 231, 218, 0.14);
+  --border-strong:    rgba(237, 231, 218, 0.30);
   --text-primary:     #F0E8D8;
-  --text-secondary:   #A79C89;
-  --text-tertiary:    #766E61;
+  --text-secondary:   #C0B49F;
+  --text-tertiary:    #8E8373;
 
-  --status-allocate:  #36D17D;
-  --status-pause:     #F0B84E;
-  --status-review:    #72A8FF;
+  --status-allocate:  #2FEA83;
+  --status-pause:     #FFC857;
+  --status-review:    #7DB7FF;
   --status-error:     #F06F62;
-  --status-live:      #36D17D;
-  --status-stub:      #F0B84E;
-  --status-gated:     #B08CFF;
+  --status-live:      #2FEA83;
+  --status-stub:      #FFC857;
+  --status-gated:     #C094FF;
   --hero-ink:         #F4E6CF;
   --hero-accent:      #F0B84E;
 
@@ -37,7 +37,7 @@
   --pause:        var(--status-pause);
   --clear:        var(--status-allocate);
   --review:       var(--status-review);
-  --seal:         #B9A777;
+  --seal:         #D2BD76;
   --pending:      #8D806D;
   --gated:        var(--status-gated);
 
@@ -175,18 +175,21 @@ button,
 }
 
 button:not(:disabled):hover,
-.console-action:hover {
+a.console-action:hover {
   box-shadow:
-    0 10px 24px rgba(0,0,0,0.28),
-    inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
-  filter: saturate(1.08) brightness(1.04);
-  transform: translateY(-1px);
+    0 14px 30px rgba(0,0,0,0.36),
+    0 0 0 1px color-mix(in srgb, currentColor 28%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+  filter: saturate(1.18) brightness(1.08);
+  transform: translateY(-2px);
 }
 
 button:not(:disabled):active,
-.console-action:active {
-  box-shadow: none;
-  filter: none;
+a.console-action:active {
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+  filter: saturate(1.04) brightness(1.02);
   transform: translateY(0);
 }
 
@@ -316,7 +319,7 @@ summary:focus-visible {
 
 .surface-command {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--seal) 7%, transparent), transparent 90px),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-accent) 9%, transparent), transparent 110px),
     var(--surface-command);
   border-color: var(--border-strong);
 }
@@ -325,6 +328,87 @@ summary:focus-visible {
   background:
     linear-gradient(90deg, color-mix(in srgb, var(--panel-accent) 7%, transparent), transparent 42%),
     var(--surface-evidence);
+}
+
+.scenario-grid {
+  align-items: stretch;
+}
+
+.scenario-card {
+  display: grid;
+  gap: 18px;
+  grid-template-rows: minmax(58px, auto) minmax(118px, auto) auto 1fr auto;
+  min-height: 360px;
+}
+
+.scenario-card-head {
+  align-items: start;
+  display: grid;
+  gap: 10px;
+  grid-row: 1;
+}
+
+.scenario-card-index {
+  color: var(--text-tertiary);
+  font-family: 'Azeret Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.scenario-card-status {
+  justify-self: start;
+  line-height: 1.15;
+  max-width: 100%;
+  min-height: 28px;
+  padding: 6px 10px;
+}
+
+.scenario-card-body {
+  align-self: start;
+  grid-row: 2;
+}
+
+.scenario-card-body p {
+  max-width: 34ch;
+}
+
+.scenario-card-tags {
+  grid-row: 3;
+  min-height: 32px;
+}
+
+.scenario-chip {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(237,231,218,0.08);
+  border-radius: 4px;
+  color: rgba(242,232,213,0.88);
+  font-family: 'Azeret Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 5px 9px;
+}
+
+.scenario-card-note {
+  align-self: start;
+  background: color-mix(in srgb, var(--gated) 10%, rgba(255,255,255,0.03));
+  border: 1px solid color-mix(in srgb, var(--gated) 36%, transparent);
+  border-radius: 3px;
+  color: color-mix(in srgb, var(--gated) 88%, var(--text));
+  font-family: 'Azeret Mono', monospace;
+  font-size: 11px;
+  grid-row: 4;
+  line-height: 1.7;
+  padding: 12px 13px;
+}
+
+.scenario-card-action {
+  align-self: end;
+  border-top: 1px solid var(--border);
+  grid-row: 5;
+  padding-top: 16px;
 }
 
 .hero-console {
