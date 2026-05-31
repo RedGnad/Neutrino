@@ -255,7 +255,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
         <div>
           <p
             className="text-[10px] font-medium uppercase tracking-widest mb-2"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-muted)" }}
           >
             DECISION RECEIPT
           </p>
@@ -316,13 +316,13 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
         <div className="flex-1 min-w-0">
           <p
             className="text-[10px] font-medium uppercase tracking-widest mb-1"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-muted)" }}
           >
             DECISION RECEIPT · neutrino.decision.v2
           </p>
           <p
             className="text-2xl font-bold tracking-wider"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", color: verifiedColor }}
+            style={{ fontFamily: "'Azeret Mono', monospace", color: verifiedColor }}
           >
             {verified === "ok"
               ? "✓ VERIFIED MATCH"
@@ -348,7 +348,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               style={{ background: `${actionColor}14`, border: `1px solid ${actionColor}40` }}
             >
               <p className="text-[9px] font-mono uppercase tracking-widest mb-0.5" style={{ color: "var(--bb-muted)" }}>ACTION</p>
-              <p className="text-lg font-bold tracking-wider" style={{ color: actionColor, fontFamily: "'IBM Plex Mono', monospace" }}>
+              <p className="text-lg font-bold tracking-wider" style={{ color: actionColor, fontFamily: "'Azeret Mono', monospace" }}>
                 {parsed.action}
               </p>
             </div>
@@ -359,7 +359,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
             >
               <p className="text-[9px] font-mono uppercase tracking-widest mb-0.5" style={{ color: "var(--bb-muted)" }}>RISK SCORE</p>
-              <p className="text-lg font-bold tabular-nums" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Mono', monospace" }}>
+              <p className="text-lg font-bold tabular-nums" style={{ color: "var(--bb-text)", fontFamily: "'Azeret Mono', monospace" }}>
                 {parsed.riskScore}<span className="text-xs font-normal" style={{ color: "var(--bb-muted)" }}>/1000</span>
               </p>
             </div>
@@ -377,7 +377,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
           >
             <p
               className="text-[9px] font-medium uppercase tracking-widest"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(155,143,232,0.7)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(155,143,232,0.7)" }}
             >
               AI Proposal
             </p>
@@ -385,7 +385,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               <ActionPill action={parsed.aiProposal.proposedAction} />
               <span
                 className="text-[10px] tabular-nums"
-                style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(155,143,232,0.6)" }}
+                style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(155,143,232,0.6)" }}
               >
                 {Math.round(parsed.aiProposal.confidence * 100)}% conf.
               </span>
@@ -398,7 +398,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             </p>
             <p
               className="text-[9px]"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(155,143,232,0.4)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(155,143,232,0.4)" }}
             >
               model: {parsed.aiProposal.model}
             </p>
@@ -417,7 +417,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             <p
               className="text-[9px] font-medium uppercase tracking-widest"
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily: "'Azeret Mono', monospace",
                 color: parsed.policyReview.decision === 'OVERRIDE'
                   ? "rgba(255,107,53,0.7)"
                   : "rgba(45,212,165,0.6)",
@@ -453,7 +453,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             ) : (
               <p
                 className="text-[10px]"
-                style={{ color: "rgba(45,212,165,0.5)", fontFamily: "'IBM Plex Mono', monospace" }}
+                style={{ color: "rgba(45,212,165,0.5)", fontFamily: "'Azeret Mono', monospace" }}
               >
                 Risk-based proposal accepted.
               </p>
@@ -467,22 +467,22 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
           >
             <p
               className="text-[9px] font-medium uppercase tracking-widest"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(45,212,165,0.55)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(45,212,165,0.55)" }}
             >
               On-chain Commitment
             </p>
             <ActionPill action={parsed.action} />
             <div className="space-y-1.5">
               <div className="flex justify-between gap-2">
-                <span className="text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
+                <span className="text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
                   riskScore
                 </span>
-                <span className="text-[10px] tabular-nums" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(235,229,215,0.6)" }}>
+                <span className="text-[10px] tabular-nums" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(235,229,215,0.6)" }}>
                   {parsed.riskScore}<span style={{ color: "rgba(138,148,166,0.35)" }}>/1000</span>
                 </span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
+                <span className="text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
                   reasonHash
                 </span>
                 <span className="text-[10px] font-mono truncate max-w-[120px]" style={{ color: "rgba(45,212,165,0.55)" }}>
@@ -502,7 +502,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             <p
               className="text-[9px] leading-relaxed pt-1"
               style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily: "'Azeret Mono', monospace",
                 color: "rgba(45,212,165,0.35)",
                 borderTop: "1px solid rgba(45,212,165,0.1)",
               }}
@@ -522,7 +522,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             <div>
               <p
                 className="text-[10px] font-medium uppercase tracking-widest"
-                style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+                style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-muted)" }}
               >
                 RECEIPT EXPORTS
               </p>
@@ -557,7 +557,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                 <div>
                   <p
                     className="text-[10px] font-medium uppercase tracking-widest mb-2"
-                    style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+                    style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-muted)" }}
                   >
                     ASSET
                   </p>
@@ -575,14 +575,14 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                 <div>
                   <p
                     className="text-[10px] font-medium uppercase tracking-widest mb-1"
-                    style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+                    style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-muted)" }}
                   >
-                    REASON (LLM NARRATION)
+                    REASON (AI NARRATION)
                   </p>
                   <p className="text-xs leading-relaxed" style={{ color: "rgba(235,229,215,0.7)" }}>
                     {parsed.reason}
                   </p>
-                  <p className="mt-2 text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
+                  <p className="mt-2 text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
                     AI proposes · policy validates or overrides · Mantle verifies · llmControlsAction = false
                   </p>
                 </div>
@@ -597,7 +597,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               >
                 <p
                   className="text-[10px] font-medium uppercase tracking-widest mb-3"
-                  style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+                  style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-muted)" }}
                 >
                   SOURCE MATRIX
                 </p>
@@ -616,7 +616,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                 >
                   <p
                     className="text-[10px] font-medium uppercase tracking-widest mb-3"
-                    style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-teal)" }}
+                    style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-teal)" }}
                   >
                     xSTOCKS PUBLIC API (LIVE READ-ONLY)
                   </p>
@@ -673,14 +673,14 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
           >
             <p
               className="text-[10px] font-medium uppercase tracking-widest"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-muted)" }}
             >
               HASH VERIFICATION
             </p>
 
             {/* On-chain hash */}
             <div>
-              <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
+              <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
                 ON-CHAIN REASON HASH (RWADecisionLogger)
               </p>
               <div
@@ -696,7 +696,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
 
             {/* Recomputed hash */}
             <div>
-              <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
+              <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.5)" }}>
                 RECOMPUTED: keccak256(canonicalJson)
               </p>
               <div
@@ -726,7 +726,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                 style={{
                   background: "var(--bb-teal)",
                   color: "#070A0F",
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily: "'Azeret Mono', monospace",
                 }}
               >
                 Verify hash
@@ -739,7 +739,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.1)",
                   color: "var(--bb-muted)",
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontFamily: "'Azeret Mono', monospace",
                 }}
               >
                 {showJson ? "Hide JSON" : "View canonical JSON"}
@@ -773,7 +773,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
           >
             <p
               className="text-[10px] font-medium uppercase tracking-widest"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-muted)" }}
             >
               REPRODUCE LOCALLY
             </p>
@@ -799,7 +799,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             </ol>
             <p
               className="text-[10px] leading-relaxed pt-2"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.4)", borderTop: "1px solid rgba(255,255,255,0.05)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.4)", borderTop: "1px solid rgba(255,255,255,0.05)" }}
             >
               The JSON is byte-stable. Re-hash it with keccak256 and you get the same bytes32 emitted by RWADecisionLogger.DecisionLogged.reasonHash.
             </p>
@@ -816,7 +816,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
           <div className="flex items-center justify-between">
             <p
               className="text-[10px] font-medium uppercase tracking-widest"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-teal)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-teal)" }}
             >
               CANONICAL JSON · byte-stable · do not re-stringify before hashing
             </p>
@@ -828,7 +828,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               background: "rgba(0,0,0,0.4)",
               border: "1px solid rgba(255,255,255,0.06)",
               color: "rgba(235,229,215,0.7)",
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily: "'Azeret Mono', monospace",
             }}
           >
             {prettyJson(cache.canonicalJson)}
@@ -839,7 +839,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
       {/* Footer */}
       <p
         className="text-[11px] leading-relaxed"
-        style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.4)" }}
+        style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.4)" }}
       >
         * spreadBps and volume24hUsd are modelled — the xStocks public API can expose indicative price and
         trading status, but price is marked stub when the quote is null. Every field is covered by the on-chain reasonHash.
@@ -886,7 +886,7 @@ function DarkAuditCard({ title, rows, note }: { title: string; rows: Array<[stri
     >
       <p
         className="text-[9px] font-medium uppercase tracking-widest mb-2"
-        style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
+        style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-muted)" }}
       >
         {title}
       </p>
@@ -895,13 +895,13 @@ function DarkAuditCard({ title, rows, note }: { title: string; rows: Array<[stri
           <div key={k} className="flex justify-between gap-2 py-0.5">
             <span
               className="text-[10px] shrink-0"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.5)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.5)" }}
             >
               {k}
             </span>
             <span
               className="text-[10px] text-right break-all"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(235,229,215,0.6)" }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(235,229,215,0.6)" }}
             >
               {v}
             </span>
@@ -909,7 +909,7 @@ function DarkAuditCard({ title, rows, note }: { title: string; rows: Array<[stri
         ))}
       </div>
       {note && (
-        <p className="mt-2 text-[9px]" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.35)" }}>
+        <p className="mt-2 text-[9px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.35)" }}>
           {note}
         </p>
       )}

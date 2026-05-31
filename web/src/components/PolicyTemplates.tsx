@@ -1,7 +1,9 @@
+import { ConsoleCard, SectionHeader, StatusPill } from "./Console";
+
 const POLICIES = [
   {
     name: "Conservative RWA",
-    tone: "var(--clear)",
+    tone: "green" as const,
     summary: "Default guardrail profile for tokenized equity and yield agents.",
     rules: [
       "Blocks unsafe after-hours tokenized equity execution.",
@@ -11,7 +13,7 @@ const POLICIES = [
   },
   {
     name: "Balanced Agent",
-    tone: "var(--seal)",
+    tone: "gold" as const,
     summary: "More tolerant review posture for agents that can defer execution.",
     rules: [
       "Allows more REVIEW states before PAUSE.",
@@ -21,7 +23,7 @@ const POLICIES = [
   },
   {
     name: "Yield-seeking",
-    tone: "var(--gated)",
+    tone: "violet" as const,
     summary: "Biases toward Mantle-native yield only when data quality is strong.",
     rules: [
       "Prioritizes mETH/USDY opportunities.",
@@ -34,64 +36,41 @@ const POLICIES = [
 export function PolicyTemplates({ compact = false }: { compact?: boolean }) {
   return (
     <section className="section-ruled space-y-5">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <span className="section-label">POLICY TEMPLATES</span>
-          <h2
-            className="italic"
-            style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: compact ? "1.45rem" : "1.75rem",
-              fontWeight: 600,
-              color: "var(--text)",
-              letterSpacing: "-0.01em",
-            }}
-          >
-            Choose the guardrail profile before the agent acts.
-          </h2>
-        </div>
-        <p
-          className="max-w-md text-sm leading-relaxed"
-          style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-        >
-          Outputs are policy outcomes, not fixed asset labels. Neutrino reevaluates live
-          signals on every run. The hosted demo runs the Conservative RWA-style No after-hours
-          risk policy today; the other profiles show the builder template direction.
-        </p>
-      </div>
+      <SectionHeader
+        eyebrow="Policy templates"
+        title="Outputs are policy outcomes, not fixed asset labels."
+        compact={compact}
+        body={
+          <>
+            Neutrino reevaluates live signals on every run. The hosted demo uses the
+            Conservative RWA-style No after-hours risk policy today; the other profiles show
+            builder template direction.
+          </>
+        }
+      />
 
       <div className="grid gap-4 lg:grid-cols-3">
         {POLICIES.map((policy) => (
-          <div
-            key={policy.name}
-            className="rounded-lg p-5"
-            style={{
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid var(--border)",
-              borderLeft: `3px solid ${policy.tone}`,
-            }}
-          >
-            <p
-              className="mb-2 text-sm font-semibold"
-              style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
-            >
-              {policy.name}
-            </p>
-            <p
-              className="mb-4 text-xs leading-relaxed"
-              style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-            >
-              {policy.summary}
-            </p>
+          <ConsoleCard key={policy.name} compact={compact} accent={policy.tone} className="space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                  {policy.name}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+                  {policy.summary}
+                </p>
+              </div>
+              <StatusPill value="template" tone={policy.tone}>template</StatusPill>
+            </div>
             <ul className="space-y-2">
               {policy.rules.map((rule) => (
-                <li key={rule} className="flex gap-2 text-xs leading-relaxed">
-                  <span style={{ color: policy.tone, marginTop: 1 }}>-</span>
-                  <span style={{ color: "rgba(242,232,213,0.72)" }}>{rule}</span>
+                <li key={rule} className="text-xs leading-relaxed" style={{ color: "rgba(242,232,213,0.72)" }}>
+                  {rule}
                 </li>
               ))}
             </ul>
-          </div>
+          </ConsoleCard>
         ))}
       </div>
     </section>

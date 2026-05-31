@@ -15,7 +15,8 @@
   --muted:        #907E6C;
 
   /* Verdict palette — authority, not decoration */
-  --refuse:       #D14040;   /* blood crimson — PAUSE / danger */
+  --refuse:       #D14040;   /* red — errors / unavailable */
+  --pause:        #D4A040;   /* amber — PAUSE / caution */
   --clear:        #3A9B62;   /* deep forest   — ALLOCATE / safe */
   --seal:         #D4A040;   /* aged gold     — verified / receipt */
   --pending:      #7A6B58;   /* tobacco       — modelled / uncertain */
@@ -38,7 +39,7 @@
   --bb-muted:     var(--muted);
   --bb-teal:      var(--clear);
   --bb-amber:     var(--seal);
-  --bb-orange:    var(--refuse);
+  --bb-orange:    var(--pause);
   --bb-red:       #D14040;
   --bb-violet:    var(--gated);
 }
@@ -56,6 +57,8 @@ body {
   font-family:             'Instrument Sans', system-ui, sans-serif;
   -webkit-font-smoothing:  antialiased;
   position: relative;
+  line-height: 1.5;
+  overflow-x: hidden;
 }
 
 /* Archival noise — warm grain, not cool static */
@@ -71,6 +74,22 @@ body::before {
 
 code, pre {
   font-family: 'Azeret Mono', 'JetBrains Mono', monospace;
+}
+
+::selection {
+  background: rgba(58,155,98,0.28);
+  color: var(--text);
+}
+
+a, button, input, summary {
+  outline-offset: 3px;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 1px solid var(--clear);
 }
 
 /* ── Scrollbar ─────────────────────────────────── */
@@ -153,6 +172,113 @@ code, pre {
   position: relative;
 }
 
+.console-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.014));
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--border-hi);
+  border-radius: 8px;
+  min-width: 0;
+  padding: 24px;
+  position: relative;
+}
+
+.console-card-compact {
+  padding: 16px;
+}
+
+.console-code {
+  background: rgba(0,0,0,0.34);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: rgba(242,232,213,0.78);
+  font-family: 'Azeret Mono', monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  overflow-x: auto;
+  padding: 16px;
+  max-width: 100%;
+}
+
+.console-table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.console-table {
+  min-width: 820px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.console-table thead th {
+  background: rgba(0,0,0,0.22);
+  border-bottom: 1px solid var(--border);
+  color: rgba(144,126,108,0.7);
+  font-family: 'Azeret Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 12px 14px;
+  position: sticky;
+  text-transform: uppercase;
+  top: 0;
+  z-index: 1;
+}
+
+.console-table tbody td {
+  border-bottom: 1px solid rgba(255,255,255,0.045);
+  padding: 13px 14px;
+  vertical-align: middle;
+}
+
+.console-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.console-table tbody tr:hover td {
+  background: rgba(255,255,255,0.018);
+}
+
+.quiet-details {
+  background: rgba(255,255,255,0.018);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.quiet-details > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 16px 18px;
+}
+
+.quiet-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.quiet-details > summary::after {
+  color: var(--muted);
+  content: '+';
+  float: right;
+  font-family: 'Azeret Mono', monospace;
+}
+
+.quiet-details[open] > summary::after {
+  content: '-';
+}
+
+@media (max-width: 640px) {
+  .console-card {
+    padding: 16px;
+  }
+
+  .section-ruled {
+    padding-top: 22px;
+  }
+}
+
 /* Proof: premium card — use sparingly, 2-3 times max per page */
 .section-proof {
   background:    var(--panel);
@@ -165,7 +291,7 @@ code, pre {
   position:      relative;
   overflow:      hidden;
 }
-.section-proof.refuse { border-left-color: var(--refuse); }
+.section-proof.refuse { border-left-color: var(--pause); }
 .section-proof.clear  { border-left-color: var(--clear); }
 .section-proof.seal   { border-left-color: var(--seal); }
 
@@ -192,7 +318,7 @@ code, pre {
   position:      relative;
   overflow:      hidden;
 }
-.ruling-card.pause    { border-left-color: var(--refuse); }
+.ruling-card.pause    { border-left-color: var(--pause); }
 .ruling-card.allocate { border-left-color: var(--clear); }
 .ruling-card.verified { border-left-color: var(--seal); }
 .ruling-card.modelled { border-left-color: var(--pending); }
@@ -255,12 +381,12 @@ code, pre {
 }
 
 /* ── Verdict colour helpers ────────────────────── */
-.verdict-pause    { color: var(--refuse); }
+.verdict-pause    { color: var(--pause); }
 .verdict-allocate { color: var(--clear); }
 .verdict-hold     { color: var(--seal); }
 .verdict-reduce   { color: var(--seal); }
 
-.decision-pause    { color: var(--refuse); }
+.decision-pause    { color: var(--pause); }
 .decision-allocate { color: var(--clear); }
 .decision-hold     { color: var(--seal); }
 .decision-reduce   { color: var(--seal); }

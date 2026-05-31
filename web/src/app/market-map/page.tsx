@@ -1,13 +1,20 @@
-import Link from 'next/link';
+import Link from "next/link";
 import {
   EXPLORER_TX,
   LOGGER_ADDRESS,
   NETWORK_LABEL,
   TRACKED_ASSETS,
   fetchLatestPerAsset,
-  statusFor,
   timeAgo,
-} from '@/lib/onchain';
+} from "@/lib/onchain";
+import {
+  ConsoleCard,
+  HashText,
+  MetricStrip,
+  RiskBar,
+  SectionHeader,
+  StatusPill,
+} from "@/components/Console";
 
 export const revalidate = 10;
 
@@ -16,33 +23,30 @@ export default async function MarketMapPage() {
     ? await fetchLatestPerAsset().catch(() => null)
     : null;
 
+  const populated = rows?.filter((r) => r.latest !== null).length ?? 0;
+
   return (
-    <div className="space-y-6" style={{ color: "var(--bb-text)" }}>
-      {/* Header */}
-      <div>
-        <p
-          className="text-[10px] font-medium uppercase tracking-widest mb-2"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
-        >
-          RWA MARKET MAP
-        </p>
-        <h1
-          className="text-2xl font-semibold tracking-tight"
-          style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
-        >
-          Latest policy outcome per asset
-        </h1>
-        <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--bb-muted)" }}>
-          Read live from{' '}
-          <code
-            className="rounded px-1.5 py-0.5 text-xs"
-            style={{ background: "rgba(45,212,165,0.1)", color: "var(--bb-teal)", fontFamily: "'IBM Plex Mono', monospace" }}
-          >
-            RWADecisionLogger
-          </code>{' '}
-          on {NETWORK_LABEL}. Click any asset to view its full receipt history.
-        </p>
-      </div>
+    <div className="space-y-8" style={{ color: "var(--text)" }}>
+      <section className="space-y-5">
+        <SectionHeader
+          eyebrow="RWA market map"
+          title="Latest policy outcome per asset."
+          body={
+            <>
+              A compact dashboard of tracked assets, read from RWADecisionLogger on {NETWORK_LABEL}.
+              Click any asset to inspect the full receipt history.
+            </>
+          }
+        />
+        <MetricStrip
+          columns={3}
+          items={[
+            { label: "Network", value: NETWORK_LABEL, tone: "green" },
+            { label: "Tracked assets", value: String(TRACKED_ASSETS.length), tone: "blue" },
+            { label: "With decisions", value: `${populated}/${TRACKED_ASSETS.length}`, tone: populated ? "green" : "slate" },
+          ]}
+        />
+      </section>
 
       {!LOGGER_ADDRESS ? (
         <Empty
@@ -55,143 +59,91 @@ export default async function MarketMapPage() {
           body={`The ${NETWORK_LABEL} RPC returned an error. Try again in a moment.`}
         />
       ) : (
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
-        >
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                {["Asset", "Kind", "Market", "Last action", "Last risk", "Status", "When", "Tx"].map((h, i) => (
-                  <th
-                    key={h}
-                    className={`px-4 py-3 text-[10px] font-medium uppercase tracking-widest ${i === 3 || i === 4 ? "text-right" : "text-left"}`}
-                    style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)", background: "rgba(0,0,0,0.2)" }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(({ asset, latest }, idx) => {
-                const status = statusFor(latest?.action ?? null, latest?.riskScore ?? null);
-                const actionColor =
-                  latest?.action === "PAUSE" ? "var(--bb-orange)"
-                  : latest?.action === "ALLOCATE" ? "var(--bb-teal)"
-                  : latest?.action ? "var(--bb-amber)"
-                  : "var(--bb-muted)";
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {rows.map(({ asset, latest }) => {
+            const category = asset.kind === "tokenized_equity" ? "Tokenized equity" : "Yield-bearing";
+            const market = "market" in asset ? asset.market : "on-chain";
+            const sourceQuality =
+              asset.kind === "tokenized_equity"
+                ? "live / stub / modelled flags"
+                : "on-chain RWA signals";
 
-                const badgeBg =
-                  status.label === 'ALLOCATE' ? 'rgba(45,212,165,0.12)'
-                  : status.label === 'PAUSE' ? 'rgba(255,107,53,0.12)'
-                  : status.label === 'HOLD' ? 'rgba(245,166,35,0.12)'
-                  : 'rgba(255,255,255,0.05)';
-                const badgeBorder =
-                  status.label === 'ALLOCATE' ? 'rgba(45,212,165,0.3)'
-                  : status.label === 'PAUSE' ? 'rgba(255,107,53,0.3)'
-                  : status.label === 'HOLD' ? 'rgba(245,166,35,0.3)'
-                  : 'rgba(255,255,255,0.1)';
-                const badgeColor =
-                  status.label === 'ALLOCATE' ? 'var(--bb-teal)'
-                  : status.label === 'PAUSE' ? 'var(--bb-orange)'
-                  : status.label === 'HOLD' ? 'var(--bb-amber)'
-                  : 'var(--bb-muted)';
+            return (
+              <ConsoleCard
+                key={asset.symbol}
+                accent={latest?.action === "ALLOCATE" ? "green" : latest?.action === "PAUSE" ? "amber" : "slate"}
+                className="space-y-5"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <Link
+                      href={`/agent-decision/${asset.symbol}`}
+                      className="text-xl font-semibold transition-opacity hover:opacity-80"
+                      style={{ color: "var(--text)" }}
+                    >
+                      {asset.symbol}
+                    </Link>
+                    {"reference" in asset && asset.reference ? (
+                      <p className="text-xs" style={{ color: "var(--muted)" }}>
+                        references {asset.reference}
+                      </p>
+                    ) : null}
+                  </div>
+                  <StatusPill value={latest?.action ?? "N/A"}>{latest?.action ?? "N/A"}</StatusPill>
+                </div>
 
-                return (
-                  <tr
-                    key={asset.symbol}
-                    className="transition-colors hover:bg-white/[0.02]"
-                    style={{ borderBottom: idx < rows.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}
-                  >
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/agent-decision/${asset.symbol}`}
-                        className="text-sm font-semibold transition-opacity hover:opacity-80"
-                        style={{ color: "var(--bb-text)" }}
-                      >
-                        {asset.symbol}
-                      </Link>
-                      {'reference' in asset && asset.reference ? (
-                        <span className="ml-2 text-xs" style={{ color: "rgba(138,148,166,0.5)" }}>
-                          ↔ {asset.reference}
-                        </span>
-                      ) : null}
-                    </td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "var(--bb-muted)" }}>
-                      {asset.kind === 'tokenized_equity' ? 'Tokenized equity' : 'Yield-bearing'}
-                    </td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "var(--bb-muted)" }}>
-                      {'market' in asset ? asset.market : 'on-chain'}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span
-                        className="text-sm font-semibold"
-                        style={{ color: actionColor, fontFamily: "'IBM Plex Mono', monospace" }}
-                      >
-                        {latest?.action ?? '—'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-sm" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Mono', monospace" }}>
-                      {latest ? (
-                        <>
-                          {latest.riskScore}
-                          <span style={{ color: "rgba(138,148,166,0.4)" }}>/1000</span>
-                        </>
-                      ) : '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className="text-[10px] font-mono font-medium uppercase tracking-widest rounded px-2 py-0.5"
-                        style={{ background: badgeBg, border: `1px solid ${badgeBorder}`, color: badgeColor }}
-                      >
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "var(--bb-muted)" }}>
-                      {latest ? timeAgo(latest.timestamp) : '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      {latest ? (
-                        <a
-                          href={`${EXPLORER_TX}/${latest.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-mono text-xs transition-opacity hover:opacity-80"
-                          style={{ color: "var(--bb-teal)" }}
-                        >
-                          {latest.txHash.slice(0, 10)}… ↗
-                        </a>
-                      ) : '—'}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <MiniMetric label="Category" value={category} />
+                  <MiniMetric label="Market" value={market} />
+                  <MiniMetric label="Source quality" value={sourceQuality} wide />
+                </div>
+
+                <RiskBar value={latest?.riskScore ?? null} />
+
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+                  <span className="text-[11px]" style={{ color: "rgba(144,126,108,0.62)", fontFamily: "'Azeret Mono', monospace" }}>
+                    {latest ? timeAgo(latest.timestamp) : "no decision yet"}
+                  </span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Link href={`/agent-decision/${asset.symbol}`} className="text-xs font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--clear)", fontFamily: "'Azeret Mono', monospace" }}>
+                      Receipt
+                    </Link>
+                    {latest ? (
+                      <HashText value={latest.txHash} href={`${EXPLORER_TX}/${latest.txHash}`} chars={8} />
+                    ) : null}
+                  </div>
+                </div>
+              </ConsoleCard>
+            );
+          })}
+        </section>
       )}
+    </div>
+  );
+}
 
-      {rows && (
-        <p
-          className="text-xs"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.4)" }}
-        >
-          {rows.filter((r) => r.latest !== null).length} of {TRACKED_ASSETS.length} tracked assets have an on-chain decision.
-        </p>
-      )}
+function MiniMetric({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) {
+  return (
+    <div className={wide ? "col-span-2" : ""}>
+      <p className="text-[9px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.55)", fontFamily: "'Azeret Mono', monospace" }}>
+        {label}
+      </p>
+      <p className="mt-1 text-sm leading-snug" style={{ color: "rgba(242,232,213,0.76)" }}>
+        {value}
+      </p>
     </div>
   );
 }
 
 function Empty({ title, body }: { title: string; body: string }) {
   return (
-    <div
-      className="rounded-xl p-8 text-center"
-      style={{ background: "var(--bb-panel)", border: "1px dashed rgba(255,255,255,0.1)" }}
-    >
-      <p className="text-sm font-medium mb-1" style={{ color: "var(--bb-text)" }}>{title}</p>
-      <p className="text-sm" style={{ color: "var(--bb-muted)" }}>{body}</p>
-    </div>
+    <ConsoleCard accent="amber" className="text-center">
+      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+        {title}
+      </p>
+      <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+        {body}
+      </p>
+    </ConsoleCard>
   );
 }

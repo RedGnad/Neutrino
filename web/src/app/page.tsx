@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { RunAgentButton } from "@/components/RunAgentButton";
 import { LatestExecution } from "@/components/LatestExecution";
-import { DecisionTimeline } from "@/components/DecisionTimeline";
 import { PolicyTemplates } from "@/components/PolicyTemplates";
+import {
+  ConsoleCard,
+  HashText,
+  RiskBar,
+  SectionHeader,
+  StatusPill,
+  TextLink,
+} from "@/components/Console";
 import {
   NETWORK_LABEL,
   LOGGER_ADDRESS,
@@ -17,14 +24,13 @@ export const revalidate = 30;
 
 export default function Home() {
   return (
-    <div className="space-y-14">
+    <div className="space-y-12 md:space-y-14">
       <Hero />
+      <ScenarioSection />
       <JudgeModeGuide />
       <BuilderIntegrationSection />
       <PolicyTemplates compact />
       <LatestExecution />
-      <DecisionTimeline />
-      <ScenarioSection />
       <DataHonestySection />
       <AttackSurfaceSection />
       <WhyMantleSection />
@@ -32,550 +38,215 @@ export default function Home() {
   );
 }
 
-/* ─── Hero ─────────────────────────────────────────────────────────── */
-
 async function Hero() {
   const allDecisions = await fetchRecentDecisions(100).catch(() => []);
-  // Deduplicate by canonical symbol (not address) — each asset has both a legacy
-  // placeholder address and a real Mantle address; keying by address lets both through.
   const seenSymbols = new Set<string>();
-  const decisions = allDecisions.filter((d) => {
-    const sym = resolveAsset(d.assetAddress).symbol;
-    if (seenSymbols.has(sym)) return false;
-    seenSymbols.add(sym);
-    return true;
-  });
+  const decisions = allDecisions
+    .filter((d) => {
+      const sym = resolveAsset(d.assetAddress).symbol;
+      if (seenSymbols.has(sym)) return false;
+      seenSymbols.add(sym);
+      return true;
+    })
+    .slice(0, 5);
 
   return (
     <section
-      className="-mx-6 -mt-10 px-6 pt-16 pb-16"
+      className="-mx-4 -mt-10 border-b px-4 py-12 sm:-mx-6 sm:px-6 sm:py-16"
       style={{
         background:
-          "linear-gradient(175deg, var(--bg) 0%, var(--panel) 100%)",
-        borderBottom: "1px solid var(--border)",
+          "linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0))",
+        borderColor: "var(--border)",
       }}
     >
-      <div className="mx-auto max-w-6xl">
-        <div className="grid gap-16 lg:grid-cols-[1fr_320px] items-start">
-
-          {/* LEFT — Headline */}
-          <div className="space-y-8">
-            <div className="animate-stagger-1">
-              <span className="section-label flex items-center gap-2">
-                <span
-                  className="h-1.5 w-1.5 rounded-full animate-live"
-                  style={{ background: "var(--clear)" }}
-                />
-                Neutrino · AI × RWA · {NETWORK_LABEL}
-              </span>
-            </div>
-
-            <div className="animate-stagger-2">
-              <h1
-                className="italic leading-[1.05] tracking-tight"
-                style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  fontSize: "clamp(3rem, 6.5vw, 5rem)",
-                  fontWeight: 600,
-                  color: "var(--text)",
-                }}
-              >
-                The market
-                <br />
-                closed at 4pm.
-                <br />
-                <span style={{ color: "var(--muted)" }}>
-                  The token
-                  <br />
-                  didn&rsquo;t.
-                </span>
-              </h1>
-            </div>
-
-            <div className="animate-stagger-3 max-w-lg">
-              <p
-                className="text-base leading-relaxed"
-                style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-              >
-                Neutrino reads live RWA and xStocks signals, lets the AI
-                propose an action, lets policy validate or override it, then
-                commits the final decision to Mantle.{" "}
-                <span style={{ color: "var(--text)" }}>
-                  The AI proposes. Policy validates. Mantle verifies.
-                </span>
-              </p>
-            </div>
-
-            <div className="animate-stagger-4 flex flex-wrap gap-2">
-              <ProofChip label="xStocks status + price check" state="LIVE/STUB" color="clear" />
-              <ProofChip label="Mantle receipts" state="LIVE" color="clear" />
-              <ProofChip label="Fluxion execution" state="LIVE" color="clear" />
-              <ProofChip label="xStocks RFQ" state="GATED" color="gated" />
-            </div>
-
-            <div className="animate-stagger-5 flex flex-wrap gap-3">
-              <Link
-                href="#scenarios"
-                className="inline-flex h-10 items-center rounded px-5 text-sm font-semibold transition-all"
-                style={{
-                  background: "var(--clear)",
-                  color: "#060504",
-                  fontFamily: "'Instrument Sans', sans-serif",
-                }}
-              >
-                Run the agent
-              </Link>
-              <Link
-                href="/proof"
-                className="inline-flex h-10 items-center rounded px-5 text-sm font-medium transition-colors"
-                style={{
-                  background: "rgba(200,168,110,0.06)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border-hi)",
-                  fontFamily: "'Instrument Sans', sans-serif",
-                }}
-              >
-                On-chain proofs
-              </Link>
-              <Link
-                href="/integrate"
-                className="inline-flex h-10 items-center rounded px-5 text-sm font-medium transition-colors"
-                style={{
-                  background: "rgba(200,168,110,0.06)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border-hi)",
-                  fontFamily: "'Instrument Sans', sans-serif",
-                }}
-              >
-                Integrate your agent
-              </Link>
-            </div>
-
-            {(LOGGER_ADDRESS || AGENT_ADDRESS) && (
-              <div
-                className="flex flex-wrap gap-4 pt-1"
-                style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px" }}
-              >
-                {LOGGER_ADDRESS && (
-                  <a
-                    href={`${EXPLORER_ADDR}/${LOGGER_ADDRESS}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
-                    style={{ color: "rgba(144,126,108,0.5)" }}
-                  >
-                    RWADecisionLogger:{" "}
-                    <span style={{ color: "var(--muted)" }}>
-                      {LOGGER_ADDRESS.slice(0, 10)}…{LOGGER_ADDRESS.slice(-6)}
-                    </span>
-                    <span style={{ color: "var(--seal)" }}>↗</span>
-                  </a>
-                )}
-                {AGENT_ADDRESS && (
-                  <a
-                    href={`${EXPLORER_ADDR}/${AGENT_ADDRESS}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
-                    style={{ color: "rgba(144,126,108,0.5)" }}
-                  >
-                    RWAAgent:{" "}
-                    <span style={{ color: "var(--muted)" }}>
-                      {AGENT_ADDRESS.slice(0, 10)}…{AGENT_ADDRESS.slice(-6)}
-                    </span>
-                    <span style={{ color: "var(--seal)" }}>↗</span>
-                  </a>
-                )}
-              </div>
-            )}
+      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
+        <div className="space-y-7">
+          <div className="space-y-4">
+            <span className="section-label flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full animate-live" style={{ background: "var(--clear)" }} />
+              Neutrino · AI x RWA · {NETWORK_LABEL}
+            </span>
+            <h1
+              className="font-display italic leading-[1.03]"
+              style={{
+                color: "var(--text)",
+                fontSize: "clamp(2.8rem, 7vw, 5.4rem)",
+                fontWeight: 600,
+              }}
+            >
+              The market closed at 4pm.
+              <br />
+              <span style={{ color: "rgba(242,232,213,0.58)" }}>The token didn&rsquo;t.</span>
+            </h1>
+            <p className="max-w-2xl text-base leading-relaxed sm:text-lg" style={{ color: "var(--muted)" }}>
+              Neutrino is the policy layer between market signals and capital movement. Signals enter,
+              AI proposes, policy validates or overrides, and Mantle verifies the final receipt.
+            </p>
           </div>
 
-          {/* RIGHT — Live decisions column */}
-          <div
-            className="animate-stagger-3"
-            style={{
-              borderLeft: "1px solid var(--border-hi)",
-              paddingLeft: "28px",
-            }}
-          >
-            <p className="section-label mb-4">LATEST STATE · LIVE</p>
-
-            {decisions.length === 0 ? (
-              <p
-                className="text-sm"
-                style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
-              >
-                No decisions on-chain yet — run a scenario below.
-              </p>
-            ) : (
-              <ul className="space-y-0">
-                {decisions.map((d, i) => {
-                  const sym = resolveAsset(d.assetAddress).symbol;
-                  const isPause = d.action === "PAUSE" || d.action === "REDUCE";
-                  const isAllocate = d.action === "ALLOCATE";
-                  const actionColor = isPause
-                    ? "var(--refuse)"
-                    : isAllocate
-                    ? "var(--clear)"
-                    : "var(--seal)";
-
-                  return (
-                    <li
-                      key={d.txHash}
-                      className="flex items-baseline gap-3 py-2.5"
-                      style={{
-                        borderBottom: "1px solid var(--border)",
-                        animation: `stagger-up 0.4s ease-out ${i * 60}ms both`,
-                      }}
-                    >
-                      <span
-                        className="font-semibold text-sm shrink-0 w-12"
-                        style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--text)" }}
-                      >
-                        {sym}
-                      </span>
-                      <span
-                        className="text-xs font-medium flex-1"
-                        style={{ fontFamily: "'Azeret Mono', monospace", color: actionColor }}
-                      >
-                        {d.action}
-                      </span>
-                      <span
-                        className="text-[10px] shrink-0"
-                        style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.5)" }}
-                      >
-                        {timeAgo(d.timestamp)}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-
-            <div
-              className="mt-4 flex items-center justify-between"
-              style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px" }}
-            >
-              <span style={{ color: "rgba(144,126,108,0.4)" }}>
-                5 assets · latest decision per asset · Mantle Mainnet
-              </span>
-              <Link
-                href="/proof"
-                className="transition-opacity hover:opacity-70"
-                style={{ color: "var(--seal)" }}
-              >
-                all proofs ↗
-              </Link>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ProofChip({
-  label,
-  state,
-  color,
-}: {
-  label: string;
-  state: string;
-  color: "clear" | "seal" | "gated" | "muted";
-}) {
-  const s = {
-    clear: { bg: "rgba(58,155,98,0.08)",  border: "rgba(58,155,98,0.22)",  dot: "var(--clear)", text: "var(--clear)" },
-    seal:  { bg: "rgba(212,160,64,0.08)", border: "rgba(212,160,64,0.22)", dot: "var(--seal)",  text: "var(--seal)" },
-    gated: { bg: "rgba(120,104,212,0.08)",border: "rgba(120,104,212,0.22)",dot: "var(--gated)", text: "#9B8FE8" },
-    muted: { bg: "rgba(144,126,108,0.06)",border: "rgba(144,126,108,0.16)",dot: "var(--muted)", text: "var(--muted)" },
-  }[color];
-
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded px-2.5 py-1"
-      style={{
-        background: s.bg,
-        border: `1px solid ${s.border}`,
-        fontFamily: "'Azeret Mono', monospace",
-        fontSize: "10px",
-      }}
-    >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: s.dot }} />
-      <span style={{ color: "var(--muted)" }}>{label}</span>
-      <span className="font-semibold" style={{ color: s.text }}>{state}</span>
-    </span>
-  );
-}
-
-/* ─── Judge Mode Guide ──────────────────────────────────────────────── */
-
-function JudgeModeGuide() {
-  const steps = [
-    {
-      n: "01",
-      label: "Run risky xStocks",
-      sub: "Scenario 01 below",
-      action: "Current policy outcome",
-      color: "var(--refuse)",
-      href: "#scenarios",
-    },
-    {
-      n: "02",
-      label: "Verify receipt",
-      sub: "/proof or /agent-decision",
-      action: "Hash match on-chain",
-      color: "var(--clear)",
-      href: "/proof",
-    },
-    {
-      n: "03",
-      label: "Run safe yield",
-      sub: "Scenario 02 below",
-      action: "Policy outcome under current conditions",
-      color: "var(--clear)",
-      href: "#scenarios",
-    },
-    {
-      n: "04",
-      label: "Execute Fluxion",
-      sub: "Scenario 03 below",
-      action: "Real on-chain tx",
-      color: "var(--seal)",
-      href: "#scenarios",
-    },
-  ] as const;
-
-  return (
-    <section className="section-ruled">
-      <div className="flex items-center gap-4 mb-6">
-        <span
-          className="rounded px-2 py-0.5"
-          style={{
-            fontFamily: "'Azeret Mono', monospace",
-            fontSize: "9px",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            background: "rgba(58,155,98,0.1)",
-            border: "1px solid rgba(58,155,98,0.25)",
-            color: "var(--clear)",
-          }}
-        >
-          JUDGE FLOW
-        </span>
-        <span
-          className="text-sm"
-          style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-        >
-          Complete evaluation path — start here
-        </span>
-      </div>
-
-      <div className="grid gap-0 sm:grid-cols-4 sm:divide-x"
-        style={{ borderColor: "var(--border)" }}
-      >
-        {steps.map((s) => (
-          <a
-            key={s.n}
-            href={s.href}
-            className="group block transition-all hover:opacity-80 px-0 py-3 sm:px-5 sm:first:pl-0 sm:last:pr-0"
-          >
-            <p
-              className="mb-2"
-              style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", letterSpacing: "0.12em", color: "rgba(144,126,108,0.4)", textTransform: "uppercase" }}
-            >
-              STEP {s.n}
-            </p>
-            <p
-              className="font-semibold mb-0.5 text-sm"
-              style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
-            >
-              {s.label}
-            </p>
-            <p
-              className="text-xs"
-              style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-            >
-              {s.sub}
-            </p>
-            <p
-              className="mt-2 font-medium"
-              style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", color: s.color }}
-            >
-              → {s.action}
-            </p>
-          </a>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* ─── Builder Integration ───────────────────────────────────────────── */
-
-function BuilderIntegrationSection() {
-  const uses = [
-    ["RWA agent builders", "Add policy guardrails before execution."],
-    ["Vault / treasury builders", "Prove why an agent allocated, paused, or required review."],
-    ["xStocks apps", "Check market and execution conditions before capital moves."],
-    ["Mantle protocols", "Generate public decision receipts for autonomous workflows."],
-  ] as const;
-
-  return (
-    <section className="section-ruled space-y-6">
-      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
-        <div>
-          <span className="section-label">USE NEUTRINO IN YOUR AGENT</span>
-          <h2
-            className="italic"
-            style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: "1.75rem",
-              fontWeight: 600,
-              color: "var(--text)",
-              letterSpacing: "-0.01em",
-            }}
-          >
-            A policy layer between market signals and capital movement.
-          </h2>
-          <p
-            className="mt-2 max-w-2xl text-sm leading-relaxed"
-            style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-          >
-            Run configured RWA scenarios through Neutrino&apos;s policy loop; receive an AI proposal,
-            policy review, final action, reasonHash, and Mantle receipt. AI proposes,
-            policy validates or overrides, Mantle verifies the final receipt. AI proposal → policy review → on-chain receipt.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3">
             <Link
-              href="/integrate"
-              className="inline-flex h-10 items-center rounded px-5 text-sm font-semibold transition-opacity hover:opacity-85"
-              style={{ background: "var(--clear)", color: "#060504", fontFamily: "'Instrument Sans', sans-serif" }}
+              href="#scenarios"
+              className="inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold transition-opacity hover:opacity-85"
+              style={{ background: "var(--clear)", color: "#060504" }}
             >
-              View integration guide
+              Run agent
             </Link>
             <Link
               href="/proof"
-              className="inline-flex h-10 items-center rounded px-5 text-sm font-medium transition-colors"
-              style={{
-                background: "rgba(200,168,110,0.06)",
-                color: "var(--text)",
-                border: "1px solid var(--border-hi)",
-                fontFamily: "'Instrument Sans', sans-serif",
-              }}
+              className="inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold transition-colors"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-hi)", color: "var(--text)" }}
             >
-              Live proof registry
+              View proofs
+            </Link>
+            <Link
+              href="/integrate"
+              className="inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold transition-colors"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-hi)", color: "var(--text)" }}
+            >
+              Integrate
             </Link>
           </div>
+
+          <ConsoleCard compact accent="green" className="max-w-3xl">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <EvidenceItem label="xStocks status" value="live when API responds" tone="green" />
+              <EvidenceItem label="Price quality" value="live or stub flagged" tone="amber" />
+              <EvidenceItem label="Mantle receipts" value="on-chain" tone="green" />
+              <EvidenceItem label="xStocks execution" value="verified RFQ gated" tone="violet" />
+            </div>
+          </ConsoleCard>
         </div>
 
-        <div
-          className="rounded-lg p-5"
-          style={{ background: "var(--panel)", border: "1px solid var(--border-hi)" }}
-        >
-          <p
-            className="mb-4 text-[10px] font-medium uppercase tracking-widest"
-            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--seal)" }}
-          >
-            WHO USES NEUTRINO?
-          </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {uses.map(([title, body]) => (
-              <div key={title}>
-                <p
-                  className="text-sm font-semibold"
-                  style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
-                >
-                  {title}
-                </p>
-                <p
-                  className="mt-1 text-xs leading-relaxed"
-                  style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-                >
-                  {body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <LatestStateCard decisions={decisions} />
       </div>
     </section>
   );
 }
 
-/* ─── Scenarios ─────────────────────────────────────────────────────── */
+function EvidenceItem({ label, value, tone }: { label: string; value: string; tone: "green" | "amber" | "violet" }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-[9px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+        {label}
+      </p>
+      <StatusPill value={value} tone={tone}>
+        {value}
+      </StatusPill>
+    </div>
+  );
+}
+
+function LatestStateCard({
+  decisions,
+}: {
+  decisions: Awaited<ReturnType<typeof fetchRecentDecisions>>;
+}) {
+  return (
+    <ConsoleCard accent="gold" className="lg:sticky lg:top-20">
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <span className="section-label" style={{ color: "var(--seal)" }}>
+            Latest state
+          </span>
+          <h2 className="text-lg font-semibold" style={{ color: "var(--text)" }}>
+            Current policy outcomes
+          </h2>
+          <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+            Latest decision per asset, read from Mantle.
+          </p>
+        </div>
+        <TextLink href="/proof">All proofs</TextLink>
+      </div>
+
+      {decisions.length === 0 ? (
+        <p className="text-sm" style={{ color: "var(--muted)", fontFamily: "'Azeret Mono', monospace" }}>
+          No decisions on-chain yet. Run a scenario below.
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {decisions.map((d) => {
+            const sym = resolveAsset(d.assetAddress).symbol;
+            return (
+              <li key={d.txHash} className="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-lg px-3 py-2" style={{ background: "rgba(255,255,255,0.022)", border: "1px solid var(--border)" }}>
+                <Link href={`/agent-decision/${sym}`} className="font-mono text-sm font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--text)" }}>
+                  {sym}
+                </Link>
+                <div className="min-w-0">
+                  <StatusPill value={d.action}>{d.action}</StatusPill>
+                  <p className="mt-1 text-[10px]" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Azeret Mono', monospace" }}>
+                    {timeAgo(d.timestamp)}
+                  </p>
+                </div>
+                <RiskBar value={d.riskScore} label={false} />
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {(LOGGER_ADDRESS || AGENT_ADDRESS) && (
+        <div className="mt-5 space-y-2 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+          {LOGGER_ADDRESS ? (
+            <ContractLink label="Logger" address={LOGGER_ADDRESS} />
+          ) : null}
+          {AGENT_ADDRESS ? (
+            <ContractLink label="Agent" address={AGENT_ADDRESS} />
+          ) : null}
+        </div>
+      )}
+    </ConsoleCard>
+  );
+}
+
+function ContractLink({ label, address }: { label: string; address: string }) {
+  return (
+    <a
+      href={`${EXPLORER_ADDR}/${address}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center justify-between gap-3 text-[10px] transition-opacity hover:opacity-80"
+      style={{ color: "rgba(144,126,108,0.62)", fontFamily: "'Azeret Mono', monospace" }}
+    >
+      <span>{label}</span>
+      <HashText value={address} chars={8} />
+    </a>
+  );
+}
 
 function ScenarioSection() {
   return (
-    <section id="scenarios" className="section-ruled scroll-mt-8 space-y-6">
-      <div className="flex flex-col gap-1 mb-6">
-        <span className="section-label">AGENT SCENARIOS</span>
-        <h2
-          className="italic"
-          style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: "1.75rem",
-            fontWeight: 600,
-            color: "var(--text)",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          Run the full pipeline — pick a scenario
-        </h2>
-        <p
-          className="text-sm mt-1 max-w-xl"
-          style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-        >
-          Each run checks xStocks public-API signals, flags unavailable fields as stub, scores deterministically, narrates via LLM, writes one{" "}
-          <code
-            className="rounded px-1 py-0.5 text-xs"
-            style={{ fontFamily: "'Azeret Mono', monospace", background: "rgba(255,255,255,0.05)", color: "var(--text)" }}
-          >
-            DecisionLogged
-          </code>{" "}
-          event per asset on Mantle mainnet.
-        </p>
-      </div>
+    <section id="scenarios" className="section-ruled scroll-mt-24 space-y-6">
+      <SectionHeader
+        eyebrow="Agent scenarios"
+        title="Run the full policy loop."
+        body={
+          <>
+            Each run evaluates current signals, creates an AI proposal, applies policy review, and
+            writes a decision receipt to Mantle. Outputs are policy outcomes, not fixed asset labels.
+          </>
+        }
+      />
 
-      {/* Engine / LLM split banner */}
-      <div
-        className="rounded px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm"
-        style={{ background: "rgba(120,104,212,0.06)", border: "1px solid rgba(120,104,212,0.18)" }}
-      >
-        <span className="flex items-center gap-2">
-          <span
-            className="rounded px-2 py-0.5"
-            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", background: "rgba(255,255,255,0.06)", color: "var(--text)", letterSpacing: "0.08em" }}
-          >
-            AI PROPOSAL
+      <ConsoleCard compact accent="violet">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <span className="flex items-center gap-2">
+            <StatusPill value="AI proposal" tone="blue">AI proposal</StatusPill>
+            <span style={{ color: "var(--muted)" }}>scores signals and drafts intent</span>
           </span>
-          <span style={{ color: "var(--muted)", fontSize: "13px" }}>scores signals + drafts intent</span>
-        </span>
-        <span className="flex items-center gap-2">
-          <span
-            className="rounded px-2 py-0.5"
-            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", background: "rgba(120,104,212,0.14)", color: "#9B8FE8", letterSpacing: "0.08em" }}
-          >
-            POLICY REVIEW
+          <span className="flex items-center gap-2">
+            <StatusPill value="Policy review" tone="violet">Policy review</StatusPill>
+            <span style={{ color: "var(--muted)" }}>validates or overrides before the receipt</span>
           </span>
-          <span style={{ color: "var(--muted)", fontSize: "13px" }}>approves or overrides before on-chain receipt</span>
-        </span>
-      </div>
-
-      {/* Agent wallet note */}
-      <p
-        className="text-[11px] leading-relaxed"
-        style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.55)" }}
-      >
-        Transactions are signed by a controlled agent wallet. No user wallet connection is required — this demonstrates autonomous agent execution, not a user custody flow.
-      </p>
+        </div>
+      </ConsoleCard>
 
       <div className="grid gap-5 lg:grid-cols-3">
         <ScenarioCard
           index="01"
-          colorKey="refuse"
+          tone="amber"
           title="After-hours xStock exposure"
-          subtitle="CURRENT POLICY OUTCOME"
+          subtitle="Current policy outcome"
           assets={["NVDAx", "TSLAx", "SPYx"]}
           description="Live xStocks trading-halt status plus indicative price when available. If the quote is null, the receipt marks price as stub. xStocks can be paused when execution conditions are unsafe under the active policy."
           button={
@@ -583,37 +254,34 @@ function ScenarioSection() {
               scenario="risky-xstocks"
               label="Run risk check"
               variant="primary"
-              hint="Risk evaluation only · ~30–60s · 3 on-chain receipts"
+              hint="Risk evaluation only · ~30-60s · 3 on-chain receipts"
             />
           }
         />
-
         <ScenarioCard
           index="02"
-          colorKey="clear"
+          tone="green"
           title="Safe on-chain RWA yield"
-          subtitle="POLICY OUTCOME UNDER CURRENT CONDITIONS"
+          subtitle="Policy outcome under current conditions"
           assets={["USDY", "mETH"]}
-          description="USDY and mETH can be allocated when policy allows. No market-hours exposure. xStock signals are n/a — no hidden stubs."
+          description="USDY and mETH can be allocated when freshness and risk checks pass. No market-hours exposure. xStock signals are n/a."
           button={
             <RunAgentButton
               scenario="safe-yield"
               label="Run safe-yield scenario"
               variant="primary"
-              hint="Risk evaluation · ~20–40s · 2 on-chain receipts"
+              hint="Risk evaluation · ~20-40s · 2 on-chain receipts"
             />
           }
         />
-
         <ScenarioCard
           index="03"
-          colorKey="seal"
+          tone="gold"
           title="Verified Mantle execution"
-          subtitle="ROUND-TRIP ON MAINNET"
+          subtitle="Opt-in mainnet round trip"
           assets={["USDC", "mETH"]}
-          description="Real Fluxion V3 USDC→mETH→USDC round-trip. Two on-chain swaps. Two Mantlescan tx hashes. Demo wallet stays solvent."
-          rfqNote="Safety gate active: xStocks execution waits for verified RFQ rails. Neutrino can record a PAUSE receipt instead of forcing an unsafe trade."
-          rfqMicro="Public xStocks signals are used for risk evaluation. Execution only proceeds through verified rails."
+          description="Real Fluxion V3 USDC to mETH to USDC round trip. Two on-chain swaps. Two Mantlescan tx hashes. Demo wallet stays solvent."
+          note="xStocks execution waits for verified RFQ rails. Neutrino can record a PAUSE receipt instead of forcing an unsafe trade."
           button={
             <RunAgentButton
               scenario="safe-yield"
@@ -625,494 +293,345 @@ function ScenarioSection() {
           }
         />
       </div>
+
+      <p className="text-[11px] leading-relaxed" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.58)" }}>
+        Transactions are signed by a controlled agent wallet. No user wallet connection is required;
+        this demonstrates autonomous agent execution, not a user custody flow.
+      </p>
     </section>
   );
 }
 
 function ScenarioCard({
   index,
-  colorKey,
+  tone,
   title,
   subtitle,
   assets,
   description,
-  rfqNote,
-  rfqMicro,
+  note,
   button,
 }: {
   index: string;
-  colorKey: "refuse" | "clear" | "seal";
+  tone: "green" | "amber" | "gold";
   title: string;
   subtitle: string;
   assets: string[];
   description: string;
-  rfqNote?: string;
-  rfqMicro?: string;
+  note?: string;
   button: React.ReactNode;
 }) {
-  const scheme = {
-    refuse: {
-      border: "rgba(209,64,64,0.22)",
-      bg: "rgba(209,64,64,0.04)",
-      accent: "var(--refuse)",
-      labelBg: "rgba(209,64,64,0.1)",
-      labelText: "var(--refuse)",
-      chipBg: "rgba(209,64,64,0.1)",
-      chipText: "var(--refuse)",
-    },
-    clear: {
-      border: "rgba(58,155,98,0.22)",
-      bg: "rgba(58,155,98,0.04)",
-      accent: "var(--clear)",
-      labelBg: "rgba(58,155,98,0.1)",
-      labelText: "var(--clear)",
-      chipBg: "rgba(58,155,98,0.1)",
-      chipText: "var(--clear)",
-    },
-    seal: {
-      border: "rgba(212,160,64,0.22)",
-      bg: "rgba(212,160,64,0.04)",
-      accent: "var(--seal)",
-      labelBg: "rgba(212,160,64,0.1)",
-      labelText: "var(--seal)",
-      chipBg: "rgba(212,160,64,0.1)",
-      chipText: "var(--seal)",
-    },
-  }[colorKey];
-
   return (
-    <div
-      className="relative overflow-hidden rounded-xl flex flex-col gap-4 p-5"
-      style={{ background: scheme.bg, border: `1px solid ${scheme.border}` }}
-    >
-      {/* Giant background number — texture, not label */}
-      <span
-        className="absolute right-3 bottom-0 select-none pointer-events-none leading-none"
-        style={{
-          fontFamily: "'Azeret Mono', monospace",
-          fontSize: "140px",
-          fontWeight: 700,
-          color: "transparent",
-          WebkitTextStroke: `1px ${scheme.accent}`,
-          opacity: 0.055,
-        }}
-      >
-        {index}
-      </span>
-
-      <div className="relative space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <span
-            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", color: "rgba(144,126,108,0.45)", letterSpacing: "0.1em", textTransform: "uppercase" }}
-          >
-            SCENARIO {index}
-          </span>
-          <span
-            className="rounded px-2 py-0.5 shrink-0"
-            style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", background: scheme.labelBg, color: scheme.labelText }}
-          >
-            {subtitle}
-          </span>
-        </div>
-        <h3
-          className="text-base font-semibold leading-snug"
-          style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
-        >
+    <ConsoleCard accent={tone} className="flex min-h-[340px] flex-col gap-4">
+      <div className="flex items-start justify-between gap-3">
+        <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+          Scenario {index}
+        </span>
+        <StatusPill value={subtitle} tone={tone}>
+          {subtitle}
+        </StatusPill>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold leading-snug" style={{ color: "var(--text)" }}>
           {title}
         </h3>
-        <p
-          className="text-xs leading-relaxed"
-          style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-        >
+        <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
           {description}
         </p>
       </div>
-
-      <div className="relative flex flex-wrap gap-1.5">
-        {assets.map((a) => (
-          <span
-            key={a}
-            className="rounded px-2 py-0.5 text-xs font-mono font-medium"
-            style={{ background: scheme.chipBg, color: scheme.chipText, fontFamily: "'Azeret Mono', monospace" }}
-          >
-            {a}
+      <div className="flex flex-wrap gap-1.5">
+        {assets.map((asset) => (
+          <span key={asset} className="rounded-md px-2 py-1 text-[10px] font-semibold" style={{ background: "rgba(255,255,255,0.045)", color: "rgba(242,232,213,0.78)", fontFamily: "'Azeret Mono', monospace" }}>
+            {asset}
           </span>
         ))}
       </div>
-
-      {rfqNote && (
-        <div className="relative space-y-1.5">
-          <div
-            className="rounded px-3 py-2 text-[11px] leading-relaxed"
-            style={{ background: "rgba(120,104,212,0.08)", border: "1px solid rgba(120,104,212,0.2)", fontFamily: "'Azeret Mono', monospace", color: "#9B8FE8" }}
-          >
-            {rfqNote}
-          </div>
-          {rfqMicro && (
-            <p
-              className="px-1 text-[10px] leading-relaxed"
-              style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.5)" }}
-            >
-              {rfqMicro}
-            </p>
-          )}
-        </div>
-      )}
-
-      <div className="relative mt-auto">{button}</div>
-    </div>
+      {note ? (
+        <p className="rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(120,104,212,0.08)", border: "1px solid rgba(120,104,212,0.18)", color: "#B8ACFF", fontFamily: "'Azeret Mono', monospace" }}>
+          {note}
+        </p>
+      ) : null}
+      <div className="mt-auto">{button}</div>
+    </ConsoleCard>
   );
 }
 
-/* ─── Data Honesty ──────────────────────────────────────────────────── */
+function JudgeModeGuide() {
+  const steps = [
+    ["Market signals", "Live, stub, or n/a inputs are labelled."],
+    ["AI proposal", "The model proposes a candidate action."],
+    ["Policy review", "Rules approve or override before capital moves."],
+    ["Mantle receipt", "reasonHash commits the canonical loop."],
+    ["Optional execution", "Only verified rails can move capital."],
+  ] as const;
+
+  return (
+    <section className="section-ruled space-y-5">
+      <SectionHeader
+        eyebrow="Judge flow"
+        title="Signals are not decisions."
+        body="Current signals plus policy plus AI proposal become a reviewed decision and an on-chain receipt."
+      >
+        <TextLink href="/proof">Open registry</TextLink>
+      </SectionHeader>
+      <div className="grid gap-3 md:grid-cols-5">
+        {steps.map(([title, body], index) => (
+          <ConsoleCard key={title} compact accent={index === 4 ? "gold" : index === 2 ? "violet" : "slate"}>
+            <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.52)", fontFamily: "'Azeret Mono', monospace" }}>
+              {String(index + 1).padStart(2, "0")}
+            </p>
+            <p className="mt-2 text-sm font-semibold" style={{ color: "var(--text)" }}>
+              {title}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+              {body}
+            </p>
+          </ConsoleCard>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function BuilderIntegrationSection() {
+  const uses = [
+    ["RWA agent builders", "Add policy guardrails before execution."],
+    ["Vault / treasury builders", "Prove why an agent allocated, paused, or required review."],
+    ["xStocks apps", "Check market and execution conditions before capital moves."],
+    ["Mantle protocols", "Generate public decision receipts for autonomous workflows."],
+  ] as const;
+
+  return (
+    <section className="section-ruled space-y-5">
+      <SectionHeader
+        eyebrow="Use Neutrino in your agent"
+        title="Builder-facing policy infrastructure."
+        body="Send market context and execution intent into the policy loop, receive an AI proposal, policy review, final action, reasonHash, and Mantle receipt."
+      >
+        <TextLink href="/integrate">Integration guide</TextLink>
+      </SectionHeader>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {uses.map(([title, body]) => (
+          <ConsoleCard key={title} compact accent="slate">
+            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+              {title}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+              {body}
+            </p>
+          </ConsoleCard>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function DataHonestySection() {
   return (
-    <section className="section-ruled space-y-7">
-      <div>
-        <span className="section-label">§ DATA TRANSPARENCY</span>
-        <h2
-          className="italic"
-          style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: "1.6rem",
-            fontWeight: 600,
-            color: "var(--text)",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          Every source, explicitly labelled.
-        </h2>
-        <p
-          className="mt-2 text-sm max-w-xl"
-          style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-        >
-          Each decision receipt pins a{" "}
-          <code
-            className="rounded px-1 py-0.5 text-xs"
-            style={{ fontFamily: "'Azeret Mono', monospace", background: "rgba(255,255,255,0.05)", color: "var(--text)" }}
-          >
-            live · stub · n/a
-          </code>{" "}
-          flag per signal. A judge can inspect exactly which inputs were real at decision time.
-        </p>
-      </div>
+    <section className="section-ruled">
+      <details className="quiet-details">
+        <summary>
+          <div className="pr-8">
+            <span className="section-label">Data transparency</span>
+            <h2 className="font-display italic text-2xl font-semibold" style={{ color: "var(--text)" }}>
+              Every source is explicitly labelled.
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+              Decision receipts mark signals as live, stub, modelled, or n/a so reviewers can see
+              exactly what was known at decision time.
+            </p>
+          </div>
+        </summary>
 
-      <div className="grid gap-7 sm:grid-cols-3">
-        <SourcePanel
-          state="LIVE"
-          color="clear"
-          items={[
-            "xStock indicative price when API returns a quote",
-            "xStock trading-halt status (xStocks public API)",
-            "Mantle token addresses (verified on-chain)",
-            "US market hours (evaluated at run time)",
-            "Mantle decision receipts (RWADecisionLogger)",
-            "Fluxion V3 execution (opt-in)",
-          ]}
-        />
-        <SourcePanel
-          state="MODELLED"
-          color="seal"
-          items={[
-            "xStock spread / depth",
-            "xStock 24h volume",
-            "Order-book microstructure",
-          ]}
-          note="xStocks public API does not expose order-book data. Price is flagged live only when the API returns a non-null quote; spread/depth/volume are modelled and flagged in every receipt."
-        />
-        <SourcePanel
-          state="GATED"
-          color="gated"
-          items={["xStocks execution via xChange / Atomic RFQ is not performed"]}
-          note="By design: Neutrino evaluates xStocks risk and can commit PAUSE on-chain when execution conditions are unsafe. Execution requires a verified, executable issuer route; this guardrail is intentional, not a missing feature."
-        />
-      </div>
+        <div className="space-y-6 border-t p-5" style={{ borderColor: "var(--border)" }}>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <SourcePanel
+              state="LIVE"
+              tone="green"
+              items={[
+                "xStock indicative price when the API returns a non-null quote",
+                "xStock trading-halt status when endpoint responds",
+                "Mantle token addresses and decision receipts",
+                "US market-hours check at run time",
+                "Fluxion V3 execution when explicitly selected",
+              ]}
+            />
+            <SourcePanel
+              state="MODELLED"
+              tone="amber"
+              items={["xStock spread / depth", "xStock 24h volume", "Order-book microstructure"]}
+              note="Price is flagged live only when the public API returns a non-null quote. Spread, depth, and volume are modelled and flagged."
+            />
+            <SourcePanel
+              state="GATED"
+              tone="violet"
+              items={["xStocks execution via verified issuer RFQ rails is not performed"]}
+              note="Neutrino evaluates xStocks risk and can commit PAUSE on-chain when execution readiness is unavailable."
+            />
+          </div>
 
-      {/* Token metadata */}
-      <div style={{ borderTop: "1px solid var(--border)", paddingTop: "20px" }}>
-        <p className="section-label mb-3">VERIFIED XSTOCK TOKEN METADATA · MANTLE MAINNET · 2026-05-21</p>
-        <div className="overflow-x-auto">
-          <table className="w-full" style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "11px" }}>
-            <thead>
-              <tr>
-                {["SYMBOL", "UNDERLYING", "DEC", "MANTLE ADDRESS", "SOURCE"].map((h) => (
-                  <th
-                    key={h}
-                    className="pb-2 pr-6 text-left font-medium uppercase tracking-wider"
-                    style={{ color: "rgba(144,126,108,0.4)", fontSize: "9px", letterSpacing: "0.12em" }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {TOKEN_METADATA.map((t) => (
-                <tr key={t.symbol} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                  <td className="py-2 pr-6 font-semibold" style={{ color: "var(--text)" }}>{t.symbol}</td>
-                  <td className="py-2 pr-6" style={{ color: "var(--muted)" }}>{t.underlying}</td>
-                  <td className="py-2 pr-6" style={{ color: "var(--muted)" }}>{t.decimals}</td>
-                  <td className="py-2 pr-6">
-                    <a
-                      href={`https://mantlescan.xyz/address/${t.address}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: "var(--seal)" }}
-                    >
-                      {t.address.slice(0, 10)}…{t.address.slice(-6)}
-                    </a>
-                  </td>
-                  <td className="py-2" style={{ color: "rgba(144,126,108,0.5)" }}>{t.source}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div>
+            <p className="section-label mb-3">Verified xStock token metadata · Mantle mainnet · 2026-05-21</p>
+            <div className="console-table-wrap">
+              <table className="console-table">
+                <thead>
+                  <tr>
+                    {["Symbol", "Underlying", "Decimals", "Mantle address", "Source"].map((h) => (
+                      <th key={h} className="text-left">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {TOKEN_METADATA.map((t) => (
+                    <tr key={t.symbol}>
+                      <td className="font-mono font-semibold" style={{ color: "var(--text)" }}>{t.symbol}</td>
+                      <td style={{ color: "var(--muted)" }}>{t.underlying}</td>
+                      <td style={{ color: "var(--muted)" }}>{t.decimals}</td>
+                      <td><HashText value={t.address} href={`https://mantlescan.xyz/address/${t.address}`} /></td>
+                      <td style={{ color: "rgba(144,126,108,0.66)" }}>{t.source}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
+      </details>
     </section>
   );
 }
 
 function SourcePanel({
   state,
-  color,
+  tone,
   items,
   note,
 }: {
   state: string;
-  color: "clear" | "seal" | "gated";
+  tone: "green" | "amber" | "violet";
   items: string[];
   note?: string;
 }) {
-  const c = {
-    clear: { dot: "var(--clear)", badge: "badge-live",    text: "var(--clear)" },
-    seal:  { dot: "var(--seal)",  badge: "badge-stub",    text: "var(--seal)" },
-    gated: { dot: "var(--gated)", badge: "badge-notexec", text: "#9B8FE8" },
-  }[color];
-
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: c.dot }} />
-        <span
-          className={`${c.badge} inline-flex items-center rounded px-2 py-0.5`}
-          style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "9px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}
-        >
-          {state}
-        </span>
-      </div>
-      <ul className="space-y-1.5">
+    <ConsoleCard compact accent={tone}>
+      <StatusPill value={state} tone={tone}>{state}</StatusPill>
+      <ul className="mt-4 space-y-2">
         {items.map((item) => (
-          <li key={item} className="flex gap-2" style={{ color: "var(--muted)", fontSize: "13px" }}>
-            <span style={{ color: c.dot, marginTop: 2 }}>›</span>
-            <span style={{ fontFamily: "'Instrument Sans', sans-serif" }}>{item}</span>
+          <li key={item} className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+            {item}
           </li>
         ))}
       </ul>
-      {note && (
-        <p
-          className="rounded p-3 leading-relaxed"
-          style={{
-            fontFamily: "'Azeret Mono', monospace",
-            fontSize: "10px",
-            color: "rgba(144,126,108,0.6)",
-            background: "rgba(255,255,255,0.025)",
-            border: "1px solid rgba(255,255,255,0.05)",
-          }}
-        >
+      {note ? (
+        <p className="mt-4 rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(0,0,0,0.18)", color: "rgba(242,232,213,0.62)", fontFamily: "'Azeret Mono', monospace" }}>
           {note}
         </p>
-      )}
-    </div>
+      ) : null}
+    </ConsoleCard>
   );
 }
 
 const TOKEN_METADATA = [
-  { symbol: "NVDAx", underlying: "NVDA · NASDAQ",  decimals: 18, address: "0xc845b2894dBddd03858fd2D643B4eF725fE0849d", source: "xStocks API + on-chain" },
-  { symbol: "TSLAx", underlying: "TSLA · NASDAQ",  decimals: 18, address: "0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0", source: "xStocks API + on-chain" },
-  { symbol: "SPYx",  underlying: "SPY · NYSE",     decimals: 18, address: "0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48", source: "xStocks API + on-chain" },
-  { symbol: "USDY",  underlying: "Ondo T-bills",   decimals: 18, address: "0x5bE26527e817998A7206475496fDE1E68957c5A6", source: "Mantle ERC-20" },
-  { symbol: "mETH",  underlying: "Mantle LST",     decimals: 18, address: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0", source: "Mantle ERC-20" },
+  { symbol: "NVDAx", underlying: "NVDA · NASDAQ", decimals: 18, address: "0xc845b2894dBddd03858fd2D643B4eF725fE0849d", source: "xStocks API + on-chain" },
+  { symbol: "TSLAx", underlying: "TSLA · NASDAQ", decimals: 18, address: "0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0", source: "xStocks API + on-chain" },
+  { symbol: "SPYx", underlying: "SPY · NYSE", decimals: 18, address: "0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48", source: "xStocks API + on-chain" },
+  { symbol: "USDY", underlying: "Ondo T-bills", decimals: 18, address: "0x5bE26527e817998A7206475496fDE1E68957c5A6", source: "Mantle ERC-20" },
+  { symbol: "mETH", underlying: "Mantle LST", decimals: 18, address: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0", source: "Mantle ERC-20" },
 ] as const;
-
-/* ─── Attack Surface ────────────────────────────────────────────────── */
 
 function AttackSurfaceSection() {
   const qa = [
     {
       q: "Is the AI deciding?",
-      a: "The AI scores live signals and proposes an action. Policy then validates or overrides it. Claude Haiku 4.5 narrates the rationale — policy and risk rules determine the final decision, not the LLM. llmControlsAction = false in every receipt.",
-      verdict: "No.",
-      color: "var(--clear)",
+      a: "The AI scores live signals and proposes an action. Policy validates or overrides it. The final decision comes from policy and risk rules, not LLM control.",
+      verdict: "No",
+      tone: "green" as const,
     },
     {
       q: "Is the xStock price fake?",
-      a: "Neutrino queries the xStocks public API for indicative price and trading-halt status. If the price quote is null or unavailable, the receipt marks xStock price as stub and uses the modelled fallback. Spread / depth / volume are modelled and flagged.",
-      verdict: "No.",
-      color: "var(--clear)",
+      a: "Neutrino queries the xStocks public API for indicative price and trading-halt status. If the quote is null or unavailable, the receipt marks price as stub and uses a modelled fallback.",
+      verdict: "Flagged",
+      tone: "amber" as const,
     },
     {
       q: "Why doesn't the xStocks scenario execute a trade?",
-      a: "By design. Neutrino evaluates market context and execution readiness separately. An xStock can have fresher market signals while still pausing because no verified RFQ rail is configured. PAUSE means the agent refused to move capital through an unverified rail; Fluxion V3 is the current live rail.",
-      verdict: "Safety gate.",
-      color: "var(--gated)",
+      a: "Market context and execution readiness are evaluated separately. PAUSE means the agent refused to move capital through an unverified rail.",
+      verdict: "Safety gate",
+      tone: "violet" as const,
     },
     {
       q: "Is the hash verifiable?",
-      a: "Yes. Click 'Verify hash' on any receipt — keccak256(canonicalJson) must equal the bytes32 reasonHash in the DecisionLogged event on Mantlescan. The JSON is byte-stable.",
-      verdict: "Yes.",
-      color: "var(--seal)",
-    },
-    {
-      q: "Can it actually execute?",
-      a: "Scenario 03 triggers a real Fluxion V3 USDC→mETH→USDC round-trip on Mantle mainnet. Two Mantlescan tx hashes are produced and shown below.",
-      verdict: "Yes.",
-      color: "var(--seal)",
+      a: "Yes. keccak256(canonicalJson) must equal the bytes32 reasonHash in the DecisionLogged event on Mantle.",
+      verdict: "Yes",
+      tone: "gold" as const,
     },
   ] as const;
 
   return (
-    <section className="section-ruled space-y-0">
-      <div className="mb-7">
-        <span className="section-label" style={{ color: "var(--refuse)" }}>JUDGE ATTACK SURFACE</span>
-        <h2
-          className="italic"
-          style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: "1.6rem",
-            fontWeight: 600,
-            color: "var(--text)",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          Anticipated objections.
-        </h2>
-      </div>
-
-      {qa.map(({ q, a, verdict, color }, i) => (
-        <div
-          key={q}
-          className="section-ruled"
-          style={{ paddingTop: "20px", marginTop: "0", paddingBottom: "20px" }}
-        >
-          <div className="grid gap-4 sm:grid-cols-[1fr_2fr] items-start">
-            <div>
-              <p
-                className="italic"
-                style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  fontSize: "1.05rem",
-                  color: "var(--text)",
-                  fontWeight: 600,
-                  lineHeight: 1.3,
-                }}
-              >
-                <span style={{ color: "rgba(144,126,108,0.35)", marginRight: "8px" }}>§{i + 1}</span>
-                {q}
-              </p>
-              <p
-                className="mt-2 text-xl italic font-semibold"
-                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color }}
-              >
-                {verdict}
-              </p>
-            </div>
-            <p
-              className="text-sm leading-relaxed"
-              style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-            >
-              {a}
+    <section className="section-ruled">
+      <details className="quiet-details">
+        <summary>
+          <div className="pr-8">
+            <span className="section-label">Judge attack surface</span>
+            <h2 className="font-display italic text-2xl font-semibold" style={{ color: "var(--text)" }}>
+              The skeptical questions stay visible.
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+              Short answers for the claims judges are most likely to test.
             </p>
           </div>
+        </summary>
+        <div className="grid gap-4 border-t p-5 md:grid-cols-2" style={{ borderColor: "var(--border)" }}>
+          {qa.map(({ q, a, verdict, tone }) => (
+            <ConsoleCard key={q} compact accent={tone}>
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{q}</p>
+                <StatusPill value={verdict} tone={tone}>{verdict}</StatusPill>
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>{a}</p>
+            </ConsoleCard>
+          ))}
         </div>
-      ))}
+      </details>
     </section>
   );
 }
 
-/* ─── Why Mantle ────────────────────────────────────────────────────── */
-
 function WhyMantleSection() {
   return (
-    <section className="section-ruled space-y-8">
-      <span className="section-label" style={{ color: "var(--clear)" }}>WHY THIS MATTERS FOR MANTLE</span>
-
-      {/* Pull quote */}
-      <blockquote>
-        <p
-          className="italic leading-[1.15] tracking-tight max-w-3xl"
-          style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: "clamp(1.6rem, 3vw, 2.2rem)",
-            fontWeight: 600,
-            color: "var(--text)",
-          }}
-        >
-          &ldquo;Every autonomous agent is eventually asked:{" "}
-          <em style={{ color: "var(--seal)" }}>should this money move?</em>{" "}
-          Neutrino was built for that moment.&rdquo;
-        </p>
-        <div
-          className="mt-4 h-px max-w-xs"
-          style={{ background: "linear-gradient(90deg, var(--border-hi) 0%, transparent 100%)" }}
-        />
-      </blockquote>
-
-      {/* Body */}
-      <p
-        className="text-sm leading-relaxed max-w-3xl"
-        style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-      >
-        Mantle is building institutional RWA execution rails — xStocks equities, Atomic RFQ,
-        USDY, INIT Capital yield pools, mETH as native collateral. As more autonomous agents
-        touch this capital, the scarce layer is no longer execution. It&rsquo;s{" "}
-        <strong style={{ color: "var(--text)" }}>trustworthy autonomous judgment</strong>.
-        Neutrino is that layer: the agent that decides <em>when</em> the rails are safe,
-        records the full rationale on-chain, and only then allows capital to move.
-      </p>
-
-      {/* 3 pillars */}
-      <div className="grid gap-5 sm:grid-cols-3">
+    <section className="section-ruled space-y-6">
+      <SectionHeader
+        eyebrow="Why this matters for Mantle"
+        title="Autonomous capital needs a policy receipt."
+        body={
+          <>
+            Mantle has RWA rails, yield assets, and execution venues. Neutrino focuses on the layer
+            before movement: trustworthy autonomous judgment.
+          </>
+        }
+      />
+      <div className="grid gap-4 sm:grid-cols-3">
         {[
           {
             title: "AI proposes, policy validates",
-            body: "The AI scores risk and proposes an action. Policy approves or overrides it. Claude Haiku 4.5 narrates the rationale. The full loop — proposal, review, final decision — is committed in the reasonHash.",
-            accent: "var(--muted)",
+            body: "The full loop is committed in the reasonHash: AI proposal, policy review, and final action.",
+            tone: "blue" as const,
           },
           {
-            title: "Source-freshness on every receipt",
-            body: "Every decision payload pins live / stub / n/a per signal. Nothing is hidden — judges see which inputs were live and which fell back at the moment of decision.",
-            accent: "var(--clear)",
+            title: "Source freshness per receipt",
+            body: "Each payload labels live, stub, modelled, and n/a inputs so the decision can be inspected.",
+            tone: "green" as const,
           },
           {
             title: "Verifiable by re-hash",
-            body: "The full audit JSON is byte-stable. keccak256(payload) equals the bytes32 reasonHash emitted by RWADecisionLogger on Mantle. Verify it yourself.",
-            accent: "var(--seal)",
+            body: "The byte-stable canonical JSON hashes to the bytes32 reasonHash emitted on Mantle.",
+            tone: "gold" as const,
           },
-        ].map((c) => (
-          <div
-            key={c.title}
-            className="rounded-lg p-5"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
-          >
-            <div
-              className="h-0.5 w-7 rounded-full mb-3"
-              style={{ background: c.accent }}
-            />
-            <h3
-              className="text-sm font-semibold mb-2"
-              style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
-            >
-              {c.title}
-            </h3>
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-            >
-              {c.body}
-            </p>
-          </div>
+        ].map((card) => (
+          <ConsoleCard key={card.title} accent={card.tone}>
+            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{card.title}</p>
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>{card.body}</p>
+          </ConsoleCard>
         ))}
       </div>
     </section>

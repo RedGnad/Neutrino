@@ -152,7 +152,7 @@ export function RunAgentButton({
       ? { background: "var(--seal)", color: "#080705", fontFamily: "'Instrument Sans', sans-serif" }
       : variant === "secondary"
         ? { background: "rgba(200,168,110,0.06)", color: "var(--text)", border: "1px solid var(--border-hi)", fontFamily: "'Instrument Sans', sans-serif" }
-        : { background: "rgba(200,168,110,0.07)", color: "var(--text)", border: "1px solid var(--border-hi)", fontFamily: "'Instrument Sans', sans-serif" };
+        : { background: "var(--clear)", color: "#060504", fontFamily: "'Instrument Sans', sans-serif" };
 
   const btnDisabledStyle = { opacity: 0.4, cursor: "not-allowed" };
 
@@ -162,7 +162,7 @@ export function RunAgentButton({
         type="button"
         onClick={run}
         disabled={disabled}
-        className="inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-medium transition-all"
+      className="inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-all"
         style={{ ...btnStyle, ...(disabled ? btnDisabledStyle : {}) }}
       >
         {running ? <><Spinner /> Running…</> : label}
@@ -251,8 +251,8 @@ function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scena
         style={{ background: "rgba(124,92,252,0.08)", border: "1px solid rgba(124,92,252,0.15)" }}
       >
         <span>
-          <span className="font-semibold" style={{ color: "var(--bb-text)" }}>Deterministic engine</span>
-          <span style={{ color: "var(--bb-muted)" }}> decided action + risk score</span>
+          <span className="font-semibold" style={{ color: "var(--bb-text)" }}>Policy review</span>
+          <span style={{ color: "var(--bb-muted)" }}> finalized action + risk score</span>
         </span>
         <span>
           <span
@@ -260,10 +260,10 @@ function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scena
             style={{ color: result.inputs.llmReasoning === "live" ? "#9D84FF" : "var(--bb-muted)" }}
           >
             {result.inputs.llmReasoning === "live"
-              ? `LLM (${result.narrationModel ?? "claude-haiku"}) narrated`
-              : "LLM unavailable — deterministic fallback reason"}
+              ? `AI narration (${result.narrationModel ?? "claude-haiku"}) attached`
+              : "AI narration unavailable - fallback reason attached"}
           </span>
-          <span style={{ color: "var(--bb-muted)" }}> — LLM never controls the action</span>
+          <span style={{ color: "var(--bb-muted)" }}> - the LLM never controls the final action</span>
         </span>
       </div>
 
@@ -332,7 +332,7 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
 
   return (
     <li className="space-y-2 py-3 text-sm">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span
           className="w-14 font-mono font-semibold"
           style={{ color: "var(--bb-text)" }}
@@ -340,7 +340,7 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
           {r.symbol}
         </span>
         <span
-          className="w-36 font-mono font-semibold text-xs tracking-wide"
+          className="w-32 font-mono font-semibold text-xs tracking-wide"
           style={{ color: actionColor }}
         >
           {r.action}
@@ -349,7 +349,7 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
           {r.riskScore}
           <span style={{ color: "rgba(138,148,166,0.4)" }}>/1000</span>
         </span>
-        <span className="flex-1 text-right">
+        <span className="min-w-[180px] flex-1 text-right">
           {r.txHash ? (
             <>
               <a

@@ -25,8 +25,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             borderBottom: '1px solid var(--border)',
           }}
         >
-          <div className="mx-auto flex h-13 max-w-6xl items-center justify-between px-6">
-            <Link href="/" className="flex items-center gap-3">
+          <div className="mx-auto flex min-h-14 max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+            <Link href="/" className="flex shrink-0 items-center gap-3">
               <svg
                 width="22"
                 height="22"
@@ -70,12 +70,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl px-6 py-10">
+        <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
           {children}
         </main>
 
         <footer
-          className="mx-auto max-w-6xl px-6 py-6"
+          className="mx-auto max-w-6xl px-4 py-6 sm:px-6"
           style={{ borderTop: '1px solid var(--border)' }}
         >
           <div className="flex flex-wrap items-center justify-between gap-3">

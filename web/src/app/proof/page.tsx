@@ -9,6 +9,15 @@ import {
   timeAgo,
 } from "@/lib/onchain";
 import { ReasonHashVerifier } from "@/components/ReasonHashVerifier";
+import { CopyButton } from "@/components/CopyButton";
+import {
+  ConsoleCard,
+  HashText,
+  MetricStrip,
+  RiskBar,
+  SectionHeader,
+  StatusPill,
+} from "@/components/Console";
 
 export const revalidate = 10;
 
@@ -16,36 +25,42 @@ export default async function ProofPage() {
   const decisions = LOGGER_ADDRESS
     ? await fetchRecentDecisions(50).catch(() => [])
     : [];
+  const latest = decisions[0] ?? null;
 
   return (
-    <div className="space-y-6" style={{ color: "var(--bb-text)" }}>
-      {/* Header */}
-      <div>
-        <p
-          className="text-[10px] font-medium uppercase tracking-widest mb-2"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
-        >
-          ON-CHAIN PROOF REGISTRY
-        </p>
-        <h1
-          className="text-2xl font-semibold tracking-tight"
-          style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}
-        >
-          Verifiable decision receipts — Mantle mainnet
-        </h1>
-        <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--bb-muted)" }}>
-          Every decision Neutrino takes is logged via{" "}
-          <code
-            className="rounded px-1.5 py-0.5 text-xs"
-            style={{ background: "rgba(45,212,165,0.1)", color: "var(--bb-teal)", fontFamily: "'IBM Plex Mono', monospace" }}
-          >
-            RWADecisionLogger
-          </code>{" "}
-          on {NETWORK_LABEL}. Rows below are read live from the chain.
-        </p>
-      </div>
+    <div className="space-y-8" style={{ color: "var(--text)" }}>
+      <section className="space-y-5">
+        <SectionHeader
+          eyebrow="On-chain proof registry"
+          title="Verifiable decision receipts on Mantle."
+          body={
+            <>
+              Every decision is logged through RWADecisionLogger on {NETWORK_LABEL}. Rows below
+              are read live from the chain and link back to the receipt verifier.
+            </>
+          }
+        />
 
-      {/* Contract addresses */}
+        <MetricStrip
+          columns={4}
+          items={[
+            { label: "Network", value: NETWORK_LABEL, tone: "green" },
+            {
+              label: "Logger",
+              value: LOGGER_ADDRESS ? <HashText value={LOGGER_ADDRESS} chars={8} /> : "not configured",
+              href: LOGGER_ADDRESS ? `${EXPLORER_ADDR}/${LOGGER_ADDRESS}` : undefined,
+              tone: LOGGER_ADDRESS ? "gold" : "red",
+            },
+            {
+              label: "Latest block",
+              value: latest ? latest.blockNumber.toString() : "n/a",
+              tone: latest ? "blue" : "slate",
+            },
+            { label: "Decisions shown", value: String(decisions.length), tone: decisions.length ? "green" : "slate" },
+          ]}
+        />
+      </section>
+
       <ContractCards />
 
       <ReasonHashVerifier />
@@ -58,127 +73,104 @@ export default async function ProofPage() {
       ) : decisions.length === 0 ? (
         <Empty
           title="No decisions on-chain yet"
-          body="Run the agent from the home page or via pnpm dev to write the first DecisionLogged event."
+          body="Run the agent from the home page to write the first DecisionLogged event."
         />
       ) : (
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{ border: "1px solid var(--bb-border)", background: "var(--bb-panel)" }}
-        >
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                {["When", "Asset", "Action", "Risk", "Block", "Reason hash", "Tx", "Verify"].map((h, i) => (
-                  <th
-                    key={h}
-                    className={`px-4 py-3 text-[10px] font-medium uppercase tracking-widest ${i >= 3 && i <= 4 ? "text-right" : "text-left"}`}
-                    style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)", background: "rgba(0,0,0,0.2)" }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {decisions.map((d, idx) => {
-                const asset = resolveAsset(d.assetAddress);
-                const actionColor =
-                  d.action === "PAUSE" ? "var(--bb-orange)"
-                  : d.action === "ALLOCATE" ? "var(--bb-teal)"
-                  : "var(--bb-amber)";
-                return (
-                  <tr
-                    key={d.txHash}
-                    style={{ borderBottom: idx < decisions.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}
-                    className="transition-colors hover:bg-white/[0.02]"
-                  >
-                    <td className="whitespace-nowrap px-4 py-3 text-xs" style={{ color: "var(--bb-muted)" }}>
-                      {timeAgo(d.timestamp)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-medium" style={{ color: "var(--bb-text)" }}>
-                        {asset.symbol}
-                      </span>
-                      {asset.reference ? (
-                        <span className="ml-2 text-xs" style={{ color: "rgba(138,148,166,0.5)" }}>
-                          ↔ {asset.reference}
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <span className="section-label">Registry rows</span>
+              <p className="text-sm" style={{ color: "var(--muted)" }}>
+                Latest row refreshed {latest ? timeAgo(latest.timestamp) : "n/a"}.
+              </p>
+            </div>
+            <StatusPill value="live read" tone="green">live read</StatusPill>
+          </div>
+
+          <div className="console-table-wrap">
+            <table className="console-table">
+              <thead>
+                <tr>
+                  {["When", "Asset", "Action", "Risk", "Block", "Reason hash", "Tx", "Verify"].map((h, i) => (
+                    <th key={h} className={i >= 3 && i <= 4 ? "text-right" : "text-left"}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {decisions.map((d) => {
+                  const asset = resolveAsset(d.assetAddress);
+                  return (
+                    <tr key={d.txHash}>
+                      <td className="whitespace-nowrap text-xs" style={{ color: "var(--muted)" }}>
+                        {timeAgo(d.timestamp)}
+                      </td>
+                      <td>
+                        <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                          {asset.symbol}
                         </span>
-                      ) : null}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-semibold" style={{ color: actionColor, fontFamily: "'IBM Plex Mono', monospace" }}>
-                        {d.action}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-sm" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Mono', monospace" }}>
-                      {d.riskScore}
-                      <span style={{ color: "rgba(138,148,166,0.4)" }}>/1000</span>
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-xs" style={{ color: "var(--bb-muted)", fontFamily: "'IBM Plex Mono', monospace" }}>
-                      {d.blockNumber.toString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <code className="font-mono text-xs" style={{ color: "rgba(138,148,166,0.5)" }}>
-                        {d.reasonHash.slice(0, 10)}…{d.reasonHash.slice(-4)}
-                      </code>
-                    </td>
-                    <td className="px-4 py-3">
-                      <a
-                        href={`${EXPLORER_TX}/${d.txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-mono text-xs transition-opacity hover:opacity-80"
-                        style={{ color: "var(--bb-teal)" }}
-                      >
-                        {d.txHash.slice(0, 10)}… ↗
-                      </a>
-                    </td>
-                    <td className="px-4 py-3">
-                      <a
-                        href={`/agent-decision/${asset.symbol}`}
-                        className="text-xs font-medium transition-opacity hover:opacity-80"
-                        style={{ color: "var(--bb-teal)", fontFamily: "'IBM Plex Mono', monospace" }}
-                      >
-                        Receipt →
-                      </a>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                        {asset.reference ? (
+                          <span className="ml-2 text-xs" style={{ color: "rgba(144,126,108,0.56)" }}>
+                            {asset.reference}
+                          </span>
+                        ) : null}
+                      </td>
+                      <td>
+                        <StatusPill value={d.action}>{d.action}</StatusPill>
+                      </td>
+                      <td className="text-right">
+                        <div className="ml-auto w-28">
+                          <RiskBar value={d.riskScore} label />
+                        </div>
+                      </td>
+                      <td className="text-right text-xs tabular-nums" style={{ color: "var(--muted)", fontFamily: "'Azeret Mono', monospace" }}>
+                        {d.blockNumber.toString()}
+                      </td>
+                      <td>
+                        <div className="flex min-w-[150px] items-center gap-2">
+                          <HashText value={d.reasonHash} chars={10} />
+                          <CopyButton value={d.reasonHash} label="copy" copiedLabel="copied" />
+                        </div>
+                      </td>
+                      <td>
+                        <HashText value={d.txHash} href={`${EXPLORER_TX}/${d.txHash}`} chars={10} />
+                      </td>
+                      <td>
+                        <a
+                          href={`/agent-decision/${asset.symbol}`}
+                          className="text-xs font-semibold transition-opacity hover:opacity-80"
+                          style={{ color: "var(--clear)", fontFamily: "'Azeret Mono', monospace" }}
+                        >
+                          Receipt
+                        </a>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
-      {decisions.length > 0 && (
-        <p className="text-xs" style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.4)" }}>
-          Showing {decisions.length} most recent decision{decisions.length === 1 ? "" : "s"} from RWADecisionLogger.
-        </p>
-      )}
-
-      {/* What a judge can verify */}
-      <section
-        className="rounded-xl p-5 space-y-4"
-        style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
-      >
-        <p
-          className="text-[10px] font-medium uppercase tracking-widest"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-teal)" }}
-        >
-          WHAT A JUDGE CAN VERIFY
-        </p>
-        <div className="grid gap-3 sm:grid-cols-3">
+      <section className="section-ruled space-y-5">
+        <SectionHeader
+          eyebrow="What a judge can verify"
+          title="Chain event, canonical JSON, and hash binding."
+        />
+        <div className="grid gap-4 sm:grid-cols-3">
           <ProofItem
             title="Event exists on-chain"
-            body="DecisionLogged is read live from Mantle — tx hash, block number, caller, action, risk score."
+            body="DecisionLogged exposes tx hash, block number, caller, action, risk score, reasonHash, and policyHash."
           />
           <ProofItem
             title="Hash is binding"
-            body="Open any receipt, click Verify hash — keccak256(canonicalJson) must equal the on-chain reasonHash."
+            body="Open any receipt and verify keccak256(canonicalJson) against the on-chain reasonHash."
           />
           <ProofItem
             title="Sources are explicit"
-            body="Every field in the payload is marked live, stub, simulated or n/a. Spread/depth/volume are modelled, never claimed live."
+            body="Inputs are marked live, stub, modelled, or n/a. Spread, depth, and volume are not claimed live."
           />
         </div>
       </section>
@@ -188,12 +180,12 @@ export default async function ProofPage() {
 
 function ContractCards() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-2">
       {LOGGER_ADDRESS ? (
         <ContractCard label="RWADecisionLogger" address={LOGGER_ADDRESS} />
       ) : null}
       {AGENT_ADDRESS ? (
-        <ContractCard label="RWAAgent (ERC-8004)" address={AGENT_ADDRESS} />
+        <ContractCard label="RWAAgent" address={AGENT_ADDRESS} />
       ) : null}
     </div>
   );
@@ -201,51 +193,44 @@ function ContractCards() {
 
 function ContractCard({ label, address }: { label: string; address: string }) {
   return (
-    <a
-      href={`${EXPLORER_ADDR}/${address}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="rounded-xl p-4 block transition-colors"
-      style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
-    >
-      <p
-        className="text-[10px] font-medium uppercase tracking-widest mb-1"
-        style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-muted)" }}
-      >
-        {label}
-      </p>
-      <p className="font-mono text-sm" style={{ color: "var(--bb-text)" }}>
-        {address.slice(0, 10)}…{address.slice(-8)}
-      </p>
-      <p className="mt-1 text-xs" style={{ color: "var(--bb-teal)" }}>
-        View on Mantlescan ↗
-      </p>
+    <a href={`${EXPLORER_ADDR}/${address}`} target="_blank" rel="noopener noreferrer" className="block transition-opacity hover:opacity-80">
+      <ConsoleCard accent="gold" compact>
+        <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+          {label}
+        </p>
+        <p className="mt-1 font-mono text-sm" style={{ color: "var(--text)" }}>
+          {address.slice(0, 10)}...{address.slice(-8)}
+        </p>
+        <p className="mt-2 text-xs" style={{ color: "var(--clear)" }}>
+          View on Mantlescan
+        </p>
+      </ConsoleCard>
     </a>
   );
 }
 
 function ProofItem({ title, body }: { title: string; body: string }) {
   return (
-    <div
-      className="rounded-lg p-4"
-      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-    >
-      <p className="text-sm font-semibold mb-1" style={{ color: "var(--bb-text)", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+    <ConsoleCard compact accent="slate">
+      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
         {title}
       </p>
-      <p className="text-xs leading-relaxed" style={{ color: "var(--bb-muted)" }}>{body}</p>
-    </div>
+      <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+        {body}
+      </p>
+    </ConsoleCard>
   );
 }
 
 function Empty({ title, body }: { title: string; body: string }) {
   return (
-    <div
-      className="rounded-xl p-8 text-center"
-      style={{ background: "var(--bb-panel)", border: "1px dashed rgba(255,255,255,0.1)" }}
-    >
-      <p className="text-sm font-medium mb-1" style={{ color: "var(--bb-text)" }}>{title}</p>
-      <p className="text-sm" style={{ color: "var(--bb-muted)" }}>{body}</p>
-    </div>
+    <ConsoleCard accent="amber" className="text-center">
+      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+        {title}
+      </p>
+      <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+        {body}
+      </p>
+    </ConsoleCard>
   );
 }

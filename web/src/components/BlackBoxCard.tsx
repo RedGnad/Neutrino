@@ -34,7 +34,7 @@ const DEMO_DATA: BlackBoxData = {
 
 function verdictStyle(action: string): { text: string; border: string; bg: string } {
   if (action === "PAUSE" || action === "REDUCE")
-    return { text: "var(--refuse)", border: "rgba(209,64,64,0.35)", bg: "rgba(209,64,64,0.06)" };
+    return { text: "var(--pause)", border: "rgba(212,160,64,0.35)", bg: "rgba(212,160,64,0.06)" };
   if (action === "ALLOCATE")
     return { text: "var(--clear)", border: "rgba(58,155,98,0.35)", bg: "rgba(58,155,98,0.06)" };
   return { text: "var(--seal)", border: "rgba(212,160,64,0.35)", bg: "rgba(212,160,64,0.06)" };

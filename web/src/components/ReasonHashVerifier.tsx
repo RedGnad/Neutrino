@@ -74,21 +74,20 @@ export function ReasonHashVerifier() {
   }
 
   return (
-    <section
-      className="rounded-xl p-5 space-y-4"
-      style={{ background: "var(--bb-panel)", border: "1px solid var(--bb-border)" }}
-    >
-      <div>
-        <p
-          className="text-[10px] font-medium uppercase tracking-widest"
-          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--bb-teal)" }}
-        >
+    <section className="console-card console-card-compact space-y-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p
+            className="text-[10px] font-medium uppercase tracking-widest"
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-teal)" }}
+          >
           RECOVER RECEIPT BY REASON HASH
-        </p>
-        <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--bb-muted)" }}>
-          Paste a Mantle `reasonHash`. Neutrino tries hosted KV/Upstash recovery, recomputes
-          keccak256(canonicalJson), and checks the match.
-        </p>
+          </p>
+          <p className="mt-1 max-w-2xl text-xs leading-relaxed" style={{ color: "var(--bb-muted)" }}>
+            Paste a Mantle reasonHash. Neutrino tries hosted KV/Upstash recovery, recomputes
+            keccak256(canonicalJson), and checks the match.
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -96,7 +95,7 @@ export function ReasonHashVerifier() {
           value={hash}
           onChange={(e) => setHash(e.target.value)}
           placeholder="0x..."
-          className="min-w-0 flex-1 rounded-lg px-3 py-2 text-xs font-mono outline-none"
+          className="min-w-0 flex-1 rounded-md px-3 py-2 text-xs font-mono outline-none"
           style={{
             background: "rgba(0,0,0,0.25)",
             border: `1px solid ${hash && !validHash ? "rgba(232,72,85,0.35)" : "rgba(255,255,255,0.08)"}`,
@@ -107,7 +106,7 @@ export function ReasonHashVerifier() {
           type="button"
           disabled={!validHash || state.kind === "loading"}
           onClick={verify}
-          className="rounded-lg px-4 py-2 text-xs font-mono font-semibold uppercase tracking-wider transition-all disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-md px-4 py-2 text-xs font-mono font-semibold uppercase tracking-wider transition-all disabled:cursor-not-allowed disabled:opacity-40"
           style={{ background: "var(--bb-teal)", color: "#07100D" }}
         >
           {state.kind === "loading" ? "Checking..." : "Verify"}

@@ -2,6 +2,14 @@ import Link from "next/link";
 import { CopyButton } from "@/components/CopyButton";
 import { PolicyTemplates } from "@/components/PolicyTemplates";
 import {
+  ConsoleCard,
+  HashText,
+  MetricStrip,
+  SectionHeader,
+  StatusPill,
+  TextLink,
+} from "@/components/Console";
+import {
   AGENT_ADDRESS,
   EXPLORER_ADDR,
   EXPLORER_TX,
@@ -16,11 +24,19 @@ const DEMO_VIDEO_URL = "https://youtube.com/watch?v=mKJ9H6le5xY";
 const EXAMPLE_TX =
   "0xa09b1576df102dbf2a062b72ca6097907a37b2c362e954de5bca4dd0e7ef51d8";
 
+const CURL_SAFE_YIELD = `curl -X POST https://neutrino-fawn.vercel.app/api/run-agent \\
+  -H "Content-Type: application/json" \\
+  -d '{"scenario":"safe-yield","execute":false}'`;
+
+const CURL_XSTOCKS = `curl -X POST https://neutrino-fawn.vercel.app/api/run-agent \\
+  -H "Content-Type: application/json" \\
+  -d '{"scenario":"risky-xstocks","execute":false}'`;
+
 const FETCH_SNIPPET = `const res = await fetch("/api/run-agent", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    scenario: "default",
+    scenario: "safe-yield",
     execute: false
   })
 });
@@ -46,122 +62,83 @@ const RESPONSE_SNIPPET = `{
   }
 }`;
 
-const CURL_SAFE_YIELD = `curl -X POST https://neutrino-fawn.vercel.app/api/run-agent \\
-  -H "Content-Type: application/json" \\
-  -d '{"scenario":"safe-yield","execute":false}'`;
-
-const CURL_XSTOCKS = `curl -X POST https://neutrino-fawn.vercel.app/api/run-agent \\
-  -H "Content-Type: application/json" \\
-  -d '{"scenario":"risky-xstocks","execute":false}'`;
-
 export default function IntegratePage() {
   return (
     <div className="space-y-10">
-      <section className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-start">
-        <div className="space-y-6">
-          <div>
-            <span className="section-label">BUILDER INTEGRATION</span>
-            <h1
-              className="italic leading-tight"
-              style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "clamp(2.4rem, 5vw, 4.2rem)",
-                fontWeight: 600,
-                color: "var(--text)",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              Use Neutrino in your agent.
-            </h1>
-            <p
-              className="mt-4 max-w-2xl text-base leading-relaxed"
-              style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-            >
-              Neutrino is a policy layer for RWA agents. The hosted demo endpoint runs
-              named scenarios through the live policy loop and returns an AI proposal,
-              policy review, final action, reasonHash, and Mantle receipt.
-            </p>
-          </div>
-
-          <div className="grid gap-2 sm:grid-cols-5">
-            {[
-              "market signals",
-              "AI proposal",
-              "policy review",
-              "final on-chain receipt",
-              "optional execution if allowed",
-            ].map((step, index) => (
-              <div
-                key={step}
-                className="rounded-lg p-3"
+      <section className="space-y-6">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+          <div className="space-y-5">
+            <div>
+              <span className="section-label">Builder integration</span>
+              <h1
+                className="font-display italic leading-tight"
                 style={{
-                  background: "rgba(255,255,255,0.02)",
-                  border: "1px solid var(--border)",
+                  color: "var(--text)",
+                  fontSize: "clamp(2.35rem, 5vw, 4rem)",
+                  fontWeight: 600,
                 }}
               >
-                <p
-                  className="mb-2 text-[10px] font-medium uppercase tracking-widest"
-                  style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.5)" }}
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <p
-                  className="text-sm font-semibold leading-snug"
-                  style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
-                >
-                  {step}
-                </p>
-              </div>
-            ))}
-          </div>
-          <p
-            className="text-[11px] leading-relaxed"
-            style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}
-          >
-            market signals → AI proposal → policy review → on-chain receipt → optional execution
-            if allowed
-          </p>
-        </div>
+                Use Neutrino in your agent.
+              </h1>
+              <p className="mt-4 max-w-2xl text-base leading-relaxed" style={{ color: "var(--muted)" }}>
+                Neutrino is a policy layer for RWA agents. Send market context and execution
+                intent, receive an AI proposal, policy review, final action, reasonHash, and
+                Mantle receipt.
+              </p>
+            </div>
 
-        <aside
-          className="rounded-lg p-5 space-y-4"
-          style={{ background: "var(--panel)", border: "1px solid var(--border-hi)" }}
-        >
-          <p
-            className="text-[10px] font-medium uppercase tracking-widest"
-            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--seal)" }}
-          >
-            Live surfaces
-          </p>
-          <div className="space-y-2 text-sm">
-            <Link href="/proof" className="block transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
-              Live proof registry
-            </Link>
-            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="block transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
-              GitHub repo
-            </a>
-            <a href={DEMO_VIDEO_URL} target="_blank" rel="noopener noreferrer" className="block transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
-              Demo video
-            </a>
-            <a href={`${EXPLORER_TX}/${EXAMPLE_TX}`} target="_blank" rel="noopener noreferrer" className="block transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
-              Example Mantlescan tx
-            </a>
+            <MetricStrip
+              columns={3}
+              items={[
+                { label: "Network", value: NETWORK_LABEL, tone: "green" },
+                { label: "Endpoint", value: "/api/run-agent", tone: "blue" },
+                { label: "Receipts", value: "reasonHash keyed", tone: "gold" },
+              ]}
+            />
           </div>
-          <div
-            className="space-y-2 rounded p-3"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)" }}
-          >
-            <ContractLink label="RWADecisionLogger" address={LOGGER_ADDRESS} />
-            <ContractLink label="RWAAgent" address={AGENT_ADDRESS} />
-          </div>
-          <p
-            className="text-[10px] leading-relaxed"
-            style={{ color: "rgba(144,126,108,0.55)", fontFamily: "'Azeret Mono', monospace" }}
-          >
-            Current network: {NETWORK_LABEL}. AI inference is off-chain; Mantle stores the final
-            decision receipt commitment.
-          </p>
-        </aside>
+
+          <ConsoleCard accent="gold" className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="section-label mb-0" style={{ color: "var(--seal)" }}>
+                Live surfaces
+              </span>
+              <StatusPill value="mainnet" tone="green">mainnet</StatusPill>
+            </div>
+            <div className="grid gap-2 text-sm">
+              <Link href="/proof" className="transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
+                Live proof registry
+              </Link>
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
+                GitHub repo
+              </a>
+              <a href={DEMO_VIDEO_URL} target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
+                Demo video
+              </a>
+              <a href={`${EXPLORER_TX}/${EXAMPLE_TX}`} target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
+                Example Mantlescan tx
+              </a>
+            </div>
+            <div className="space-y-2 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+              <ContractLink label="RWADecisionLogger" address={LOGGER_ADDRESS} />
+              <ContractLink label="RWAAgent" address={AGENT_ADDRESS} />
+            </div>
+            <p className="text-[11px] leading-relaxed" style={{ color: "rgba(144,126,108,0.64)", fontFamily: "'Azeret Mono', monospace" }}>
+              AI inference is off-chain. Mantle stores the final decision receipt commitment.
+            </p>
+          </ConsoleCard>
+        </div>
+      </section>
+
+      <section className="section-ruled space-y-5">
+        <SectionHeader
+          eyebrow="Quickstart"
+          title="Run a receipt-only policy evaluation."
+          body="These commands hit the real hosted demo endpoint and do not execute capital movement."
+        />
+        <div className="grid gap-5 lg:grid-cols-2">
+          <CodePanel title="Safe-yield receipt run" code={CURL_SAFE_YIELD} copy />
+          <CodePanel title="xStocks receipt-only run" code={CURL_XSTOCKS} copy />
+        </div>
       </section>
 
       <section className="section-ruled grid gap-5 lg:grid-cols-2">
@@ -169,46 +146,46 @@ export default function IntegratePage() {
         <CodePanel title="Example response shape" code={RESPONSE_SNIPPET} />
       </section>
 
-      <section className="section-ruled space-y-4">
-        <div>
-          <span className="section-label">COPYABLE CURL</span>
-          <p
-            className="mt-1 max-w-2xl text-sm leading-relaxed"
-            style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-          >
-            Receipt-only commands against the real hosted endpoint. They do not execute capital movement.
-          </p>
-        </div>
-        <div className="grid gap-5 lg:grid-cols-2">
-          <CodePanel title="Safe-yield receipt run" code={CURL_SAFE_YIELD} copy />
-          <CodePanel title="xStocks receipt-only run" code={CURL_XSTOCKS} copy />
+      <section className="section-ruled space-y-5">
+        <SectionHeader
+          eyebrow="Flow"
+          title="AI proposal -> policy review -> on-chain receipt."
+          body="Optional execution is allowed only when the policy outcome and verified execution rail permit it."
+        />
+        <div className="grid gap-3 md:grid-cols-5">
+          {[
+            "market signals",
+            "AI proposal",
+            "policy review",
+            "final receipt",
+            "optional execution",
+          ].map((step, index) => (
+            <ConsoleCard key={step} compact accent={index === 4 ? "gold" : "slate"}>
+              <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Azeret Mono', monospace" }}>
+                {String(index + 1).padStart(2, "0")}
+              </p>
+              <p className="mt-2 text-sm font-semibold" style={{ color: "var(--text)" }}>
+                {step}
+              </p>
+            </ConsoleCard>
+          ))}
         </div>
       </section>
 
       <PolicyTemplates />
 
       <section className="section-ruled space-y-5">
-        <div>
-          <span className="section-label">WHO USES NEUTRINO?</span>
-          <h2
-            className="italic"
-            style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: "1.75rem",
-              fontWeight: 600,
-              color: "var(--text)",
-              letterSpacing: "-0.01em",
-            }}
-          >
-            Infrastructure for agents that need a reason before action.
-          </h2>
-        </div>
+        <SectionHeader
+          eyebrow="Who uses Neutrino?"
+          title="Infrastructure for agents that need a reason before action."
+        />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <UseCase title="RWA agent builders" body="Add policy guardrails before execution." />
           <UseCase title="Vault / treasury builders" body="Prove why an agent allocated, paused, or required review." />
           <UseCase title="xStocks apps" body="Check market and execution conditions before capital moves." />
           <UseCase title="Mantle protocols" body="Generate public decision receipts for autonomous workflows." />
         </div>
+        <TextLink href="/proof">Open the live proof registry</TextLink>
       </section>
     </div>
   );
@@ -216,31 +193,17 @@ export default function IntegratePage() {
 
 function CodePanel({ title, code, copy = false }: { title: string; code: string; copy?: boolean }) {
   return (
-    <div
-      className="rounded-lg p-4"
-      style={{ background: "var(--panel)", border: "1px solid var(--border-hi)" }}
-    >
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <p
-          className="text-[10px] font-medium uppercase tracking-widest"
-          style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--seal)" }}
-        >
+    <ConsoleCard accent="slate" compact className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--seal)" }}>
           {title}
         </p>
         {copy ? <CopyButton value={code} label="copy" copiedLabel="copied" /> : null}
       </div>
-      <pre
-        className="overflow-x-auto rounded p-4 text-[11px] leading-relaxed"
-        style={{
-          background: "rgba(0,0,0,0.35)",
-          border: "1px solid var(--border)",
-          color: "rgba(242,232,213,0.78)",
-          fontFamily: "'Azeret Mono', monospace",
-        }}
-      >
+      <pre className="console-code">
         <code>{code}</code>
       </pre>
-    </div>
+    </ConsoleCard>
   );
 }
 
@@ -252,40 +215,23 @@ function ContractLink({ label, address }: { label: string; address: string }) {
       rel="noopener noreferrer"
       className="flex items-center justify-between gap-3 transition-opacity hover:opacity-80"
     >
-      <span
-        className="text-[10px] uppercase tracking-widest"
-        style={{ color: "rgba(144,126,108,0.5)", fontFamily: "'Azeret Mono', monospace" }}
-      >
+      <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
         {label}
       </span>
-      <span
-        className="font-mono text-[11px]"
-        style={{ color: "var(--muted)" }}
-      >
-        {address.slice(0, 8)}...{address.slice(-6)}
-      </span>
+      <HashText value={address} chars={8} />
     </a>
   );
 }
 
 function UseCase({ title, body }: { title: string; body: string }) {
   return (
-    <div
-      className="rounded-lg p-5"
-      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)" }}
-    >
-      <p
-        className="mb-2 text-sm font-semibold"
-        style={{ color: "var(--text)", fontFamily: "'Instrument Sans', sans-serif" }}
-      >
+    <ConsoleCard compact accent="slate">
+      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
         {title}
       </p>
-      <p
-        className="text-xs leading-relaxed"
-        style={{ color: "var(--muted)", fontFamily: "'Instrument Sans', sans-serif" }}
-      >
+      <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
         {body}
       </p>
-    </div>
+    </ConsoleCard>
   );
 }

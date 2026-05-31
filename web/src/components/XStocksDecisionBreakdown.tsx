@@ -81,7 +81,8 @@ function previewLabel(decision: XStocksBreakdownDecision): string {
 
 function statusColor(value: string): string {
   if (value === "OPEN" || value === "LIVE" || value === "VERIFIED" || value === "ALLOCATE") return "var(--bb-teal)";
-  if (value === "UNAVAILABLE" || value === "PAUSE" || value === "HALTED" || value === "CLOSED") return "var(--bb-orange)";
+  if (value === "UNAVAILABLE" || value === "HALTED") return "var(--bb-red)";
+  if (value === "PAUSE" || value === "CLOSED" || value === "STUB" || value === "MODELLED") return "var(--bb-amber)";
   return "var(--bb-amber)";
 }
 
@@ -107,13 +108,13 @@ export function XStocksDecisionBreakdown({
   return (
     <div
       className={`rounded-lg ${compact ? "p-3" : "p-4"} space-y-3`}
-      style={{ background: "rgba(120,104,212,0.06)", border: "1px solid rgba(120,104,212,0.18)" }}
+      style={{ background: "rgba(120,104,212,0.055)", border: "1px solid rgba(120,104,212,0.18)" }}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p
             className="text-[10px] font-medium uppercase tracking-widest"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", color: "#9B8FE8" }}
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "#9B8FE8" }}
           >
             xStocks decision breakdown
           </p>
@@ -134,17 +135,17 @@ export function XStocksDecisionBreakdown({
           <div
             key={label}
             className="rounded-md px-3 py-2"
-            style={{ background: "rgba(0,0,0,0.18)", border: "1px solid rgba(255,255,255,0.05)" }}
+            style={{ background: "rgba(0,0,0,0.16)", border: "1px solid rgba(255,255,255,0.055)" }}
           >
             <p
               className="text-[9px] uppercase tracking-widest"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: "rgba(138,148,166,0.58)" }}
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.6)" }}
             >
               {label}
             </p>
             <p
               className="mt-1 text-[11px] font-semibold uppercase tracking-wide"
-              style={{ fontFamily: "'IBM Plex Mono', monospace", color: statusColor(value) }}
+              style={{ fontFamily: "'Azeret Mono', monospace", color: statusColor(value) }}
             >
               {value}
             </p>
