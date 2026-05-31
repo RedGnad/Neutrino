@@ -4,7 +4,7 @@
 
 **Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade.**
 
-Neutrino gives autonomous agents a safety loop: the AI scores live RWA and xStocks signals and proposes an action, policy validates or overrides it, and the final decision is committed to Mantle with a canonical receipt (`reasonHash = keccak256(audit JSON)`). When policy allows, execution routes through Fluxion V3. The AI proposes. Policy validates. Mantle verifies.
+Neutrino gives autonomous agents a safety loop: the AI scores live RWA and xStocks signals and proposes an action, policy validates or overrides it, and the final decision is committed to Mantle with a canonical receipt (`reasonHash = keccak256(audit JSON)`). When policy allows, execution routes through Fluxion V3. AI proposes, policy validates or overrides, Mantle verifies the final receipt.
 
 
 - **Live:** decision receipts on Mantle mainnet; the Fluxion V3 execution path; xStock **trading-halt status** and **indicative price when the public API returns a quote**. If the quote is null or unavailable, the receipt marks xStock price as `stub` and uses the modelled fallback.
@@ -20,6 +20,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 | | |
 |---|---|
 | **Live app** | **https://neutrino-fawn.vercel.app** |
+| **Builder integration** | **https://neutrino-fawn.vercel.app/integrate** |
 | **Demo video** | **https://youtube.com/watch?v=mKJ9H6le5xY** |
 | **GitHub repo** | https://github.com/RedGnad/Neutrino |
 | **RWAAgent** (verified) | [`0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96`](https://mantlescan.xyz/address/0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96#code) — Source Code Verified on Mantlescan |
@@ -36,7 +37,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 | AI-powered callable on-chain function | `RWADecisionLogger.logDecision()` — off-chain agent commits `action`, `riskScore`, `reasonHash`, `policyHash` on Mantle. AI proposes; policy validates or overrides; `reasonHash` covers the full loop — proposal, review, final decision. | ✅ |
 | Public frontend | https://neutrino-fawn.vercel.app — live, no localhost | ✅ |
 | Deployment address in submission | Both addresses above | ✅ |
-| Demo video ≥ 2 min | **Pending recording** | ✅ |
+| Demo video ≥ 2 min | https://www.youtube.com/watch?v=mKJ9H6le5xY | ✅ |
 | Open-source repo + README | https://github.com/RedGnad/Neutrino | ✅ |
 | Setup instructions | "Reproduce in 5 minutes" below | ✅ |
 | Architecture overview | "Repo layout" + "Stack" below | ✅ |
@@ -75,7 +76,7 @@ Real `ALLOCATE` end-to-end on Fluxion V3 (Mantle mainnet):
 
 - **Real on-chain decisions** on Mantle mainnet. Every run writes one `DecisionLogged` event per asset with a `reasonHash` that covers the full canonical audit JSON (schema `neutrino.decision.v2`).
 - **xStocks public-API integration.** For every tokenized equity the agent queries the issuer's **indicative price** (`/public/assets/{symbol}/price-data`) and the official **trading-halt status** (`/public/system/status/{symbol}`). Trading status is live when the endpoint responds; price is live only when the API returns a non-null quote. Otherwise the receipt marks xStock price as `stub` and uses the modelled fallback. An `isMarketTradingHalted` / `isAtomicTradingHalted` flag produces a policy PAUSE outcome.
-- **Verifiable receipts** — after a run, the `/agent-decision/[asset]` page reads the on-chain reason hash and lets you re-compute `keccak256` on the audit JSON. The hosted app also exposes `/api/receipts/[reasonHash]` from durable KV/Upstash when configured, with in-memory demo fallback otherwise.
+- **Verifiable receipts** — after a run, the `/agent-decision/[asset]` page reads the on-chain reason hash and lets you re-compute `keccak256` on the audit JSON. Canonical receipts are cached locally for fast verification and, when KV/Upstash is configured, persisted in hosted durable receipt storage keyed by `reasonHash`. If KV is unavailable, Neutrino falls back to in-memory demo storage.
 - **Live freshness flags** in every result panel: market hours, reference prices (Twelve Data), xStock price (xStocks API), xStock trading status (xStocks API), LLM reasoning (Claude Haiku 4.5), on-chain write, on-chain execution. `live` / `stub` / `n/a` is shown per signal, never hidden.
 - **Two judge-ready scenarios** on the home page:
   - *Risky xStocks* (NVDAx / TSLAx / SPYx) — policy can pause when execution conditions are unsafe.
@@ -131,6 +132,16 @@ Example receipt shape for downstream systems:
 ```
 
 Policy templates are visible in the app: Conservative RWA, Balanced Agent, and Yield-seeking. The current hosted demo runtime uses the Conservative RWA-style `No after-hours risk` policy; Balanced and Yield-seeking show the builder-facing template direction. Outputs are policy outcomes, not fixed asset labels. Neutrino reevaluates live signals on every run.
+
+## Durable receipt recovery
+
+- `reasonHash` is committed to Mantle through `RWADecisionLogger.logDecision()`.
+- The canonical receipt JSON is recoverable by `reasonHash` from hosted KV/Upstash when configured.
+- `keccak256(canonicalJson)` is recomputed and matched against the on-chain `reasonHash`.
+- `localStorage` and the server memory cache remain fallbacks for fast demo UX.
+- No private keys, wallet secrets, or API tokens are stored in receipt storage.
+
+Hosted receipt storage is not IPFS, not decentralized archival storage, and not claimed as permanent storage. It is a builder-friendly recovery layer for the canonical JSON that the Mantle `reasonHash` verifies.
 
 ## What's modelled / not done (and labelled as such)
 
@@ -230,7 +241,7 @@ Mantle is closing the xStocks execution gap with the recent **Atomic RFQ** launc
 3. **xStock execution (xChange / Atomic RFQ) is not performed.** Neutrino treats RFQ execution as unavailable unless it has a verified, executable issuer route; that guardrail *is* the product. xStock execution is never simulated.
 4. **Aave V3 is now available on Mantle**, but Neutrino's current live execution demo uses Fluxion V3. Aave integration is left as a post-hackathon extension.
 5. **INIT Capital `mintTo` ABI** is not visually verified on Mantlescan. Wrapper has fallback modes; the live execution rail is Fluxion V3, INIT stays experimental.
-6. **Decision payloads** are cached per browser via `localStorage` and exposed server-side after fresh runs. If `KV_REST_API_URL` / `KV_REST_API_TOKEN` or `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are configured, receipts persist durably by `reasonHash`; otherwise the server uses an in-memory demo fallback.
+6. **Decision payloads** are cached per browser via `localStorage` and exposed server-side after fresh runs. If `KV_REST_API_URL` / `KV_REST_API_TOKEN` or `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are configured, canonical receipts are persisted in hosted durable receipt storage keyed by `reasonHash`; otherwise the server uses an in-memory demo fallback. Hosted receipt storage is not IPFS, not decentralized archival storage, and not claimed as permanent storage.
 
 ## License
 
