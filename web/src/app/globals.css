@@ -1,25 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Azeret+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=Azeret+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 /* ── Research-led role tokens ───────────────────── */
 :root {
-  --surface:          #070706;
-  --surface-raised:   #0D0C0A;
-  --surface-command:  #11100C;
-  --surface-evidence: #090908;
-  --border-subtle:    rgba(229, 221, 207, 0.08);
-  --border-strong:    rgba(229, 221, 207, 0.18);
-  --text-primary:     #E5DDCF;
-  --text-secondary:   #91887B;
-  --text-tertiary:    #6F675D;
+  --surface:          #050706;
+  --surface-raised:   #0B0E0B;
+  --surface-command:  #10110B;
+  --surface-evidence: #070A08;
+  --border-subtle:    rgba(237, 231, 218, 0.11);
+  --border-strong:    rgba(237, 231, 218, 0.24);
+  --text-primary:     #F0E8D8;
+  --text-secondary:   #A79C89;
+  --text-tertiary:    #766E61;
 
-  --status-allocate:  #80A887;
-  --status-pause:     #C4A35C;
-  --status-review:    #8E9AAF;
-  --status-error:     #C1776C;
-  --status-live:      #80A887;
-  --status-stub:      #C4A35C;
-  --status-gated:     #9A90BD;
+  --status-allocate:  #36D17D;
+  --status-pause:     #F0B84E;
+  --status-review:    #72A8FF;
+  --status-error:     #F06F62;
+  --status-live:      #36D17D;
+  --status-stub:      #F0B84E;
+  --status-gated:     #B08CFF;
+  --hero-ink:         #F4E6CF;
+  --hero-accent:      #F0B84E;
 
   --bg:           var(--surface);
   --panel:        var(--surface-raised);
@@ -62,7 +64,7 @@
 }
 
 @theme inline {
-  --font-display: 'Instrument Sans', system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-sans:    'Instrument Sans', system-ui, sans-serif;
   --font-mono:    'Azeret Mono', 'JetBrains Mono', 'Menlo', monospace;
 }
@@ -202,25 +204,83 @@ summary:focus-visible {
 .console-surface::before {
   background: var(--panel-accent, var(--border-hi));
   content: '';
-  height: 1px;
+  height: 2px;
   left: 0;
   opacity: 0.92;
   position: absolute;
-  right: 0;
+  right: auto;
   top: 0;
+  width: min(88px, 45%);
+}
+
+.console-surface::after {
+  background: var(--panel-accent, var(--border-hi));
+  bottom: 0;
+  content: '';
+  left: 0;
+  opacity: 0.38;
+  position: absolute;
+  top: 0;
+  width: 1px;
 }
 
 .surface-ledger {
-  background: var(--surface-raised);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-accent) 4%, transparent), transparent 68px),
+    var(--surface-raised);
 }
 
 .surface-command {
-  background: var(--surface-command);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--seal) 7%, transparent), transparent 90px),
+    var(--surface-command);
   border-color: var(--border-strong);
 }
 
 .surface-evidence {
-  background: var(--surface-evidence);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--panel-accent) 7%, transparent), transparent 42%),
+    var(--surface-evidence);
+}
+
+.hero-console {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--hero-accent) 10%, transparent), transparent 42%),
+    linear-gradient(180deg, color-mix(in srgb, var(--clear) 5%, transparent), transparent 46%),
+    var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-title {
+  color: var(--hero-ink);
+  font-family: var(--font-display);
+  font-size: clamp(2.72rem, 9.8vw, 6.35rem);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 0.9;
+  overflow-wrap: break-word;
+}
+
+.hero-title-accent {
+  color: color-mix(in srgb, var(--hero-accent) 78%, var(--text) 22%);
+}
+
+.hero-rule {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 680px;
+}
+
+.hero-rule span {
+  background: rgba(0,0,0,0.23);
+  border: 1px solid var(--border);
+  color: var(--muted-strong);
+  font-family: 'Azeret Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  padding: 10px 12px;
+  text-transform: uppercase;
 }
 
 .console-surface-compact {

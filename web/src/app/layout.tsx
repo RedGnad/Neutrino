@@ -40,9 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </svg>
               <span
                 style={{
-                  fontFamily: "'Instrument Sans', system-ui, sans-serif",
-                  fontSize: '1.2rem',
-                  fontWeight: 600,
+                  fontFamily: "var(--font-display)",
+                  fontSize: '1.35rem',
+                  fontWeight: 700,
                   color: 'var(--text)',
                   letterSpacing: '0',
                 }}

@@ -7,38 +7,38 @@ type Surface = "ledger" | "command" | "evidence";
 const TONES: Record<Tone, { fg: string; bg: string; border: string }> = {
   green: {
     fg: "var(--clear)",
-    bg: "color-mix(in srgb, var(--clear) 7%, transparent)",
-    border: "color-mix(in srgb, var(--clear) 28%, transparent)",
+    bg: "color-mix(in srgb, var(--clear) 14%, transparent)",
+    border: "color-mix(in srgb, var(--clear) 44%, transparent)",
   },
   amber: {
     fg: "var(--pause)",
-    bg: "color-mix(in srgb, var(--pause) 7%, transparent)",
-    border: "color-mix(in srgb, var(--pause) 28%, transparent)",
+    bg: "color-mix(in srgb, var(--pause) 14%, transparent)",
+    border: "color-mix(in srgb, var(--pause) 44%, transparent)",
   },
   blue: {
     fg: "var(--review)",
-    bg: "color-mix(in srgb, var(--review) 7%, transparent)",
-    border: "color-mix(in srgb, var(--review) 24%, transparent)",
+    bg: "color-mix(in srgb, var(--review) 13%, transparent)",
+    border: "color-mix(in srgb, var(--review) 40%, transparent)",
   },
   red: {
     fg: "var(--refuse)",
-    bg: "color-mix(in srgb, var(--refuse) 8%, transparent)",
-    border: "color-mix(in srgb, var(--refuse) 28%, transparent)",
+    bg: "color-mix(in srgb, var(--refuse) 14%, transparent)",
+    border: "color-mix(in srgb, var(--refuse) 42%, transparent)",
   },
   slate: {
     fg: "var(--muted-strong)",
-    bg: "color-mix(in srgb, var(--muted-strong) 5%, transparent)",
-    border: "color-mix(in srgb, var(--muted-strong) 18%, transparent)",
+    bg: "color-mix(in srgb, var(--muted-strong) 8%, transparent)",
+    border: "color-mix(in srgb, var(--muted-strong) 26%, transparent)",
   },
   gold: {
     fg: "var(--seal)",
-    bg: "color-mix(in srgb, var(--seal) 7%, transparent)",
-    border: "color-mix(in srgb, var(--seal) 24%, transparent)",
+    bg: "color-mix(in srgb, var(--seal) 14%, transparent)",
+    border: "color-mix(in srgb, var(--seal) 38%, transparent)",
   },
   violet: {
     fg: "var(--gated)",
-    bg: "color-mix(in srgb, var(--gated) 7%, transparent)",
-    border: "color-mix(in srgb, var(--gated) 24%, transparent)",
+    bg: "color-mix(in srgb, var(--gated) 13%, transparent)",
+    border: "color-mix(in srgb, var(--gated) 40%, transparent)",
   },
 };
 
@@ -167,7 +167,7 @@ export function StatusPill({
         fontFamily: "'Azeret Mono', monospace",
       }}
     >
-      <span className="h-1 w-1 rounded-full" style={{ background: t.fg }} />
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.fg }} />
       {children ?? value}
     </span>
   );

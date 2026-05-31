@@ -52,11 +52,7 @@ async function Hero() {
 
   return (
     <section
-      className="-mx-4 -mt-10 border-b px-4 py-12 sm:-mx-6 sm:px-6 sm:py-16"
-      style={{
-        background: "var(--surface)",
-        borderColor: "var(--border)",
-      }}
+      className="hero-console -mx-4 -mt-10 px-4 py-12 sm:-mx-6 sm:px-6 sm:py-16"
     >
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <div className="space-y-7">
@@ -66,22 +62,21 @@ async function Hero() {
               Neutrino · AI x RWA · {NETWORK_LABEL}
             </span>
             <h1
-              className="font-display leading-[1.02]"
-              style={{
-                color: "var(--text)",
-                fontSize: "clamp(2.05rem, 9vw, 5.4rem)",
-                fontWeight: 600,
-                overflowWrap: "break-word",
-              }}
+              className="hero-title"
             >
               The market closed at 4pm.
               <br />
-              <span style={{ color: "rgba(242,232,213,0.58)" }}>The token didn&rsquo;t.</span>
+              <span className="hero-title-accent">The token didn&rsquo;t.</span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed sm:text-lg" style={{ color: "var(--muted)" }}>
               Policy layer between market signals and capital movement. AI proposes, policy
               validates or overrides, Mantle verifies.
             </p>
+            <div className="hero-rule">
+              <span>Market signal</span>
+              <span>Policy gate</span>
+              <span>Mantle receipt</span>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-3">
