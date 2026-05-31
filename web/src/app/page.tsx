@@ -52,7 +52,7 @@ async function Hero() {
 
   return (
     <section
-      className="hero-console -mx-4 -mt-10 px-4 py-12 sm:-mx-6 sm:px-6 sm:py-16"
+      className="hero-console -mt-10 px-4 py-12 sm:px-6 sm:py-16"
     >
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <div className="space-y-7">
@@ -82,21 +82,21 @@ async function Hero() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="#scenarios"
-              className="inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold transition-opacity hover:opacity-85"
+              className="console-action inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold"
               style={{ background: "var(--clear)", color: "#060504" }}
             >
               Run agent
             </Link>
             <Link
               href="/proof"
-              className="inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold transition-colors"
+              className="console-action inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-hi)", color: "var(--text)" }}
             >
               View proofs
             </Link>
             <Link
               href="/integrate"
-              className="inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold transition-colors"
+              className="console-action inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-hi)", color: "var(--text)" }}
             >
               Integrate
