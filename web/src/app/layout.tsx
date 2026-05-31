@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </svg>
               <span
                 style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontFamily: "'Instrument Sans', system-ui, sans-serif",
                   fontSize: '1.2rem',
                   fontWeight: 600,
                   color: 'var(--text)',
@@ -56,9 +56,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   fontSize: '9px',
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
-                  background: 'rgba(120,155,125,0.055)',
+                  background: 'color-mix(in srgb, var(--clear) 9%, transparent)',
                   color: 'var(--clear)',
-                  border: '1px solid rgba(120,155,125,0.22)',
+                  border: '1px solid color-mix(in srgb, var(--clear) 26%, transparent)',
                 }}
               >
                 mainnet

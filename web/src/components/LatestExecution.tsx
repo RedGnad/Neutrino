@@ -37,8 +37,8 @@ function CopyButton({ value }: { value: string }) {
       className="rounded-md px-2 py-1 text-[10px] font-semibold transition-all"
       style={{
         fontFamily: "'Azeret Mono', monospace",
-        background: copied ? "rgba(120,155,125,0.15)" : "rgba(255,255,255,0.045)",
-        border: `1px solid ${copied ? "rgba(120,155,125,0.3)" : "var(--border)"}`,
+        background: copied ? "color-mix(in srgb, var(--clear) 12%, transparent)" : "rgba(255,255,255,0.04)",
+        border: `1px solid ${copied ? "color-mix(in srgb, var(--clear) 30%, transparent)" : "var(--border)"}`,
         color: copied ? "var(--clear)" : "var(--muted)",
       }}
     >
@@ -58,12 +58,12 @@ export function LatestExecution() {
         <StatusPill value="verified" tone="green">verified</StatusPill>
       </SectionHeader>
 
-      <ConsoleCard accent="gold" className="space-y-4">
+      <ConsoleCard surface="ledger" accent="gold" className="space-y-4">
         <div className="grid gap-3 md:grid-cols-2">
           {LEGS.map((leg) => (
             <div
               key={leg.tx}
-              className="rounded-lg px-4 py-3"
+              className="px-4 py-3"
               style={{ background: "rgba(0,0,0,0.18)", border: "1px solid var(--border)" }}
             >
               <div className="mb-3 flex items-start justify-between gap-3">

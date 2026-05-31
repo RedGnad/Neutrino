@@ -54,8 +54,7 @@ async function Hero() {
     <section
       className="-mx-4 -mt-10 border-b px-4 py-12 sm:-mx-6 sm:px-6 sm:py-16"
       style={{
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0))",
+        background: "var(--surface)",
         borderColor: "var(--border)",
       }}
     >
@@ -70,8 +69,9 @@ async function Hero() {
               className="font-display leading-[1.02]"
               style={{
                 color: "var(--text)",
-                fontSize: "clamp(2.8rem, 7vw, 5.4rem)",
+                fontSize: "clamp(2.05rem, 9vw, 5.4rem)",
                 fontWeight: 600,
+                overflowWrap: "break-word",
               }}
             >
               The market closed at 4pm.
@@ -108,7 +108,7 @@ async function Hero() {
             </Link>
           </div>
 
-          <ConsoleCard compact accent="green" className="max-w-3xl">
+          <ConsoleCard compact surface="evidence" accent="green" className="max-w-3xl">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <EvidenceItem label="xStocks status" value="feed checked" tone="green" />
               <EvidenceItem label="Price quality" value="quote tagged" tone="amber" />
@@ -143,7 +143,7 @@ function LatestStateCard({
   decisions: Awaited<ReturnType<typeof fetchRecentDecisions>>;
 }) {
   return (
-    <ConsoleCard accent="gold" className="lg:sticky lg:top-20">
+    <ConsoleCard surface="evidence" accent="gold" className="lg:sticky lg:top-20">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
           <span className="section-label" style={{ color: "var(--seal)" }}>
@@ -168,7 +168,7 @@ function LatestStateCard({
           {decisions.map((d) => {
             const sym = resolveAsset(d.assetAddress).symbol;
             return (
-              <li key={d.txHash} className="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-lg px-3 py-2" style={{ background: "rgba(255,255,255,0.022)", border: "1px solid var(--border)" }}>
+              <li key={d.txHash} className="grid grid-cols-[64px_1fr_auto] items-center gap-3 px-3 py-2" style={{ background: "rgba(255,255,255,0.012)", border: "1px solid var(--border)" }}>
                 <Link href={`/agent-decision/${sym}`} className="font-mono text-sm font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--text)" }}>
                   {sym}
                 </Link>
@@ -228,7 +228,7 @@ function ScenarioSection() {
         }
       />
 
-      <ConsoleCard compact accent="violet">
+      <ConsoleCard compact surface="evidence" accent="violet">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <span className="flex items-center gap-2">
             <StatusPill value="AI proposal" tone="blue">AI proposal</StatusPill>
@@ -322,8 +322,8 @@ function ScenarioCard({
   button: React.ReactNode;
 }) {
   return (
-    <ConsoleCard accent={tone} className="flex min-h-[340px] flex-col gap-4">
-      <div className="flex items-start justify-between gap-3">
+    <ConsoleCard surface="command" accent={tone} className="flex min-h-[340px] flex-col gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
           Scenario {index}
         </span>
@@ -376,7 +376,7 @@ function JudgeModeGuide() {
       </SectionHeader>
       <div className="grid gap-3 md:grid-cols-5">
         {steps.map(([title, body], index) => (
-          <ConsoleCard key={title} compact accent={index === 4 ? "gold" : index === 2 ? "violet" : "slate"}>
+          <ConsoleCard key={title} compact surface="evidence" accent={index === 4 ? "gold" : index === 2 ? "violet" : "slate"}>
             <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.52)", fontFamily: "'Azeret Mono', monospace" }}>
               {String(index + 1).padStart(2, "0")}
             </p>
@@ -412,7 +412,7 @@ function BuilderIntegrationSection() {
       </SectionHeader>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {uses.map(([title, body]) => (
-          <ConsoleCard key={title} compact accent="slate">
+          <ConsoleCard key={title} compact surface="ledger" accent="slate">
             <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
               {title}
             </p>
@@ -512,7 +512,7 @@ function SourcePanel({
   note?: string;
 }) {
   return (
-    <ConsoleCard compact accent={tone}>
+    <ConsoleCard compact surface="ledger" accent={tone}>
       <StatusPill value={state} tone={tone}>{state}</StatusPill>
       <ul className="mt-4 space-y-2">
         {items.map((item) => (
@@ -582,7 +582,7 @@ function AttackSurfaceSection() {
         </summary>
         <div className="grid gap-4 border-t p-5 md:grid-cols-2" style={{ borderColor: "var(--border)" }}>
           {qa.map(({ q, a, verdict, tone }) => (
-            <ConsoleCard key={q} compact accent={tone}>
+            <ConsoleCard key={q} compact surface="ledger" accent={tone}>
               <div className="mb-3 flex items-start justify-between gap-3">
                 <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{q}</p>
                 <StatusPill value={verdict} tone={tone}>{verdict}</StatusPill>
@@ -627,7 +627,7 @@ function WhyMantleSection() {
             tone: "gold" as const,
           },
         ].map((card) => (
-          <ConsoleCard key={card.title} accent={card.tone}>
+          <ConsoleCard key={card.title} surface="ledger" accent={card.tone}>
             <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{card.title}</p>
             <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>{card.body}</p>
           </ConsoleCard>

@@ -194,7 +194,7 @@ function ContractCards() {
 function ContractCard({ label, address }: { label: string; address: string }) {
   return (
     <a href={`${EXPLORER_ADDR}/${address}`} target="_blank" rel="noopener noreferrer" className="block transition-opacity hover:opacity-80">
-      <ConsoleCard accent="gold" compact>
+      <ConsoleCard surface="evidence" accent="gold" compact>
         <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
           {label}
         </p>
@@ -211,7 +211,7 @@ function ContractCard({ label, address }: { label: string; address: string }) {
 
 function ProofItem({ title, body }: { title: string; body: string }) {
   return (
-    <ConsoleCard compact accent="slate">
+    <ConsoleCard compact surface="ledger" accent="slate">
       <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
         {title}
       </p>
@@ -224,7 +224,7 @@ function ProofItem({ title, body }: { title: string; body: string }) {
 
 function Empty({ title, body }: { title: string; body: string }) {
   return (
-    <ConsoleCard accent="amber" className="text-center">
+    <ConsoleCard surface="ledger" accent="amber" className="text-center">
       <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
         {title}
       </p>

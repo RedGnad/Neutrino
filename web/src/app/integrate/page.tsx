@@ -98,7 +98,7 @@ export default function IntegratePage() {
             />
           </div>
 
-          <ConsoleCard accent="gold" className="space-y-4">
+          <ConsoleCard surface="evidence" accent="gold" className="space-y-4">
             <div className="flex items-center justify-between gap-3">
               <span className="section-label mb-0" style={{ color: "var(--seal)" }}>
                 Live surfaces
@@ -161,7 +161,7 @@ export default function IntegratePage() {
             "final receipt",
             "optional execution",
           ].map((step, index) => (
-            <ConsoleCard key={step} compact accent={index === 4 ? "gold" : "slate"}>
+            <ConsoleCard key={step} compact surface="evidence" accent={index === 4 ? "gold" : "slate"}>
               <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Azeret Mono', monospace" }}>
                 {String(index + 1).padStart(2, "0")}
               </p>
@@ -194,7 +194,7 @@ export default function IntegratePage() {
 
 function CodePanel({ title, code, copy = false }: { title: string; code: string; copy?: boolean }) {
   return (
-    <ConsoleCard accent="slate" compact className="space-y-3">
+    <ConsoleCard surface="command" accent="slate" compact className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--seal)" }}>
           {title}
@@ -226,7 +226,7 @@ function ContractLink({ label, address }: { label: string; address: string }) {
 
 function UseCase({ title, body }: { title: string; body: string }) {
   return (
-    <ConsoleCard compact accent="slate">
+    <ConsoleCard compact surface="ledger" accent="slate">
       <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
         {title}
       </p>

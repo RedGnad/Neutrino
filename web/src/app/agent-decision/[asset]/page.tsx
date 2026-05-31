@@ -47,7 +47,7 @@ export default async function AgentDecisionPage({ params }: Props) {
           Back to market map
         </Link>
 
-        <ConsoleCard accent={latest?.action === "ALLOCATE" ? "green" : latest?.action === "PAUSE" ? "amber" : "slate"} className="space-y-6">
+        <ConsoleCard surface="ledger" accent={latest?.action === "ALLOCATE" ? "green" : latest?.action === "PAUSE" ? "amber" : "slate"} className="space-y-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <span className="section-label">Decision receipt</span>
@@ -100,7 +100,7 @@ export default async function AgentDecisionPage({ params }: Props) {
 
           {latest ? (
             <div className="grid gap-5 lg:grid-cols-[220px_1fr]">
-              <ConsoleCard compact accent={latest.action === "ALLOCATE" ? "green" : latest.action === "PAUSE" ? "amber" : "slate"}>
+              <ConsoleCard compact surface="evidence" accent={latest.action === "ALLOCATE" ? "green" : latest.action === "PAUSE" ? "amber" : "slate"}>
                 <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
                   Risk score
                 </p>
@@ -112,7 +112,7 @@ export default async function AgentDecisionPage({ params }: Props) {
                 </div>
               </ConsoleCard>
 
-              <ConsoleCard compact accent="gold" className="space-y-3">
+              <ConsoleCard compact surface="ledger" accent="gold" className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
@@ -217,7 +217,7 @@ export default async function AgentDecisionPage({ params }: Props) {
 
 function Stat({ label, value, mono = false, link }: { label: string; value: string; mono?: boolean; link?: string }) {
   const content = (
-    <ConsoleCard compact accent="slate">
+    <ConsoleCard compact surface="ledger" accent="slate">
       <p className="text-[10px] uppercase tracking-widest" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.58)" }}>
         {label}
       </p>
@@ -260,7 +260,7 @@ function HashField({ label, value, link }: { label: string; value: string; link?
 
 function Empty({ title, body }: { title: string; body: string }) {
   return (
-    <ConsoleCard accent="amber" compact>
+    <ConsoleCard surface="ledger" accent="amber" compact>
       <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{title}</p>
       <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>{body}</p>
     </ConsoleCard>

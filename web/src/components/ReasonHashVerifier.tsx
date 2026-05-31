@@ -74,16 +74,16 @@ export function ReasonHashVerifier() {
   }
 
   return (
-    <section className="console-card console-card-compact space-y-4">
+    <section className="console-surface surface-command console-surface-compact space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p
             className="text-[10px] font-medium uppercase tracking-widest"
-            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--bb-teal)" }}
+            style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--clear)" }}
           >
-          RECOVER RECEIPT BY REASON HASH
+            RECOVER RECEIPT BY REASON HASH
           </p>
-          <p className="mt-1 max-w-2xl text-xs leading-relaxed" style={{ color: "var(--bb-muted)" }}>
+          <p className="mt-1 max-w-2xl text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
             Paste a Mantle reasonHash. Neutrino tries hosted KV/Upstash recovery, recomputes
             keccak256(canonicalJson), and checks the match.
           </p>
@@ -99,7 +99,7 @@ export function ReasonHashVerifier() {
           style={{
             background: "rgba(0,0,0,0.25)",
             border: `1px solid ${hash && !validHash ? "rgba(232,72,85,0.35)" : "rgba(255,255,255,0.08)"}`,
-            color: "var(--bb-text)",
+            color: "var(--text)",
           }}
         />
         <button
@@ -107,14 +107,14 @@ export function ReasonHashVerifier() {
           disabled={!validHash || state.kind === "loading"}
           onClick={verify}
           className="rounded-md px-4 py-2 text-xs font-mono font-semibold uppercase tracking-wider transition-all disabled:cursor-not-allowed disabled:opacity-40"
-          style={{ background: "var(--bb-teal)", color: "#07100D" }}
+          style={{ background: "var(--clear)", color: "#07100D" }}
         >
           {state.kind === "loading" ? "Checking..." : "Verify"}
         </button>
       </div>
 
       {hash && !validHash ? (
-        <p className="text-xs" style={{ color: "var(--bb-orange)" }}>
+        <p className="text-xs" style={{ color: "var(--pause)" }}>
           Enter a bytes32 hash: 0x + 64 hex characters.
         </p>
       ) : null}
@@ -131,13 +131,13 @@ export function ReasonHashVerifier() {
       ) : null}
 
       {state.kind === "found" ? (
-        <div className="rounded-lg p-4 space-y-3" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="p-4 space-y-3" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid var(--border)" }}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--bb-text)" }}>
+              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
                 Receipt found{state.receipt.asset ? ` · ${state.receipt.asset}` : ""}
               </p>
-              <p className="text-xs" style={{ color: matches ? "var(--bb-teal)" : "var(--bb-red)" }}>
+              <p className="text-xs" style={{ color: matches ? "var(--clear)" : "var(--refuse)" }}>
                 matches on-chain reasonHash: {matches ? "yes" : "no"}
               </p>
             </div>
@@ -152,7 +152,7 @@ export function ReasonHashVerifier() {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex text-xs font-mono transition-opacity hover:opacity-80"
-              style={{ color: "var(--bb-teal)" }}
+              style={{ color: "var(--clear)" }}
             >
               related tx {state.receipt.txHash.slice(0, 10)}...{state.receipt.txHash.slice(-6)} ↗
             </a>
@@ -167,9 +167,9 @@ function ResultBox({ title, children }: { tone: "warn"; title: string; children:
   return (
     <div
       className="rounded-lg p-3 text-xs leading-relaxed"
-      style={{ background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.22)", color: "var(--bb-muted)" }}
+      style={{ background: "color-mix(in srgb, var(--pause) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--pause) 24%, transparent)", color: "var(--muted)" }}
     >
-      <p className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--bb-orange)" }}>
+      <p className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--pause)" }}>
         {title}
       </p>
       {children}

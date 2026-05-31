@@ -1,27 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600;1,700&family=Instrument+Sans:wght@400;500;600;700&family=Azeret+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Azeret+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
-/* ── Design tokens ─────────────────────────────── */
+/* ── Research-led role tokens ───────────────────── */
 :root {
-  /* Institutional dark console: low chroma, high legibility. */
-  --bg:           #050504;
-  --panel:        #0B0A08;
-  --raised:       #11100D;
-  --border:       rgba(229, 221, 207, 0.085);
-  --border-hi:    rgba(229, 221, 207, 0.17);
+  --surface:          #070706;
+  --surface-raised:   #0D0C0A;
+  --surface-command:  #11100C;
+  --surface-evidence: #090908;
+  --border-subtle:    rgba(229, 221, 207, 0.08);
+  --border-strong:    rgba(229, 221, 207, 0.18);
+  --text-primary:     #E5DDCF;
+  --text-secondary:   #91887B;
+  --text-tertiary:    #6F675D;
 
-  --text:         #E5DDCF;
-  --muted:        #82796D;
-  --muted-strong: #AAA194;
+  --status-allocate:  #80A887;
+  --status-pause:     #C4A35C;
+  --status-review:    #8E9AAF;
+  --status-error:     #C1776C;
+  --status-live:      #80A887;
+  --status-stub:      #C4A35C;
+  --status-gated:     #9A90BD;
 
-  /* Verdict palette: restrained status colors, not decoration. */
-  --refuse:       #BD6B61;   /* error / unavailable */
-  --pause:        #BFA05E;   /* PAUSE / caution */
-  --clear:        #789B7D;   /* ALLOCATE / live */
-  --review:       #8793A6;   /* REVIEW / neutral */
-  --seal:         #B7A16A;   /* receipt / verification */
-  --pending:      #8E806D;   /* modelled / uncertain */
-  --gated:        #9188B7;   /* verified rails */
+  --bg:           var(--surface);
+  --panel:        var(--surface-raised);
+  --raised:       #14120F;
+  --border:       var(--border-subtle);
+  --border-hi:    var(--border-strong);
+
+  --text:         var(--text-primary);
+  --muted:        var(--text-secondary);
+  --muted-strong: #B1A89A;
+
+  --refuse:       var(--status-error);
+  --pause:        var(--status-pause);
+  --clear:        var(--status-allocate);
+  --review:       var(--status-review);
+  --seal:         #B9A777;
+  --pending:      #8D806D;
+  --gated:        var(--status-gated);
 
   /* Shorthand aliases — existing component code unchanged */
   --terracotta:   var(--refuse);
@@ -46,7 +62,7 @@
 }
 
 @theme inline {
-  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Instrument Sans', system-ui, sans-serif;
   --font-sans:    'Instrument Sans', system-ui, sans-serif;
   --font-mono:    'Azeret Mono', 'JetBrains Mono', 'Menlo', monospace;
 }
@@ -175,8 +191,7 @@ summary:focus-visible {
   position: relative;
 }
 
-.console-card {
-  background: rgba(11,10,8,0.74);
+.console-surface {
   border: 1px solid var(--border);
   border-radius: 2px;
   min-width: 0;
@@ -184,7 +199,7 @@ summary:focus-visible {
   position: relative;
 }
 
-.console-card::before {
+.console-surface::before {
   background: var(--panel-accent, var(--border-hi));
   content: '';
   height: 1px;
@@ -195,7 +210,20 @@ summary:focus-visible {
   top: 0;
 }
 
-.console-card-compact {
+.surface-ledger {
+  background: var(--surface-raised);
+}
+
+.surface-command {
+  background: var(--surface-command);
+  border-color: var(--border-strong);
+}
+
+.surface-evidence {
+  background: var(--surface-evidence);
+}
+
+.console-surface-compact {
   padding: 14px 16px;
 }
 
@@ -255,6 +283,45 @@ summary:focus-visible {
   background: rgba(229,221,207,0.018);
 }
 
+.asset-ledger {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.asset-ledger-head,
+.asset-ledger-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr 0.9fr 1fr 1.2fr 0.9fr 1fr;
+}
+
+.asset-ledger-head {
+  background: rgba(0,0,0,0.28);
+  border-bottom: 1px solid var(--border);
+  color: rgba(170,161,148,0.72);
+  font-family: 'Azeret Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 12px 14px;
+  text-transform: uppercase;
+}
+
+.asset-ledger-row {
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.045);
+  padding: 14px;
+}
+
+.asset-ledger-row:last-child {
+  border-bottom: 0;
+}
+
+.asset-ledger-label {
+  display: none;
+}
+
 .metric-strip {
   border: 1px solid var(--border);
   border-bottom: 0;
@@ -269,8 +336,9 @@ summary:focus-visible {
 
 .status-chip {
   border-radius: 1px;
+  max-width: 100%;
   min-height: 20px;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .rounded,
@@ -308,13 +376,52 @@ summary:focus-visible {
   content: '-';
 }
 
+.quiet-details:not([open]) > *:not(summary) {
+  display: none;
+}
+
 @media (max-width: 640px) {
-  .console-card {
+  .console-surface {
     padding: 16px;
   }
 
   .section-ruled {
     padding-top: 22px;
+  }
+
+  .asset-ledger-head {
+    display: none;
+  }
+
+  .asset-ledger-row {
+    align-items: stretch;
+    gap: 10px;
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .asset-ledger-cell {
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(255,255,255,0.045);
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    padding-bottom: 10px;
+  }
+
+  .asset-ledger-cell:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .asset-ledger-label {
+    color: rgba(170,161,148,0.58);
+    display: block;
+    flex: 0 0 92px;
+    font-family: 'Azeret Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 }
 
@@ -485,9 +592,8 @@ summary:focus-visible {
   margin:     0 auto;
 }
 
-/* ── Cormorant display helper ──────────────────── */
 .font-display {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Instrument Sans', system-ui, sans-serif;
 }
 
 /* ── Exhibit corner marks ──────────────────────── */

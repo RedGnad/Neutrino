@@ -80,10 +80,10 @@ function previewLabel(decision: XStocksBreakdownDecision): string {
 }
 
 function statusColor(value: string): string {
-  if (value === "OPEN" || value === "LIVE" || value === "VERIFIED" || value === "ALLOCATE") return "var(--bb-teal)";
-  if (value === "UNAVAILABLE" || value === "HALTED") return "var(--bb-red)";
-  if (value === "PAUSE" || value === "CLOSED" || value === "STUB" || value === "MODELLED") return "var(--bb-amber)";
-  return "var(--bb-amber)";
+  if (value === "OPEN" || value === "LIVE" || value === "VERIFIED" || value === "ALLOCATE") return "var(--clear)";
+  if (value === "UNAVAILABLE" || value === "HALTED") return "var(--refuse)";
+  if (value === "PAUSE" || value === "CLOSED" || value === "STUB" || value === "MODELLED") return "var(--seal)";
+  return "var(--seal)";
 }
 
 export function XStocksDecisionBreakdown({
@@ -107,8 +107,8 @@ export function XStocksDecisionBreakdown({
 
   return (
     <div
-      className={`rounded-lg ${compact ? "p-3" : "p-4"} space-y-3`}
-      style={{ background: "rgba(145,136,183,0.055)", border: "1px solid rgba(145,136,183,0.18)" }}
+      className={`console-surface surface-ledger ${compact ? "console-surface-compact" : ""} space-y-3`}
+      style={{ border: "1px solid color-mix(in srgb, var(--gated) 22%, transparent)" }}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
@@ -118,13 +118,13 @@ export function XStocksDecisionBreakdown({
           >
             xStocks decision breakdown
           </p>
-          <p className="mt-1 text-[11px] leading-relaxed" style={{ color: "var(--bb-muted)" }}>
+          <p className="mt-1 text-[11px] leading-relaxed" style={{ color: "var(--muted)" }}>
             Market context and execution readiness are evaluated separately.
           </p>
         </div>
         <span
           className="rounded px-2 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wider"
-          style={{ background: "rgba(145,136,183,0.12)", border: "1px solid rgba(145,136,183,0.25)", color: "var(--gated)" }}
+          style={{ background: "color-mix(in srgb, var(--gated) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--gated) 26%, transparent)", color: "var(--gated)" }}
         >
           xStock
         </span>
@@ -134,8 +134,8 @@ export function XStocksDecisionBreakdown({
         {rows.map(([label, value]) => (
           <div
             key={label}
-            className="rounded-md px-3 py-2"
-            style={{ background: "rgba(0,0,0,0.16)", border: "1px solid rgba(255,255,255,0.055)" }}
+            className="px-3 py-2"
+            style={{ background: "rgba(0,0,0,0.16)", border: "1px solid var(--border)" }}
           >
             <p
               className="text-[9px] uppercase tracking-widest"
@@ -157,11 +157,11 @@ export function XStocksDecisionBreakdown({
         <details className="group">
           <summary
             className="cursor-pointer text-[11px] font-mono font-semibold uppercase tracking-wider transition-opacity hover:opacity-80"
-            style={{ color: "var(--bb-teal)" }}
+            style={{ color: "var(--clear)" }}
           >
             Why paused?
           </summary>
-          <div className="mt-3 grid gap-2 text-[11px] sm:grid-cols-2" style={{ color: "var(--bb-muted)" }}>
+          <div className="mt-3 grid gap-2 text-[11px] sm:grid-cols-2" style={{ color: "var(--muted)" }}>
             <ReasonLine label="Market status" value={market.toLowerCase()} />
             <ReasonLine label="xStock quote" value={quoteLabel(decision)} />
             <ReasonLine label="RFQ execution rail" value="unavailable" />
@@ -174,10 +174,7 @@ export function XStocksDecisionBreakdown({
         </details>
       ) : null}
 
-      <div
-        className="rounded-md px-3 py-2 text-[11px] leading-relaxed"
-        style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", color: "rgba(138,148,166,0.72)" }}
-      >
+      <div className="px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid var(--border)", color: "var(--muted)" }}>
         <span className="font-mono uppercase tracking-wider" style={{ color: "var(--gated)" }}>
           Preview only:
         </span>{" "}
@@ -190,7 +187,7 @@ export function XStocksDecisionBreakdown({
 
 function ReasonLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-3 rounded px-2 py-1.5" style={{ background: "rgba(255,255,255,0.025)" }}>
+    <div className="flex justify-between gap-3 px-2 py-1.5" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid var(--border)" }}>
       <span style={{ color: "rgba(138,148,166,0.55)" }}>{label}</span>
       <span className="text-right font-mono" style={{ color: "rgba(235,229,215,0.68)" }}>{value}</span>
     </div>

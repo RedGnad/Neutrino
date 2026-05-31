@@ -59,52 +59,69 @@ export default async function MarketMapPage() {
           body={`The ${NETWORK_LABEL} RPC returned an error. Try again in a moment.`}
         />
       ) : (
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <section className="asset-ledger">
+          <div className="asset-ledger-head">
+            {["Asset", "Category", "Outcome", "Risk", "Source quality", "Updated", "Receipt"].map((h) => (
+              <span key={h}>{h}</span>
+            ))}
+          </div>
           {rows.map(({ asset, latest }) => {
             const category = asset.kind === "tokenized_equity" ? "Tokenized equity" : "Yield-bearing";
-            const market = "market" in asset ? asset.market : "on-chain";
             const sourceQuality =
               asset.kind === "tokenized_equity"
                 ? "live / stub / modelled flags"
                 : "on-chain RWA signals";
 
             return (
-              <ConsoleCard
-                key={asset.symbol}
-                accent={latest?.action === "ALLOCATE" ? "green" : latest?.action === "PAUSE" ? "amber" : "slate"}
-                className="space-y-5"
-              >
-                <div className="flex items-start justify-between gap-3">
+              <div key={asset.symbol} className="asset-ledger-row">
+                <div className="asset-ledger-cell">
+                  <span className="asset-ledger-label">Asset</span>
                   <div>
                     <Link
                       href={`/agent-decision/${asset.symbol}`}
-                      className="text-xl font-semibold transition-opacity hover:opacity-80"
+                      className="font-mono text-sm font-semibold transition-opacity hover:opacity-80"
                       style={{ color: "var(--text)" }}
                     >
                       {asset.symbol}
                     </Link>
                     {"reference" in asset && asset.reference ? (
-                      <p className="text-xs" style={{ color: "var(--muted)" }}>
+                      <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
                         references {asset.reference}
                       </p>
                     ) : null}
                   </div>
+                </div>
+                <div className="asset-ledger-cell">
+                  <span className="asset-ledger-label">Category</span>
+                  <span className="text-xs text-right sm:text-left" style={{ color: "var(--muted)" }}>
+                    {category}
+                  </span>
+                </div>
+                <div className="asset-ledger-cell">
+                  <span className="asset-ledger-label">Outcome</span>
                   <StatusPill value={latest?.action ?? "N/A"}>{latest?.action ?? "N/A"}</StatusPill>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <MiniMetric label="Category" value={category} />
-                  <MiniMetric label="Market" value={market} />
-                  <MiniMetric label="Source quality" value={sourceQuality} wide />
+                <div className="asset-ledger-cell">
+                  <span className="asset-ledger-label">Risk</span>
+                  <div className="w-28 sm:w-full">
+                    <RiskBar value={latest?.riskScore ?? null} />
+                  </div>
                 </div>
-
-                <RiskBar value={latest?.riskScore ?? null} />
-
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4" style={{ borderColor: "var(--border)" }}>
-                  <span className="text-[11px]" style={{ color: "rgba(144,126,108,0.62)", fontFamily: "'Azeret Mono', monospace" }}>
+                <div className="asset-ledger-cell">
+                  <span className="asset-ledger-label">Source</span>
+                  <span className="text-right text-xs sm:text-left" style={{ color: "var(--muted)" }}>
+                    {sourceQuality}
+                  </span>
+                </div>
+                <div className="asset-ledger-cell">
+                  <span className="asset-ledger-label">Updated</span>
+                  <span className="whitespace-nowrap text-xs" style={{ color: "var(--muted)", fontFamily: "'Azeret Mono', monospace" }}>
                     {latest ? timeAgo(latest.timestamp) : "no decision yet"}
                   </span>
-                  <div className="flex flex-wrap items-center gap-3">
+                </div>
+                <div className="asset-ledger-cell">
+                  <span className="asset-ledger-label">Receipt</span>
+                  <div className="flex flex-wrap justify-end gap-3 sm:justify-start">
                     <Link href={`/agent-decision/${asset.symbol}`} className="text-xs font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--clear)", fontFamily: "'Azeret Mono', monospace" }}>
                       Receipt
                     </Link>
@@ -113,7 +130,7 @@ export default async function MarketMapPage() {
                     ) : null}
                   </div>
                 </div>
-              </ConsoleCard>
+              </div>
             );
           })}
         </section>
@@ -122,22 +139,9 @@ export default async function MarketMapPage() {
   );
 }
 
-function MiniMetric({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) {
-  return (
-    <div className={wide ? "col-span-2" : ""}>
-      <p className="text-[9px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.55)", fontFamily: "'Azeret Mono', monospace" }}>
-        {label}
-      </p>
-      <p className="mt-1 text-sm leading-snug" style={{ color: "rgba(242,232,213,0.76)" }}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
 function Empty({ title, body }: { title: string; body: string }) {
   return (
-    <ConsoleCard accent="amber" className="text-center">
+    <ConsoleCard surface="ledger" accent="amber" className="text-center">
       <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
         {title}
       </p>

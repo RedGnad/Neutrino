@@ -2,42 +2,43 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 
 type Tone = "green" | "amber" | "blue" | "red" | "slate" | "gold" | "violet";
+type Surface = "ledger" | "command" | "evidence";
 
 const TONES: Record<Tone, { fg: string; bg: string; border: string }> = {
   green: {
     fg: "var(--clear)",
-    bg: "rgba(116,154,126,0.045)",
-    border: "rgba(116,154,126,0.28)",
+    bg: "color-mix(in srgb, var(--clear) 7%, transparent)",
+    border: "color-mix(in srgb, var(--clear) 28%, transparent)",
   },
   amber: {
     fg: "var(--pause)",
-    bg: "rgba(190,160,95,0.045)",
-    border: "rgba(190,160,95,0.28)",
+    bg: "color-mix(in srgb, var(--pause) 7%, transparent)",
+    border: "color-mix(in srgb, var(--pause) 28%, transparent)",
   },
   blue: {
     fg: "var(--review)",
-    bg: "rgba(128,145,166,0.045)",
-    border: "rgba(128,145,166,0.24)",
+    bg: "color-mix(in srgb, var(--review) 7%, transparent)",
+    border: "color-mix(in srgb, var(--review) 24%, transparent)",
   },
   red: {
     fg: "var(--refuse)",
-    bg: "rgba(190,100,92,0.05)",
-    border: "rgba(190,100,92,0.28)",
+    bg: "color-mix(in srgb, var(--refuse) 8%, transparent)",
+    border: "color-mix(in srgb, var(--refuse) 28%, transparent)",
   },
   slate: {
     fg: "var(--muted-strong)",
-    bg: "rgba(150,143,132,0.035)",
-    border: "rgba(150,143,132,0.18)",
+    bg: "color-mix(in srgb, var(--muted-strong) 5%, transparent)",
+    border: "color-mix(in srgb, var(--muted-strong) 18%, transparent)",
   },
   gold: {
     fg: "var(--seal)",
-    bg: "rgba(183,161,106,0.045)",
-    border: "rgba(183,161,106,0.24)",
+    bg: "color-mix(in srgb, var(--seal) 7%, transparent)",
+    border: "color-mix(in srgb, var(--seal) 24%, transparent)",
   },
   violet: {
     fg: "var(--gated)",
-    bg: "rgba(145,136,183,0.045)",
-    border: "rgba(145,136,183,0.24)",
+    bg: "color-mix(in srgb, var(--gated) 7%, transparent)",
+    border: "color-mix(in srgb, var(--gated) 24%, transparent)",
   },
 };
 
@@ -66,19 +67,21 @@ export function ConsoleCard({
   accent = "slate",
   className = "",
   compact = false,
+  surface = "ledger",
   style,
 }: {
   children: ReactNode;
   accent?: Tone | "none";
   className?: string;
   compact?: boolean;
+  surface?: Surface;
   style?: CSSProperties;
 }) {
   const accentBorder =
     accent === "none" ? "var(--border-hi)" : (TONES[accent]?.border ?? "var(--border-hi)");
   return (
     <div
-      className={`console-card ${compact ? "console-card-compact" : ""} ${className}`}
+      className={`console-surface surface-${surface} ${compact ? "console-surface-compact" : ""} ${className}`}
       style={{
         borderColor: "var(--border)",
         ["--panel-accent" as string]: accentBorder,
@@ -88,6 +91,18 @@ export function ConsoleCard({
       {children}
     </div>
   );
+}
+
+export function LedgerPanel(props: Omit<Parameters<typeof ConsoleCard>[0], "surface">) {
+  return <ConsoleCard {...props} surface="ledger" />;
+}
+
+export function CommandSurface(props: Omit<Parameters<typeof ConsoleCard>[0], "surface">) {
+  return <ConsoleCard {...props} surface="command" />;
+}
+
+export function EvidenceRow(props: Omit<Parameters<typeof ConsoleCard>[0], "surface">) {
+  return <ConsoleCard {...props} surface="evidence" compact />;
 }
 
 export function SectionHeader({

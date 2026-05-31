@@ -182,7 +182,7 @@ export function RunAgentButton({
       {state.kind === "error" ? (
         <div
           className="rounded-md px-3 py-2 text-sm"
-          style={{ background: "rgba(232,72,85,0.1)", border: "1px solid rgba(232,72,85,0.3)", color: "var(--bb-red)" }}
+          style={{ background: "rgba(232,72,85,0.1)", border: "1px solid rgba(232,72,85,0.3)", color: "var(--refuse)" }}
         >
           {state.message}
         </div>
@@ -220,23 +220,23 @@ function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scena
 
   return (
     <div
-      className="space-y-4 rounded-xl p-5 mt-2"
-      style={{ background: "var(--bb-panel)", border: "1px solid rgba(255,255,255,0.08)" }}
+      className="console-surface surface-command space-y-4 mt-2"
+      style={{ background: "var(--surface-command)", border: "1px solid var(--border-strong)" }}
     >
       {/* Summary header */}
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
-        <p className="font-semibold" style={{ color: "var(--bb-text)" }}>
+        <p className="font-semibold" style={{ color: "var(--text)" }}>
           {written}/{result.results.length} receipts on-chain
           {pending > 0 ? (
-            <span className="ml-1 font-normal" style={{ color: "var(--bb-amber)" }}>
+            <span className="ml-1 font-normal" style={{ color: "var(--seal)" }}>
               ({pending} confirming)
             </span>
           ) : null}
         </p>
-        <p style={{ color: "var(--bb-muted)" }}>
+        <p style={{ color: "var(--muted)" }}>
           {(result.durationMs / 1000).toFixed(1)}s · {networkLabel} ·{" "}
           US market{" "}
-          <span className="font-medium" style={{ color: result.marketOpen ? "var(--bb-teal)" : "var(--bb-orange)" }}>
+          <span className="font-medium" style={{ color: result.marketOpen ? "var(--clear)" : "var(--pause)" }}>
             {result.marketOpen ? "open" : "closed"}
           </span>
         </p>
@@ -251,19 +251,19 @@ function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scena
         style={{ background: "rgba(145,136,183,0.08)", border: "1px solid rgba(145,136,183,0.15)" }}
       >
         <span>
-          <span className="font-semibold" style={{ color: "var(--bb-text)" }}>Policy review</span>
-          <span style={{ color: "var(--bb-muted)" }}> finalized action + risk score</span>
+          <span className="font-semibold" style={{ color: "var(--text)" }}>Policy review</span>
+          <span style={{ color: "var(--muted)" }}> finalized action + risk score</span>
         </span>
         <span>
           <span
             className="font-semibold"
-            style={{ color: result.inputs.llmReasoning === "live" ? "var(--gated)" : "var(--bb-muted)" }}
+            style={{ color: result.inputs.llmReasoning === "live" ? "var(--gated)" : "var(--muted)" }}
           >
             {result.inputs.llmReasoning === "live"
               ? `AI narration (${result.narrationModel ?? "claude-haiku"}) attached`
               : "AI narration unavailable - fallback reason attached"}
           </span>
-          <span style={{ color: "var(--bb-muted)" }}> - the LLM never controls the final action</span>
+          <span style={{ color: "var(--muted)" }}> - the LLM never controls the final action</span>
         </span>
       </div>
 
@@ -287,7 +287,7 @@ function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scena
       {result.executionError ? (
         <div
           className="rounded-md px-4 py-3 text-xs leading-relaxed"
-          style={{ background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "var(--bb-amber)" }}
+          style={{ background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "var(--seal)" }}
         >
           <p className="font-mono font-semibold uppercase tracking-wider text-[10px] mb-1">Execution did not settle</p>
           {result.executionError}
@@ -299,14 +299,14 @@ function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scena
         className="flex flex-wrap items-center gap-3 pt-3 text-xs"
         style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
       >
-        <Link href="/proof" className="font-medium transition-colors" style={{ color: "var(--bb-teal)" }}>
+        <Link href="/proof" className="font-medium transition-colors" style={{ color: "var(--clear)" }}>
           View all on-chain receipts →
         </Link>
         {firstWritten ? (
           <Link
             href={`/agent-decision/${firstWritten.symbol}`}
             className="font-medium transition-colors"
-            style={{ color: "var(--bb-teal)" }}
+            style={{ color: "var(--clear)" }}
           >
             Verify {firstWritten.symbol} receipt →
           </Link>
@@ -325,17 +325,17 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
   const xstocksDecision = parseXStocksDecision(r.canonicalJson);
   const actionColor =
     r.action === "PAUSE" || r.action === "REDUCE"
-      ? "var(--bb-orange)"
+      ? "var(--pause)"
       : r.action === "ALLOCATE"
-        ? "var(--bb-teal)"
-        : "var(--bb-amber)";
+        ? "var(--clear)"
+        : "var(--seal)";
 
   return (
     <li className="space-y-2 py-3 text-sm">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span
           className="w-14 font-mono font-semibold"
-          style={{ color: "var(--bb-text)" }}
+          style={{ color: "var(--text)" }}
         >
           {r.symbol}
         </span>
@@ -345,7 +345,7 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
         >
           {r.action}
         </span>
-        <span className="tabular-nums text-xs" style={{ color: "var(--bb-muted)" }}>
+        <span className="tabular-nums text-xs" style={{ color: "var(--muted)" }}>
           {r.riskScore}
           <span style={{ color: "rgba(138,148,166,0.4)" }}>/1000</span>
         </span>
@@ -357,7 +357,7 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-mono text-xs"
-                style={{ color: "var(--bb-teal)" }}
+                style={{ color: "var(--clear)" }}
               >
                 {r.txHash.slice(0, 16)}…
               </a>
@@ -366,13 +366,13 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
                   block {r.blockNumber}
                 </span>
               ) : (
-                <span className="ml-1.5 text-[10px] font-mono" style={{ color: "var(--bb-amber)" }}>
+                <span className="ml-1.5 text-[10px] font-mono" style={{ color: "var(--seal)" }}>
                   confirming…
                 </span>
               )}
             </>
           ) : (
-            <span className="text-xs font-mono" style={{ color: "var(--bb-red)" }}>
+            <span className="text-xs font-mono" style={{ color: "var(--refuse)" }}>
               {r.error ?? "no tx"}
             </span>
           )}
@@ -385,13 +385,13 @@ function AssetRow({ r, explorerTx }: { r: PerAssetResult; explorerTx: string }) 
           style={
             r.reasonFromLlm
               ? { background: "rgba(145,136,183,0.15)", color: "var(--gated)", border: "1px solid rgba(145,136,183,0.25)" }
-              : { background: "rgba(255,255,255,0.05)", color: "var(--bb-muted)", border: "1px solid rgba(255,255,255,0.07)" }
+              : { background: "rgba(255,255,255,0.05)", color: "var(--muted)", border: "1px solid rgba(255,255,255,0.07)" }
           }
           title={r.reasonFromLlm ? "Narrated by Claude Haiku 4.5" : "Deterministic fallback"}
         >
           {r.reasonFromLlm ? "LLM" : "auto"}
         </span>
-        <span className="text-xs italic leading-relaxed" style={{ color: "var(--bb-muted)" }}>
+        <span className="text-xs italic leading-relaxed" style={{ color: "var(--muted)" }}>
           {r.reason}
         </span>
       </div>
@@ -461,10 +461,10 @@ function sourceBadgeClass(s: SourceState | FlagState): string {
 
 function sourceDotClass(s: SourceState | FlagState): string {
   switch (s) {
-    case "live":      return "bg-[var(--bb-teal)]";
-    case "stub":      return "bg-[var(--bb-amber)]";
+    case "live":      return "bg-[var(--clear)]";
+    case "stub":      return "bg-[var(--seal)]";
     case "simulated": return "bg-[var(--gated)]";
-    default:          return "bg-[var(--bb-muted)]";
+    default:          return "bg-[var(--muted)]";
   }
 }
 
@@ -486,11 +486,11 @@ function RfqReadinessBlock({ results }: { results: PerAssetResult[] }) {
       <div>
         <span className="font-semibold" style={{ color: "var(--gated)" }}>xStocks execution gate: </span>
         {atomicHalted ? (
-          <span className="font-mono" style={{ color: "var(--bb-red)" }}>
+          <span className="font-mono" style={{ color: "var(--refuse)" }}>
             xStocks API reports <code>atomicTradingHalted = true</code> — current policy outcome is PAUSE.
           </span>
         ) : (
-          <span style={{ color: "var(--bb-muted)" }}>
+          <span style={{ color: "var(--muted)" }}>
             Current signal may be tradable, but xStocks execution is gated because no verified RFQ rail is configured. Market context and execution readiness are evaluated separately.
           </span>
         )}
@@ -503,27 +503,27 @@ function ExecutionBlock({ execution, explorerTx }: { execution: ExecutionResult;
   return (
     <div
       className="rounded-md px-4 py-3 text-sm space-y-2"
-      style={{ background: "rgba(120,155,125,0.06)", border: "1px solid rgba(120,155,125,0.25)" }}
+      style={{ background: "color-mix(in srgb, var(--clear) 9%, transparent)", border: "1px solid color-mix(in srgb, var(--clear) 28%, transparent)" }}
     >
       <p
         className="text-[10px] font-mono font-semibold uppercase tracking-widest"
-        style={{ color: "var(--bb-teal)" }}
+        style={{ color: "var(--clear)" }}
       >
         ON-CHAIN EXECUTION SETTLED
       </p>
-      <p style={{ color: "var(--bb-muted)" }}>{execution.description}</p>
+      <p style={{ color: "var(--muted)" }}>{execution.description}</p>
       <ul className="space-y-1">
         {(execution.steps ?? [{ label: "swap", txHash: execution.txHash, blockNumber: execution.blockNumber }]).map(
           (step, i) => (
             <li key={step.txHash} className="flex flex-wrap items-center gap-2 text-xs">
               <span className="font-mono font-medium" style={{ color: "rgba(138,148,166,0.5)" }}>Leg {i + 1}</span>
-              <span style={{ color: "var(--bb-muted)" }}>{step.label}</span>
+              <span style={{ color: "var(--muted)" }}>{step.label}</span>
               <a
                 href={`${explorerTx}/${step.txHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-mono"
-                style={{ color: "var(--bb-teal)" }}
+                style={{ color: "var(--clear)" }}
               >
                 {step.txHash.slice(0, 18)}…
               </a>

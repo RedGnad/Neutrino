@@ -51,7 +51,7 @@ export function PolicyTemplates({ compact = false }: { compact?: boolean }) {
 
       <div className="grid gap-4 lg:grid-cols-3">
         {POLICIES.map((policy) => (
-          <ConsoleCard key={policy.name} compact={compact} accent={policy.tone} className="space-y-4">
+          <ConsoleCard key={policy.name} compact={compact} surface="ledger" accent={policy.tone} className="space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface BlackBoxData {
   asset?: string;
@@ -36,7 +36,11 @@ function verdictStyle(action: string): { text: string; border: string; bg: strin
   if (action === "PAUSE" || action === "REDUCE")
     return { text: "var(--pause)", border: "rgba(191,160,94,0.35)", bg: "rgba(191,160,94,0.06)" };
   if (action === "ALLOCATE")
-    return { text: "var(--clear)", border: "rgba(120,155,125,0.35)", bg: "rgba(120,155,125,0.06)" };
+    return {
+      text: "var(--clear)",
+      border: "color-mix(in srgb, var(--clear) 35%, transparent)",
+      bg: "color-mix(in srgb, var(--clear) 8%, transparent)",
+    };
   return { text: "var(--seal)", border: "rgba(191,160,94,0.35)", bg: "rgba(191,160,94,0.06)" };
 }
 
@@ -121,8 +125,8 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
           AGENT VERDICT
         </p>
         <p
-          className="italic leading-none tracking-tight"
-          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "2rem", color: vs.text, fontWeight: 600 }}
+          className="leading-none"
+          style={{ fontFamily: "'Instrument Sans', system-ui, sans-serif", fontSize: "1.7rem", color: vs.text, fontWeight: 700 }}
         >
           {action === "PAUSE" ? "Refused." : action === "ALLOCATE" ? "Cleared." : action}
         </p>
@@ -132,7 +136,7 @@ export function BlackBoxCard({ data = DEMO_DATA, label = "SIMULATED PREVIEW", cl
           </p>
         )}
         {action === "ALLOCATE" && (
-          <p style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", color: "rgba(120,155,125,0.55)", marginTop: "4px" }}>
+          <p style={{ fontFamily: "'Azeret Mono', monospace", fontSize: "10px", color: "var(--muted)", marginTop: "4px" }}>
             risk within policy · execution permitted
           </p>
         )}
