@@ -441,7 +441,7 @@ function SourceBadges({ sources }: { sources: PerAssetResult["sources"] }) {
       {entries.map((e) => (
         <span
           key={e.label}
-          className={`inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-mono font-medium uppercase tracking-wider ${sourceBadgeClass(e.state)}`}
+          className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wider ${sourceBadgeClass(e.state)}`}
         >
           {e.label}: {e.state}
         </span>

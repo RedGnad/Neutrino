@@ -4,8 +4,8 @@
 /* ── Research-led role tokens ───────────────────── */
 :root {
   --surface:          #050706;
-  --surface-raised:   #0B0E0B;
-  --surface-command:  #10140E;
+  --surface-raised:   #131610;
+  --surface-command:  #171B12;
   --surface-evidence: #070A08;
   --border-subtle:    rgba(237, 231, 218, 0.14);
   --border-strong:    rgba(237, 231, 218, 0.30);
@@ -78,7 +78,7 @@ body {
   position: relative;
   line-height: 1.5;
   overflow-x: hidden;
-  font-size: 14px;
+  font-size: 15px;
   font-feature-settings: "ss01" 1, "cv01" 1, "tnum" 1;
 }
 
@@ -284,7 +284,7 @@ summary:focus-visible {
   border: 1px solid var(--border);
   border-radius: 2px;
   min-width: 0;
-  padding: 22px;
+  padding: 26px;
   position: relative;
 }
 
@@ -431,7 +431,7 @@ summary:focus-visible {
 
 .landing-card-copy {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
   max-width: 34ch;
 }
@@ -456,14 +456,14 @@ summary:focus-visible {
 .landing-fact-key {
   color: var(--text-tertiary);
   font-family: 'Azeret Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .landing-fact-value {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
 }
 
@@ -564,14 +564,14 @@ summary:focus-visible {
   border: 1px solid var(--border);
   color: var(--muted-strong);
   font-family: 'Azeret Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
-  padding: 10px 12px;
+  padding: 12px 16px;
   text-transform: uppercase;
 }
 
 .console-surface-compact {
-  padding: 14px 16px;
+  padding: 16px 18px;
 }
 
 .console-code {
@@ -606,7 +606,7 @@ summary:focus-visible {
   border-bottom: 1px solid var(--border);
   color: rgba(170,161,148,0.72);
   font-family: 'Azeret Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.12em;
   padding: 12px 14px;
@@ -648,7 +648,7 @@ summary:focus-visible {
   border-bottom: 1px solid var(--border);
   color: rgba(170,161,148,0.72);
   font-family: 'Azeret Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.12em;
   padding: 12px 14px;
@@ -766,7 +766,7 @@ summary:focus-visible {
     display: block;
     flex: 0 0 92px;
     font-family: 'Azeret Mono', monospace;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
@@ -791,7 +791,7 @@ summary:focus-visible {
 /* Section label — tiny mono uppercase, always above the heading */
 .section-label {
   font-family:    'Azeret Mono', monospace;
-  font-size:      9px;
+  font-size:      10px;
   font-weight:    500;
   letter-spacing: 0.14em;
   text-transform: uppercase;

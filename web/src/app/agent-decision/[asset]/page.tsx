@@ -248,7 +248,7 @@ function HashField({ label, value, link }: { label: string; value: string; link?
   return (
     <div className="rounded-md px-3 py-2" style={{ background: "rgba(0,0,0,0.16)", border: "1px solid var(--border)" }}>
       <div className="mb-1 flex items-center justify-between gap-2">
-        <p className="text-[9px] uppercase tracking-widest" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.56)" }}>
+        <p className="text-[10px] uppercase tracking-widest" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.56)" }}>
           {label}
         </p>
         <CopyButton value={value} label="copy" copiedLabel="copied" />

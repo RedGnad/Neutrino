@@ -123,7 +123,7 @@ export function XStocksDecisionBreakdown({
           </p>
         </div>
         <span
-          className="rounded px-2 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wider"
+          className="rounded px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider"
           style={{ background: "color-mix(in srgb, var(--gated) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--gated) 26%, transparent)", color: "var(--gated)" }}
         >
           xStock
@@ -138,7 +138,7 @@ export function XStocksDecisionBreakdown({
             style={{ background: "rgba(0,0,0,0.16)", border: "1px solid var(--border)" }}
           >
             <p
-              className="text-[9px] uppercase tracking-widest"
+              className="text-[10px] uppercase tracking-widest"
             style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.6)" }}
             >
               {label}

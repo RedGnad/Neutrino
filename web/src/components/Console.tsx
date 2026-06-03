@@ -127,7 +127,7 @@ export function SectionHeader({
           style={{
             color: "var(--text)",
             fontFamily: "'Instrument Sans', system-ui, sans-serif",
-            fontSize: compact ? "1.05rem" : "clamp(1.08rem, 1.7vw, 1.42rem)",
+            fontSize: compact ? "1.15rem" : "clamp(1.3rem, 2vw, 1.75rem)",
             fontWeight: 600,
             letterSpacing: "0",
           }}
@@ -190,7 +190,7 @@ export function RiskBar({
     <div className="min-w-[92px]">
       {label ? (
         <div className="mb-1 flex items-baseline justify-between gap-2">
-          <span className="text-[9px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+          <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
             Risk
           </span>
           <span className="text-[10px] tabular-nums" style={{ color: "var(--text)", fontFamily: "'Azeret Mono', monospace" }}>
@@ -225,10 +225,10 @@ export function MetricStrip({
               borderColor: t?.border ?? "var(--border)",
             }}
           >
-            <p className="text-[9px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Azeret Mono', monospace" }}>
+            <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Azeret Mono', monospace" }}>
               {item.label}
             </p>
-            <div className="mt-1 text-sm font-semibold leading-snug" style={{ color: t?.fg ?? "var(--text)" }}>
+            <div className="mt-1 text-[15px] font-semibold leading-snug" style={{ color: t?.fg ?? "var(--text)" }}>
               {item.value}
             </div>
           </div>

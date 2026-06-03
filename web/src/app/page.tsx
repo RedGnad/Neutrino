@@ -122,7 +122,7 @@ async function Hero() {
 function EvidenceItem({ label, value, tone }: { label: string; value: string; tone: "green" | "amber" | "violet" }) {
   return (
     <div className="space-y-1">
-      <p className="text-[9px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+      <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
         {label}
       </p>
       <StatusPill value={value} tone={tone}>

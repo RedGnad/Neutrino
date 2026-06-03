@@ -347,7 +347,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               className="rounded-lg px-4 py-2 text-center"
               style={{ background: tint(actionColor, 12), border: `1px solid ${tint(actionColor, 34)}` }}
             >
-              <p className="text-[9px] font-mono uppercase tracking-widest mb-0.5" style={{ color: "var(--muted)" }}>ACTION</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest mb-0.5" style={{ color: "var(--muted)" }}>ACTION</p>
               <p className="text-lg font-bold tracking-wider" style={{ color: actionColor, fontFamily: "'Azeret Mono', monospace" }}>
                 {parsed.action}
               </p>
@@ -358,7 +358,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               className="rounded-lg px-4 py-2 text-center"
               style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
             >
-              <p className="text-[9px] font-mono uppercase tracking-widest mb-0.5" style={{ color: "var(--muted)" }}>RISK SCORE</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest mb-0.5" style={{ color: "var(--muted)" }}>RISK SCORE</p>
               <p className="text-lg font-bold tabular-nums" style={{ color: "var(--text)", fontFamily: "'Azeret Mono', monospace" }}>
                 {parsed.riskScore}<span className="text-xs font-normal" style={{ color: "var(--muted)" }}>/1000</span>
               </p>
@@ -376,7 +376,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             style={{ background: "var(--surface-raised)", border: `1px solid ${tint("var(--gated)", 24)}` }}
           >
             <p
-              className="text-[9px] font-medium uppercase tracking-widest"
+              className="text-[10px] font-medium uppercase tracking-widest"
               style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--gated)" }}
             >
               AI Proposal
@@ -397,7 +397,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               {parsed.aiProposal.rationale}
             </p>
             <p
-              className="text-[9px]"
+              className="text-[10px]"
               style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--text-tertiary)" }}
             >
               model: {parsed.aiProposal.model}
@@ -415,7 +415,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             }}
           >
             <p
-              className="text-[9px] font-medium uppercase tracking-widest"
+              className="text-[10px] font-medium uppercase tracking-widest"
               style={{
                 fontFamily: "'Azeret Mono', monospace",
                 color: parsed.policyReview.decision === 'OVERRIDE'
@@ -466,7 +466,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
             style={{ background: "var(--surface-raised)", border: `1px solid ${tint("var(--clear)", 22)}` }}
           >
             <p
-              className="text-[9px] font-medium uppercase tracking-widest"
+              className="text-[10px] font-medium uppercase tracking-widest"
               style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--clear)" }}
             >
               On-chain Commitment
@@ -500,7 +500,7 @@ export function DecisionVerifier({ txHash, reasonHash, policyHash }: Props) {
               {txHash.slice(0, 10)}…{txHash.slice(-4)} ↗ Mantlescan
             </a>
             <p
-              className="text-[9px] leading-relaxed pt-1"
+              className="text-[10px] leading-relaxed pt-1"
               style={{
                 fontFamily: "'Azeret Mono', monospace",
                 color: "var(--text-tertiary)",
@@ -885,7 +885,7 @@ function DarkAuditCard({ title, rows, note }: { title: string; rows: Array<[stri
       style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
     >
       <p
-        className="text-[9px] font-medium uppercase tracking-widest mb-2"
+        className="text-[10px] font-medium uppercase tracking-widest mb-2"
         style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--muted)" }}
       >
         {title}
@@ -909,7 +909,7 @@ function DarkAuditCard({ title, rows, note }: { title: string; rows: Array<[stri
         ))}
       </div>
       {note && (
-        <p className="mt-2 text-[9px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.35)" }}>
+        <p className="mt-2 text-[10px]" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(138,148,166,0.35)" }}>
           {note}
         </p>
       )}
