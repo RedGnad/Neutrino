@@ -67,6 +67,7 @@ export function ConsoleCard({
   accent = "slate",
   className = "",
   compact = false,
+  interactive = false,
   surface = "ledger",
   style,
 }: {
@@ -74,6 +75,7 @@ export function ConsoleCard({
   accent?: Tone | "none";
   className?: string;
   compact?: boolean;
+  interactive?: boolean;
   surface?: Surface;
   style?: CSSProperties;
 }) {
@@ -81,7 +83,7 @@ export function ConsoleCard({
     accent === "none" ? "var(--border-hi)" : (TONES[accent]?.border ?? "var(--border-hi)");
   return (
     <div
-      className={`console-surface surface-${surface} ${compact ? "console-surface-compact" : ""} ${className}`}
+      className={`console-surface surface-${surface} ${compact ? "console-surface-compact" : ""} ${interactive ? "console-surface-interactive" : ""} ${className}`}
       style={{
         borderColor: "var(--border)",
         ["--panel-accent" as string]: accentBorder,

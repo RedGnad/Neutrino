@@ -226,7 +226,7 @@ function ContractLink({ label, address }: { label: string; address: string }) {
 
 function UseCase({ title, body }: { title: string; body: string }) {
   return (
-    <ConsoleCard compact surface="ledger" accent="slate">
+    <ConsoleCard compact interactive surface="ledger" accent="slate">
       <p className="text-base font-semibold" style={{ color: "var(--text)" }}>
         {title}
       </p>

@@ -286,6 +286,17 @@ summary:focus-visible {
   min-width: 0;
   padding: 26px;
   position: relative;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.console-surface-interactive:hover {
+  border-color: var(--border-hi) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
+}
+
+.console-surface-interactive {
+  cursor: default;
 }
 
 .console-surface::before {
@@ -486,6 +497,10 @@ summary:focus-visible {
   position: relative;
   width: 100vw;
   background:
+    linear-gradient(180deg,
+      transparent 72%,
+      var(--surface) 100%
+    ),
     linear-gradient(90deg,
       var(--surface) 0%,
       color-mix(in srgb, var(--hero-accent) 10%, var(--surface)) 10%,
@@ -498,7 +513,7 @@ summary:focus-visible {
       transparent 58%
     ),
     var(--surface);
-  border-bottom: 1px solid var(--border);
+  border-bottom: none;
 }
 
 .hero-console::before {
@@ -682,19 +697,18 @@ summary:focus-visible {
 }
 
 .status-chip {
-  border-radius: 1px;
+  border-radius: 4px;
   max-width: 100%;
   min-height: 20px;
   white-space: normal;
 }
 
-.rounded,
-.rounded-md,
-.rounded-lg,
-.rounded-xl,
-.rounded-2xl {
-  border-radius: 2px !important;
-}
+/* Tiered radius — 2px only for data/code elements (set explicitly there) */
+.rounded    { border-radius: 4px !important; }
+.rounded-md { border-radius: 6px !important; }
+.rounded-lg { border-radius: 8px !important; }
+.rounded-xl { border-radius: 10px !important; }
+.rounded-2xl { border-radius: 12px !important; }
 
 .quiet-details {
   background: rgba(229,221,207,0.012);
@@ -942,6 +956,36 @@ summary:focus-visible {
 
 .font-display {
   font-family: 'Instrument Sans', system-ui, sans-serif;
+}
+
+/* ── Full-bleed section helper ─────────────────────────── */
+.section-fullbleed {
+  margin-left:  calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding-left:  max(1rem, calc(50vw - 42rem));
+  padding-right: max(1rem, calc(50vw - 42rem));
+  width: 100vw;
+}
+
+/* ── Section tint variants ─────────────────────────────── */
+.section-tint-green {
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--clear) 5%, transparent) 0%,
+      color-mix(in srgb, var(--clear) 2%, transparent) 100%),
+    var(--surface);
+  border-top:    1px solid color-mix(in srgb, var(--clear) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--clear) 12%, transparent);
+}
+
+.section-tint-gold {
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--seal) 5%, transparent) 0%,
+      color-mix(in srgb, var(--seal) 2%, transparent) 100%),
+    var(--surface);
+  border-top:    1px solid color-mix(in srgb, var(--seal) 14%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--seal) 14%, transparent);
 }
 
 /* ── Tagline display — signature phrase in display serif ── */

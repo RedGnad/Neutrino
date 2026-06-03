@@ -58,29 +58,29 @@ async function Hero() {
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <div className="space-y-7">
           <div className="space-y-4">
-            <span className="section-label flex items-center gap-2">
+            <span className="section-label flex items-center gap-2 animate-stagger-1">
               <span className="h-1.5 w-1.5 rounded-full animate-live" style={{ background: "var(--clear)" }} />
               Neutrino · AI x RWA · {NETWORK_LABEL}
             </span>
             <h1
-              className="hero-title"
+              className="hero-title animate-stagger-2"
             >
               The market closed at 4pm.
               <br />
               <span className="hero-title-accent">The token didn&rsquo;t.</span>
             </h1>
-            <p className="max-w-xl text-lg leading-relaxed sm:text-xl" style={{ color: "var(--muted)" }}>
+            <p className="max-w-xl text-lg leading-relaxed sm:text-xl animate-stagger-3" style={{ color: "var(--muted)" }}>
               Policy layer between market signals and capital movement. AI proposes, policy
               validates or overrides, Mantle verifies.
             </p>
-            <div className="hero-rule">
+            <div className="hero-rule animate-stagger-4">
               <span>Market signal</span>
               <span>Policy gate</span>
               <span>Mantle receipt</span>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 animate-stagger-5">
             <Link
               href="#scenarios"
               className="console-action inline-flex h-12 items-center rounded-md px-8 text-[15px] font-semibold"
@@ -213,17 +213,12 @@ function ContractLink({ label, address }: { label: string; address: string }) {
 function TaglineStatement() {
   return (
     <section
-      className="-mx-4 sm:-mx-6 px-4 sm:px-6 py-16 sm:py-20"
-      style={{
-        background: "linear-gradient(135deg, rgba(47,234,131,0.035) 0%, rgba(212,160,64,0.03) 100%)",
-        borderTop: "1px solid var(--border)",
-        borderBottom: "1px solid var(--border)",
-      }}
+      className="section-fullbleed section-tint-green py-16 sm:py-20"
     >
       <div className="mx-auto max-w-4xl text-center">
         <p className="tagline-display">
-          AI proposes.<br />Policy validates.<br className="sm:hidden" />{" "}
-          <span className="sm:inline">Mantle verifies.</span>
+          AI proposes.<br />Policy validates.{" "}
+          Mantle verifies.
         </p>
         <div className="mx-auto mt-8 h-px w-12" style={{ background: "var(--clear)" }} />
         <p
@@ -346,7 +341,7 @@ function ScenarioCard({
   button: React.ReactNode;
 }) {
   return (
-    <ConsoleCard surface="command" accent={tone} className="scenario-card">
+    <ConsoleCard surface="command" accent={tone} interactive className="scenario-card">
       <div className="scenario-card-head">
         <span className="scenario-card-index">
           Scenario {index}
@@ -400,7 +395,7 @@ function JudgeModeGuide() {
       </SectionHeader>
       <div className="grid gap-3 md:grid-cols-5">
         {steps.map(([title, body], index) => (
-          <ConsoleCard key={title} compact surface="evidence" accent={index === 4 ? "gold" : index === 2 ? "violet" : "slate"}>
+          <ConsoleCard key={title} compact surface="evidence" interactive accent={index === 4 ? "gold" : index === 2 ? "violet" : "slate"}>
             <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.52)", fontFamily: "'Azeret Mono', monospace" }}>
               {String(index + 1).padStart(2, "0")}
             </p>
@@ -436,7 +431,7 @@ function BuilderIntegrationSection() {
       </SectionHeader>
       <div className="landing-brief-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {uses.map(([title, body, tone]) => (
-          <ConsoleCard key={title} compact surface="ledger" accent={tone} className="landing-brief-card">
+          <ConsoleCard key={title} compact surface="ledger" accent={tone} interactive className="landing-brief-card">
             <StatusPill value={tone === "green" ? "guardrail" : tone === "gold" ? "proof" : tone === "violet" ? "gate" : "receipt"} tone={tone}>
               {tone === "green" ? "guardrail" : tone === "gold" ? "proof" : tone === "violet" ? "gate" : "receipt"}
             </StatusPill>
@@ -656,7 +651,7 @@ function WhyMantleSection() {
             tone: "gold" as const,
           },
         ].map((card) => (
-          <ConsoleCard key={card.title} surface="ledger" accent={card.tone} className="landing-brief-card">
+          <ConsoleCard key={card.title} surface="ledger" accent={card.tone} interactive className="landing-brief-card">
             <StatusPill value={card.title} tone={card.tone}>{card.title}</StatusPill>
             <p className="landing-card-copy">{card.body}</p>
           </ConsoleCard>
