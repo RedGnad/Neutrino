@@ -28,7 +28,7 @@ export default async function ProofPage() {
   const latest = decisions[0] ?? null;
 
   return (
-    <div className="space-y-8" style={{ color: "var(--text)" }}>
+    <div className="space-y-12" style={{ color: "var(--text)" }}>
       <section className="space-y-5">
         <SectionHeader
           eyebrow="On-chain proof registry"
@@ -212,10 +212,10 @@ function ContractCard({ label, address }: { label: string; address: string }) {
 function ProofItem({ title, body }: { title: string; body: string }) {
   return (
     <ConsoleCard compact surface="ledger" accent="slate">
-      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+      <p className="text-base font-semibold" style={{ color: "var(--text)" }}>
         {title}
       </p>
-      <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+      <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
         {body}
       </p>
     </ConsoleCard>

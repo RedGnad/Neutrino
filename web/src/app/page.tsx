@@ -24,8 +24,9 @@ export const revalidate = 30;
 
 export default function Home() {
   return (
-    <div className="space-y-12 md:space-y-14">
+    <div className="space-y-20 md:space-y-28">
       <Hero />
+      <TaglineStatement />
       <ScenarioSection />
       <JudgeModeGuide />
       <BuilderIntegrationSection />
@@ -52,7 +53,7 @@ async function Hero() {
 
   return (
     <section
-      className="hero-console -mt-10 px-4 py-12 sm:px-6 sm:py-16"
+      className="hero-console -mt-10 px-4 py-20 sm:px-6 sm:py-28"
     >
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <div className="space-y-7">
@@ -68,7 +69,7 @@ async function Hero() {
               <br />
               <span className="hero-title-accent">The token didn&rsquo;t.</span>
             </h1>
-            <p className="max-w-2xl text-base leading-relaxed sm:text-lg" style={{ color: "var(--muted)" }}>
+            <p className="max-w-xl text-lg leading-relaxed sm:text-xl" style={{ color: "var(--muted)" }}>
               Policy layer between market signals and capital movement. AI proposes, policy
               validates or overrides, Mantle verifies.
             </p>
@@ -82,21 +83,21 @@ async function Hero() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="#scenarios"
-              className="console-action inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold"
+              className="console-action inline-flex h-12 items-center rounded-md px-8 text-[15px] font-semibold"
               style={{ background: "var(--clear)", color: "#060504" }}
             >
               Run agent
             </Link>
             <Link
               href="/proof"
-              className="console-action inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold"
+              className="console-action inline-flex h-12 items-center rounded-md px-6 text-[15px] font-semibold"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-hi)", color: "var(--text)" }}
             >
               View proofs
             </Link>
             <Link
               href="/integrate"
-              className="console-action inline-flex h-10 items-center rounded-md px-5 text-sm font-semibold"
+              className="console-action inline-flex h-12 items-center rounded-md px-6 text-[15px] font-semibold"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-hi)", color: "var(--text)" }}
             >
               Integrate
@@ -206,6 +207,34 @@ function ContractLink({ label, address }: { label: string; address: string }) {
       <span>{label}</span>
       <HashText value={address} chars={8} />
     </a>
+  );
+}
+
+function TaglineStatement() {
+  return (
+    <section
+      className="-mx-4 sm:-mx-6 px-4 sm:px-6 py-16 sm:py-20"
+      style={{
+        background: "linear-gradient(135deg, rgba(47,234,131,0.035) 0%, rgba(212,160,64,0.03) 100%)",
+        borderTop: "1px solid var(--border)",
+        borderBottom: "1px solid var(--border)",
+      }}
+    >
+      <div className="mx-auto max-w-4xl text-center">
+        <p className="tagline-display">
+          AI proposes.<br />Policy validates.<br className="sm:hidden" />{" "}
+          <span className="sm:inline">Mantle verifies.</span>
+        </p>
+        <div className="mx-auto mt-8 h-px w-12" style={{ background: "var(--clear)" }} />
+        <p
+          className="mt-6 text-base leading-relaxed"
+          style={{ color: "var(--muted)", maxWidth: "52ch", margin: "1.5rem auto 0" }}
+        >
+          Tokenized stocks trade 24/7. Their underlying markets don&rsquo;t.
+          Neutrino gives autonomous agents a safety loop before capital moves.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -327,10 +356,10 @@ function ScenarioCard({
         </StatusPill>
       </div>
       <div className="scenario-card-body">
-        <h3 className="text-lg font-semibold leading-snug" style={{ color: "var(--text)" }}>
+        <h3 className="text-xl font-semibold leading-snug" style={{ color: "var(--text)" }}>
           {title}
         </h3>
-        <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+        <p className="mt-3 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
           {description}
         </p>
       </div>
@@ -375,10 +404,10 @@ function JudgeModeGuide() {
             <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.52)", fontFamily: "'Azeret Mono', monospace" }}>
               {String(index + 1).padStart(2, "0")}
             </p>
-            <p className="mt-2 text-sm font-semibold" style={{ color: "var(--text)" }}>
+            <p className="mt-2 text-base font-semibold" style={{ color: "var(--text)" }}>
               {title}
             </p>
-            <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
               {body}
             </p>
           </ConsoleCard>

@@ -64,20 +64,20 @@ const RESPONSE_SNIPPET = `{
 
 export default function IntegratePage() {
   return (
-    <div className="space-y-10">
+    <div className="space-y-14">
       <section className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
           <div className="space-y-5">
             <div>
               <span className="section-label">Builder integration</span>
               <h1
-                className="leading-tight"
                 style={{
                   color: "var(--text)",
-                  fontFamily: "'Instrument Sans', system-ui, sans-serif",
-                  fontSize: "clamp(2rem, 4.2vw, 3.25rem)",
-                  fontWeight: 600,
-                  letterSpacing: "0",
+                  fontFamily: "var(--font-display)",
+                  fontSize: "clamp(2.5rem, 5vw, 3.8rem)",
+                  fontWeight: 500,
+                  letterSpacing: "-0.02em",
+                  lineHeight: "1.05",
                 }}
               >
                 Use Neutrino in your agent.
@@ -227,10 +227,10 @@ function ContractLink({ label, address }: { label: string; address: string }) {
 function UseCase({ title, body }: { title: string; body: string }) {
   return (
     <ConsoleCard compact surface="ledger" accent="slate">
-      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+      <p className="text-base font-semibold" style={{ color: "var(--text)" }}>
         {title}
       </p>
-      <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+      <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
         {body}
       </p>
     </ConsoleCard>

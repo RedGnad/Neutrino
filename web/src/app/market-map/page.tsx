@@ -26,7 +26,7 @@ export default async function MarketMapPage() {
   const populated = rows?.filter((r) => r.latest !== null).length ?? 0;
 
   return (
-    <div className="space-y-8" style={{ color: "var(--text)" }}>
+    <div className="space-y-12" style={{ color: "var(--text)" }}>
       <section className="space-y-5">
         <SectionHeader
           eyebrow="RWA market map"

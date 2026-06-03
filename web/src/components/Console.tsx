@@ -123,19 +123,19 @@ export function SectionHeader({
       <div className="min-w-0">
         <span className="section-label">{eyebrow}</span>
         <h2
-          className="leading-tight"
           style={{
             color: "var(--text)",
-            fontFamily: "'Instrument Sans', system-ui, sans-serif",
-            fontSize: compact ? "1.15rem" : "clamp(1.3rem, 2vw, 1.75rem)",
-            fontWeight: 600,
-            letterSpacing: "0",
+            fontFamily: compact ? "'Instrument Sans', system-ui, sans-serif" : "var(--font-display)",
+            fontSize: compact ? "1.15rem" : "clamp(2rem, 3.5vw, 2.8rem)",
+            fontWeight: compact ? 600 : 500,
+            letterSpacing: compact ? "0" : "-0.01em",
+            lineHeight: compact ? "1.3" : "1.05",
           }}
         >
           {title}
         </h2>
         {body ? (
-          <div className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+          <div className="mt-4 max-w-2xl text-base leading-relaxed" style={{ color: "var(--muted)" }}>
             {body}
           </div>
         ) : null}

@@ -276,7 +276,7 @@ summary:focus-visible {
 /* Ruled: thin top rule, content below — like a brief section heading */
 .section-ruled {
   border-top: 1px solid var(--border);
-  padding-top: 30px;
+  padding-top: 52px;
   position: relative;
 }
 
@@ -942,6 +942,18 @@ summary:focus-visible {
 
 .font-display {
   font-family: 'Instrument Sans', system-ui, sans-serif;
+}
+
+/* ── Tagline display — signature phrase in display serif ── */
+.tagline-display {
+  font-family:    var(--font-display);
+  font-size:      clamp(1.8rem, 4vw, 3.2rem);
+  font-style:     italic;
+  font-weight:    500;
+  color:          var(--hero-ink);
+  letter-spacing: -0.01em;
+  line-height:    1.15;
+  opacity:        0.9;
 }
 
 /* ── Exhibit corner marks ──────────────────────── */

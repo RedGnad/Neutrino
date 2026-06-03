@@ -37,7 +37,7 @@ export default async function AgentDecisionPage({ params }: Props) {
   const market = "market" in asset ? asset.market : "on-chain";
 
   return (
-    <div className="space-y-8" style={{ color: "var(--text)" }}>
+    <div className="space-y-12" style={{ color: "var(--text)" }}>
       <section className="space-y-5">
         <Link
           href="/market-map"
@@ -53,13 +53,13 @@ export default async function AgentDecisionPage({ params }: Props) {
               <span className="section-label">Decision receipt</span>
               <div className="flex flex-wrap items-baseline gap-3">
                 <h1
-                  className="leading-none"
                   style={{
                     color: "var(--text)",
-                    fontFamily: "'Azeret Mono', monospace",
-                    fontSize: "clamp(2rem, 5vw, 3.3rem)",
-                    fontWeight: 600,
-                    letterSpacing: "0",
+                    fontFamily: "var(--font-display)",
+                    fontSize: "clamp(2.8rem, 6vw, 4.5rem)",
+                    fontWeight: 500,
+                    letterSpacing: "-0.02em",
+                    lineHeight: "1",
                   }}
                 >
                   {asset.symbol}
