@@ -1,21 +1,16 @@
 // Mirrored from /agent/src/types.ts. Keep in sync until this gets factored
 // into a shared workspace package.
 
+// Only assets with a verified Mantle mainnet ERC-20 address are listed. The
+// earlier roadmap placeholders (AAPLx/METAx/GOOGLx/MSTRx/HOODx/QQQx/CRCLx/
+// USDe/sUSDe) were removed: they had 0x0 addresses and were never monitored,
+// so keeping them only created a misleading "supported assets" surface.
 export type AssetSymbol =
   | 'NVDAx'
   | 'TSLAx'
-  | 'AAPLx'
-  | 'METAx'
-  | 'GOOGLx'
-  | 'MSTRx'
-  | 'HOODx'
   | 'SPYx'
-  | 'QQQx'
-  | 'CRCLx'
   | 'USDY'
   | 'mETH'
-  | 'USDe'
-  | 'sUSDe'
   | 'USDC'
   | 'USDT0';
 
@@ -34,6 +29,14 @@ export interface MarketSnapshot {
   onChainPrice: number;
   referencePrice?: number;
   spreadBps: number;
+  /**
+   * LIVE sell-side price impact (bps) measured on-chain via Fluxion QuoterV2 at
+   * notional size. Present only for assets with a real Fluxion pool (currently
+   * mETH); undefined otherwise. When present it is preferred over the modelled
+   * `spreadBps` for the execution-cost penalty — real on-chain depth beats a
+   * hardcoded constant. `spreadBps` is still recorded for transparency.
+   */
+  priceImpactBps?: number;
   volume24hUsd: number;
   apy?: number;
   volatility24h: number;

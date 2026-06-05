@@ -24,9 +24,8 @@ export const revalidate = 30;
 
 export default function Home() {
   return (
-    <div className="space-y-20 md:space-y-28">
+    <div className="space-y-20 md:space-y-24">
       <Hero />
-      <TaglineStatement />
       <ScenarioSection />
       <JudgeModeGuide />
       <BuilderIntegrationSection />
@@ -34,7 +33,6 @@ export default function Home() {
       <LatestExecution />
       <DataHonestySection />
       <AttackSurfaceSection />
-      <WhyMantleSection />
     </div>
   );
 }
@@ -52,26 +50,27 @@ async function Hero() {
     .slice(0, 5);
 
   return (
-    <section
-      className="hero-console -mt-10 px-4 py-20 sm:px-6 sm:py-28"
-    >
+    <section className="hero-console -mt-10 px-4 py-20 sm:px-6 sm:py-28">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <div className="space-y-7">
           <div className="space-y-4">
             <span className="section-label flex items-center gap-2 animate-stagger-1">
-              <span className="h-1.5 w-1.5 rounded-full animate-live" style={{ background: "var(--clear)" }} />
+              <span
+                className="h-1.5 w-1.5 rounded-full animate-live"
+                style={{ background: "var(--clear)" }}
+              />
               Neutrino · AI x RWA · {NETWORK_LABEL}
             </span>
-            <h1
-              className="hero-title animate-stagger-2"
-            >
+            <h1 className="hero-title animate-stagger-2">
               The market closed at 4pm.
               <br />
               <span className="hero-title-accent">The token didn&rsquo;t.</span>
             </h1>
-            <p className="max-w-xl text-lg leading-relaxed sm:text-xl animate-stagger-3" style={{ color: "var(--muted)" }}>
-              Policy layer between market signals and capital movement. AI proposes, policy
-              validates or overrides, Mantle verifies.
+            <p
+              className="max-w-xl text-lg leading-relaxed sm:text-xl animate-stagger-3"
+              style={{ color: "var(--muted)" }}
+            >
+              A policy layer between market signals and capital movement.
             </p>
             <div className="hero-rule animate-stagger-4">
               <span>Market signal</span>
@@ -91,25 +90,54 @@ async function Hero() {
             <Link
               href="/proof"
               className="console-action inline-flex h-12 items-center rounded-md px-6 text-[15px] font-semibold"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-hi)", color: "var(--text)" }}
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid var(--border-hi)",
+                color: "var(--text)",
+              }}
             >
               View proofs
             </Link>
             <Link
               href="/integrate"
               className="console-action inline-flex h-12 items-center rounded-md px-6 text-[15px] font-semibold"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-hi)", color: "var(--text)" }}
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid var(--border-hi)",
+                color: "var(--text)",
+              }}
             >
               Integrate
             </Link>
           </div>
 
-          <ConsoleCard compact surface="evidence" accent="green" className="max-w-3xl">
+          <ConsoleCard
+            compact
+            surface="evidence"
+            accent="green"
+            className="max-w-3xl"
+          >
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <EvidenceItem label="xStocks status" value="feed checked" tone="green" />
-              <EvidenceItem label="Price quality" value="quote tagged" tone="amber" />
-              <EvidenceItem label="Mantle receipts" value="on-chain" tone="green" />
-              <EvidenceItem label="xStocks execution" value="RFQ gated" tone="violet" />
+              <EvidenceItem
+                label="xStocks status"
+                value="feed checked"
+                tone="green"
+              />
+              <EvidenceItem
+                label="Price quality"
+                value="quote tagged"
+                tone="amber"
+              />
+              <EvidenceItem
+                label="Mantle receipts"
+                value="on-chain"
+                tone="green"
+              />
+              <EvidenceItem
+                label="xStocks execution"
+                value="RFQ gated"
+                tone="violet"
+              />
             </div>
           </ConsoleCard>
         </div>
@@ -120,10 +148,24 @@ async function Hero() {
   );
 }
 
-function EvidenceItem({ label, value, tone }: { label: string; value: string; tone: "green" | "amber" | "violet" }) {
+function EvidenceItem({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "green" | "amber" | "violet";
+}) {
   return (
     <div className="space-y-1">
-      <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+      <p
+        className="text-[10px] uppercase tracking-widest"
+        style={{
+          color: "rgba(144,126,108,0.58)",
+          fontFamily: "'Azeret Mono', monospace",
+        }}
+      >
         {label}
       </p>
       <StatusPill value={value} tone={tone}>
@@ -139,16 +181,26 @@ function LatestStateCard({
   decisions: Awaited<ReturnType<typeof fetchRecentDecisions>>;
 }) {
   return (
-    <ConsoleCard surface="evidence" accent="gold" className="lg:sticky lg:top-20">
+    <ConsoleCard
+      surface="evidence"
+      accent="gold"
+      className="lg:sticky lg:top-20"
+    >
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
           <span className="section-label" style={{ color: "var(--seal)" }}>
             Latest state
           </span>
-          <h2 className="text-lg font-semibold" style={{ color: "var(--text)" }}>
+          <h2
+            className="text-lg font-semibold"
+            style={{ color: "var(--text)" }}
+          >
             Current policy outcomes
           </h2>
-          <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+          <p
+            className="mt-1 text-xs leading-relaxed"
+            style={{ color: "var(--muted)" }}
+          >
             Latest decision per asset.
           </p>
         </div>
@@ -156,7 +208,13 @@ function LatestStateCard({
       </div>
 
       {decisions.length === 0 ? (
-        <p className="text-sm" style={{ color: "var(--muted)", fontFamily: "'Azeret Mono', monospace" }}>
+        <p
+          className="text-sm"
+          style={{
+            color: "var(--muted)",
+            fontFamily: "'Azeret Mono', monospace",
+          }}
+        >
           No decisions on-chain yet. Run a scenario below.
         </p>
       ) : (
@@ -164,13 +222,30 @@ function LatestStateCard({
           {decisions.map((d) => {
             const sym = resolveAsset(d.assetAddress).symbol;
             return (
-              <li key={d.txHash} className="grid grid-cols-[64px_1fr_auto] items-center gap-3 px-3 py-2" style={{ background: "rgba(255,255,255,0.012)", border: "1px solid var(--border)" }}>
-                <Link href={`/agent-decision/${sym}`} className="font-mono text-sm font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--text)" }}>
+              <li
+                key={d.txHash}
+                className="grid grid-cols-[64px_1fr_auto] items-center gap-3 px-3 py-2"
+                style={{
+                  background: "rgba(255,255,255,0.012)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <Link
+                  href={`/agent-decision/${sym}`}
+                  className="font-mono text-sm font-semibold transition-opacity hover:opacity-80"
+                  style={{ color: "var(--text)" }}
+                >
                   {sym}
                 </Link>
                 <div className="min-w-0">
                   <StatusPill value={d.action}>{d.action}</StatusPill>
-                  <p className="mt-1 text-[10px]" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Azeret Mono', monospace" }}>
+                  <p
+                    className="mt-1 text-[10px]"
+                    style={{
+                      color: "rgba(144,126,108,0.56)",
+                      fontFamily: "'Azeret Mono', monospace",
+                    }}
+                  >
                     {timeAgo(d.timestamp)}
                   </p>
                 </div>
@@ -182,7 +257,10 @@ function LatestStateCard({
       )}
 
       {(LOGGER_ADDRESS || AGENT_ADDRESS) && (
-        <div className="mt-5 space-y-2 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+        <div
+          className="mt-5 space-y-2 border-t pt-4"
+          style={{ borderColor: "var(--border)" }}
+        >
           {LOGGER_ADDRESS ? (
             <ContractLink label="Logger" address={LOGGER_ADDRESS} />
           ) : null}
@@ -202,34 +280,14 @@ function ContractLink({ label, address }: { label: string; address: string }) {
       target="_blank"
       rel="noopener noreferrer"
       className="flex items-center justify-between gap-3 text-[10px] transition-opacity hover:opacity-80"
-      style={{ color: "rgba(144,126,108,0.62)", fontFamily: "'Azeret Mono', monospace" }}
+      style={{
+        color: "rgba(144,126,108,0.62)",
+        fontFamily: "'Azeret Mono', monospace",
+      }}
     >
       <span>{label}</span>
       <HashText value={address} chars={8} />
     </a>
-  );
-}
-
-function TaglineStatement() {
-  return (
-    <section
-      className="section-fullbleed section-tint-green py-16 sm:py-20"
-    >
-      <div className="mx-auto max-w-4xl text-center">
-        <p className="tagline-display">
-          AI proposes.<br />Policy validates.{" "}
-          Mantle verifies.
-        </p>
-        <div className="mx-auto mt-8 h-px w-12" style={{ background: "var(--clear)" }} />
-        <p
-          className="mt-6 text-base leading-relaxed"
-          style={{ color: "var(--muted)", maxWidth: "52ch", margin: "1.5rem auto 0" }}
-        >
-          Tokenized stocks trade 24/7. Their underlying markets don&rsquo;t.
-          Neutrino gives autonomous agents a safety loop before capital moves.
-        </p>
-      </div>
-    </section>
   );
 }
 
@@ -241,8 +299,9 @@ function ScenarioSection() {
         title="Run the full policy loop."
         body={
           <>
-            Current signals become an AI proposal, policy review, final action, and Mantle receipt.
-            Outputs are policy outcomes, not fixed asset labels.
+            Current signals become an AI proposal, policy review, final action,
+            and Mantle receipt. Outputs are policy outcomes, not fixed asset
+            labels.
           </>
         }
       />
@@ -250,12 +309,18 @@ function ScenarioSection() {
       <ConsoleCard compact surface="evidence" accent="violet">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <span className="flex items-center gap-2">
-            <StatusPill value="AI proposal" tone="blue">AI proposal</StatusPill>
+            <StatusPill value="AI proposal" tone="blue">
+              AI proposal
+            </StatusPill>
             <span style={{ color: "var(--muted)" }}>scores signals</span>
           </span>
           <span className="flex items-center gap-2">
-            <StatusPill value="Policy review" tone="violet">Policy review</StatusPill>
-            <span style={{ color: "var(--muted)" }}>validates before receipt</span>
+            <StatusPill value="Policy review" tone="violet">
+              Policy review
+            </StatusPill>
+            <span style={{ color: "var(--muted)" }}>
+              validates before receipt
+            </span>
           </span>
         </div>
       </ConsoleCard>
@@ -313,9 +378,16 @@ function ScenarioSection() {
         />
       </div>
 
-      <p className="text-[11px] leading-relaxed" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.58)" }}>
-        Transactions are signed by a controlled agent wallet. No user wallet connection is required;
-        this demonstrates autonomous agent execution, not a user custody flow.
+      <p
+        className="text-[11px] leading-relaxed"
+        style={{
+          fontFamily: "'Azeret Mono', monospace",
+          color: "rgba(144,126,108,0.58)",
+        }}
+      >
+        Transactions are signed by a controlled agent wallet. No user wallet
+        connection is required; this demonstrates autonomous agent execution,
+        not a user custody flow.
       </p>
     </section>
   );
@@ -341,20 +413,33 @@ function ScenarioCard({
   button: React.ReactNode;
 }) {
   return (
-    <ConsoleCard surface="command" accent={tone} interactive className="scenario-card">
+    <ConsoleCard
+      surface="command"
+      accent={tone}
+      interactive
+      className="scenario-card"
+    >
       <div className="scenario-card-head">
-        <span className="scenario-card-index">
-          Scenario {index}
-        </span>
-        <StatusPill value={subtitle} tone={tone} className="scenario-card-status">
+        <span className="scenario-card-index">Scenario {index}</span>
+        <StatusPill
+          value={subtitle}
+          tone={tone}
+          className="scenario-card-status"
+        >
           {subtitle}
         </StatusPill>
       </div>
       <div className="scenario-card-body">
-        <h3 className="text-xl font-semibold leading-snug" style={{ color: "var(--text)" }}>
+        <h3
+          className="text-xl font-semibold leading-snug"
+          style={{ color: "var(--text)" }}
+        >
           {title}
         </h3>
-        <p className="mt-3 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
+        <p
+          className="mt-3 text-base leading-relaxed"
+          style={{ color: "var(--muted)" }}
+        >
           {description}
         </p>
       </div>
@@ -365,11 +450,7 @@ function ScenarioCard({
           </span>
         ))}
       </div>
-      {note ? (
-        <p className="scenario-card-note">
-          {note}
-        </p>
-      ) : null}
+      {note ? <p className="scenario-card-note">{note}</p> : null}
       <div className="scenario-card-action">{button}</div>
     </ConsoleCard>
   );
@@ -395,29 +476,58 @@ function JudgeModeGuide() {
       </SectionHeader>
       <div className="grid gap-3 md:grid-cols-5">
         {steps.map(([title, body], index) => (
-          <ConsoleCard key={title} compact surface="evidence" interactive accent={index === 4 ? "gold" : index === 2 ? "violet" : "slate"}>
-            <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.52)", fontFamily: "'Azeret Mono', monospace" }}>
+          <ConsoleCard
+            key={title}
+            compact
+            surface="evidence"
+            interactive
+            accent="slate"
+          >
+            <p
+              className="text-[10px] uppercase tracking-widest"
+              style={{
+                color: "rgba(144,126,108,0.52)",
+                fontFamily: "'Azeret Mono', monospace",
+              }}
+            >
               {String(index + 1).padStart(2, "0")}
             </p>
-            <p className="mt-2 text-base font-semibold" style={{ color: "var(--text)" }}>
+            <p
+              className="mt-2 text-base font-semibold"
+              style={{ color: "var(--text)" }}
+            >
               {title}
             </p>
-            <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p
+              className="mt-1.5 text-sm leading-relaxed"
+              style={{ color: "var(--muted)" }}
+            >
               {body}
             </p>
           </ConsoleCard>
         ))}
       </div>
+      <p
+        className="text-[11px] leading-relaxed"
+        style={{
+          fontFamily: "'Azeret Mono', monospace",
+          color: "rgba(144,126,108,0.58)",
+        }}
+      >
+        Every step is committed on Mantle: the canonical decision JSON re-hashes
+        to the on-chain reasonHash, bound to the agent&rsquo;s canonical
+        ERC-8004 identity.
+      </p>
     </section>
   );
 }
 
 function BuilderIntegrationSection() {
   const uses = [
-    ["RWA agents", "Policy before execution.", "green"],
-    ["Treasuries", "Allocation rationale.", "gold"],
-    ["xStocks apps", "Market + rail checks.", "violet"],
-    ["Mantle protocols", "Public decision receipts.", "blue"],
+    ["RWA agents", "Policy before execution.", "guardrail"],
+    ["Treasuries", "Allocation rationale.", "proof"],
+    ["xStocks apps", "Market + rail checks.", "gate"],
+    ["Mantle protocols", "Public decision receipts.", "receipt"],
   ] as const;
 
   return (
@@ -430,17 +540,20 @@ function BuilderIntegrationSection() {
         <TextLink href="/integrate">Integration guide</TextLink>
       </SectionHeader>
       <div className="landing-brief-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {uses.map(([title, body, tone]) => (
-          <ConsoleCard key={title} compact surface="ledger" accent={tone} interactive className="landing-brief-card">
-            <StatusPill value={tone === "green" ? "guardrail" : tone === "gold" ? "proof" : tone === "violet" ? "gate" : "receipt"} tone={tone}>
-              {tone === "green" ? "guardrail" : tone === "gold" ? "proof" : tone === "violet" ? "gate" : "receipt"}
+        {uses.map(([title, body, label]) => (
+          <ConsoleCard
+            key={title}
+            compact
+            surface="ledger"
+            accent="slate"
+            interactive
+            className="landing-brief-card"
+          >
+            <StatusPill value={label} tone="slate">
+              {label}
             </StatusPill>
-            <p className="landing-card-title">
-              {title}
-            </p>
-            <p className="landing-card-copy">
-              {body}
-            </p>
+            <p className="landing-card-title">{title}</p>
+            <p className="landing-card-copy">{body}</p>
           </ConsoleCard>
         ))}
       </div>
@@ -455,16 +568,25 @@ function DataHonestySection() {
         <summary>
           <div className="pr-8">
             <span className="section-label">Data transparency</span>
-            <h2 className="text-xl font-semibold" style={{ color: "var(--text)" }}>
+            <h2
+              className="text-xl font-semibold"
+              style={{ color: "var(--text)" }}
+            >
               Live, modelled, gated.
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p
+              className="mt-2 max-w-2xl text-sm leading-relaxed"
+              style={{ color: "var(--muted)" }}
+            >
               Every receipt labels input quality.
             </p>
           </div>
         </summary>
 
-        <div className="space-y-6 border-t p-5" style={{ borderColor: "var(--border)" }}>
+        <div
+          className="space-y-6 border-t p-5"
+          style={{ borderColor: "var(--border)" }}
+        >
           <div className="grid gap-4 lg:grid-cols-3">
             <SourcePanel
               state="LIVE"
@@ -498,24 +620,46 @@ function DataHonestySection() {
           </div>
 
           <div>
-            <p className="section-label mb-3">Verified xStock token metadata · Mantle mainnet · 2026-05-21</p>
+            <p className="section-label mb-3">
+              Verified xStock token metadata · Mantle mainnet · 2026-05-21
+            </p>
             <div className="console-table-wrap">
               <table className="console-table">
                 <thead>
                   <tr>
-                    {["Symbol", "Underlying", "Decimals", "Mantle address", "Source"].map((h) => (
-                      <th key={h} className="text-left">{h}</th>
+                    {[
+                      "Symbol",
+                      "Underlying",
+                      "Decimals",
+                      "Mantle address",
+                      "Source",
+                    ].map((h) => (
+                      <th key={h} className="text-left">
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {TOKEN_METADATA.map((t) => (
                     <tr key={t.symbol}>
-                      <td className="font-mono font-semibold" style={{ color: "var(--text)" }}>{t.symbol}</td>
+                      <td
+                        className="font-mono font-semibold"
+                        style={{ color: "var(--text)" }}
+                      >
+                        {t.symbol}
+                      </td>
                       <td style={{ color: "var(--muted)" }}>{t.underlying}</td>
                       <td style={{ color: "var(--muted)" }}>{t.decimals}</td>
-                      <td><HashText value={t.address} href={`https://mantlescan.xyz/address/${t.address}`} /></td>
-                      <td style={{ color: "rgba(144,126,108,0.66)" }}>{t.source}</td>
+                      <td>
+                        <HashText
+                          value={t.address}
+                          href={`https://mantlescan.xyz/address/${t.address}`}
+                        />
+                      </td>
+                      <td style={{ color: "rgba(144,126,108,0.66)" }}>
+                        {t.source}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -541,7 +685,9 @@ function SourcePanel({
 }) {
   return (
     <ConsoleCard compact surface="ledger" accent={tone} className="claim-card">
-      <StatusPill value={state} tone={tone}>{state}</StatusPill>
+      <StatusPill value={state} tone={tone}>
+        {state}
+      </StatusPill>
       <div className="landing-fact-list">
         {items.map(([label, value]) => (
           <div key={label} className="landing-fact-row">
@@ -551,7 +697,14 @@ function SourcePanel({
         ))}
       </div>
       {note ? (
-        <p className="mt-4 rounded-md px-3 py-2 text-[11px] leading-relaxed" style={{ background: "rgba(0,0,0,0.18)", color: "rgba(242,232,213,0.62)", fontFamily: "'Azeret Mono', monospace" }}>
+        <p
+          className="mt-4 rounded-md px-3 py-2 text-[11px] leading-relaxed"
+          style={{
+            background: "rgba(0,0,0,0.18)",
+            color: "rgba(242,232,213,0.62)",
+            fontFamily: "'Azeret Mono', monospace",
+          }}
+        >
           {note}
         </p>
       ) : null}
@@ -560,11 +713,41 @@ function SourcePanel({
 }
 
 const TOKEN_METADATA = [
-  { symbol: "NVDAx", underlying: "NVDA · NASDAQ", decimals: 18, address: "0xc845b2894dBddd03858fd2D643B4eF725fE0849d", source: "xStocks API + on-chain" },
-  { symbol: "TSLAx", underlying: "TSLA · NASDAQ", decimals: 18, address: "0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0", source: "xStocks API + on-chain" },
-  { symbol: "SPYx", underlying: "SPY · NYSE", decimals: 18, address: "0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48", source: "xStocks API + on-chain" },
-  { symbol: "USDY", underlying: "Ondo T-bills", decimals: 18, address: "0x5bE26527e817998A7206475496fDE1E68957c5A6", source: "Mantle ERC-20" },
-  { symbol: "mETH", underlying: "Mantle LST", decimals: 18, address: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0", source: "Mantle ERC-20" },
+  {
+    symbol: "NVDAx",
+    underlying: "NVDA · NASDAQ",
+    decimals: 18,
+    address: "0xc845b2894dBddd03858fd2D643B4eF725fE0849d",
+    source: "xStocks API + on-chain",
+  },
+  {
+    symbol: "TSLAx",
+    underlying: "TSLA · NASDAQ",
+    decimals: 18,
+    address: "0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0",
+    source: "xStocks API + on-chain",
+  },
+  {
+    symbol: "SPYx",
+    underlying: "SPY · NYSE",
+    decimals: 18,
+    address: "0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48",
+    source: "xStocks API + on-chain",
+  },
+  {
+    symbol: "USDY",
+    underlying: "Ondo T-bills",
+    decimals: 18,
+    address: "0x5bE26527e817998A7206475496fDE1E68957c5A6",
+    source: "Mantle ERC-20",
+  },
+  {
+    symbol: "mETH",
+    underlying: "Mantle LST",
+    decimals: 18,
+    address: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0",
+    source: "Mantle ERC-20",
+  },
 ] as const;
 
 function AttackSurfaceSection() {
@@ -601,62 +784,43 @@ function AttackSurfaceSection() {
         <summary>
           <div className="pr-8">
             <span className="section-label">Judge attack surface</span>
-            <h2 className="text-xl font-semibold" style={{ color: "var(--text)" }}>
+            <h2
+              className="text-xl font-semibold"
+              style={{ color: "var(--text)" }}
+            >
               Skeptical checks.
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p
+              className="mt-2 max-w-2xl text-sm leading-relaxed"
+              style={{ color: "var(--muted)" }}
+            >
               Short answers for the claims judges test.
             </p>
           </div>
         </summary>
-        <div className="grid gap-4 border-t p-5 md:grid-cols-2" style={{ borderColor: "var(--border)" }}>
+        <div
+          className="grid gap-4 border-t p-5 md:grid-cols-2"
+          style={{ borderColor: "var(--border)" }}
+        >
           {qa.map(({ q, a, verdict, tone }) => (
-            <ConsoleCard key={q} compact surface="ledger" accent={tone} className="claim-card">
+            <ConsoleCard
+              key={q}
+              compact
+              surface="ledger"
+              accent={tone}
+              className="claim-card"
+            >
               <div className="claim-card-head">
                 <p className="landing-card-title">{q}</p>
-                <StatusPill value={verdict} tone={tone}>{verdict}</StatusPill>
+                <StatusPill value={verdict} tone={tone}>
+                  {verdict}
+                </StatusPill>
               </div>
               <p className="landing-card-copy">{a}</p>
             </ConsoleCard>
           ))}
         </div>
       </details>
-    </section>
-  );
-}
-
-function WhyMantleSection() {
-  return (
-    <section className="section-ruled space-y-6">
-      <SectionHeader
-        eyebrow="Why this matters for Mantle"
-        title="Policy before movement."
-        body="Mantle agents need receipts for autonomous judgment, not just execution."
-      />
-      <div className="grid gap-4 sm:grid-cols-3">
-        {[
-          {
-            title: "Loop committed",
-            body: "AI proposal + policy review + final action.",
-            tone: "blue" as const,
-          },
-          {
-            title: "Inputs labelled",
-            body: "Live, stub, modelled, or n/a.",
-            tone: "green" as const,
-          },
-          {
-            title: "Re-hashable",
-            body: "Canonical JSON equals on-chain reasonHash.",
-            tone: "gold" as const,
-          },
-        ].map((card) => (
-          <ConsoleCard key={card.title} surface="ledger" accent={card.tone} interactive className="landing-brief-card">
-            <StatusPill value={card.title} tone={card.tone}>{card.title}</StatusPill>
-            <p className="landing-card-copy">{card.body}</p>
-          </ConsoleCard>
-        ))}
-      </div>
     </section>
   );
 }

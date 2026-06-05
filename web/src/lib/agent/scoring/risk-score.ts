@@ -14,7 +14,11 @@ export interface ScoreInput {
 
 export function computeRiskScore({ meta, snapshot, basisStats }: ScoreInput): RiskBreakdown {
   const marketHoursPenalty = computeMarketHoursPenalty(meta, snapshot);
-  const spreadPenalty = computeSpreadPenalty(snapshot.spreadBps);
+  // Execution-cost penalty prefers the LIVE on-chain price impact (Fluxion
+  // QuoterV2 at notional size) over the modelled bid/ask spread when available.
+  // Real measured depth beats a hardcoded constant.
+  const executionCostBps = snapshot.priceImpactBps ?? snapshot.spreadBps;
+  const spreadPenalty = computeSpreadPenalty(executionCostBps);
   const liquidityPenalty = computeLiquidityPenalty(snapshot.volume24hUsd);
   const basisPenalty = computeBasisPenalty(snapshot, basisStats);
   const volatilityPenalty = computeVolatilityPenalty(snapshot.volatility24h);

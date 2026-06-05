@@ -31,9 +31,12 @@ export default async function AgentDecisionPage({ params }: Props) {
   const asset = findTrackedAsset(symbol);
   if (!asset) notFound();
 
-  const decisions = LOGGER_ADDRESS ? await fetchDecisionsForAsset(asset.address, 20).catch(() => []) : [];
+  const decisions = LOGGER_ADDRESS
+    ? await fetchDecisionsForAsset(asset.address, 20).catch(() => [])
+    : [];
   const latest = decisions[0] ?? null;
-  const category = asset.kind === "tokenized_equity" ? "Tokenized equity" : "Yield-bearing";
+  const category =
+    asset.kind === "tokenized_equity" ? "Tokenized equity" : "Yield-bearing";
   const market = "market" in asset ? asset.market : "on-chain";
 
   return (
@@ -42,12 +45,25 @@ export default async function AgentDecisionPage({ params }: Props) {
         <Link
           href="/market-map"
           className="text-xs font-semibold transition-opacity hover:opacity-80"
-          style={{ color: "var(--muted)", fontFamily: "'Azeret Mono', monospace" }}
+          style={{
+            color: "var(--muted)",
+            fontFamily: "'Azeret Mono', monospace",
+          }}
         >
           Back to market map
         </Link>
 
-        <ConsoleCard surface="ledger" accent={latest?.action === "ALLOCATE" ? "green" : latest?.action === "PAUSE" ? "amber" : "slate"} className="space-y-6">
+        <ConsoleCard
+          surface="ledger"
+          accent={
+            latest?.action === "ALLOCATE"
+              ? "green"
+              : latest?.action === "PAUSE"
+                ? "amber"
+                : "slate"
+          }
+          className="space-y-6"
+        >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <span className="section-label">Decision receipt</span>
@@ -70,9 +86,12 @@ export default async function AgentDecisionPage({ params }: Props) {
                   </span>
                 ) : null}
               </div>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                AI proposal, policy review, and final on-chain commitment. reasonHash can be
-                recomputed from canonical JSON.
+              <p
+                className="mt-3 max-w-2xl text-sm leading-relaxed"
+                style={{ color: "var(--muted)" }}
+              >
+                AI proposal, policy review, and final on-chain commitment.
+                reasonHash can be recomputed from canonical JSON.
               </p>
             </div>
             <StatusPill value={latest?.action ?? "N/A"} className="self-start">
@@ -100,38 +119,93 @@ export default async function AgentDecisionPage({ params }: Props) {
 
           {latest ? (
             <div className="grid gap-5 lg:grid-cols-[220px_1fr]">
-              <ConsoleCard compact surface="evidence" accent={latest.action === "ALLOCATE" ? "green" : latest.action === "PAUSE" ? "amber" : "slate"}>
-                <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+              <ConsoleCard
+                compact
+                surface="evidence"
+                accent={
+                  latest.action === "ALLOCATE"
+                    ? "green"
+                    : latest.action === "PAUSE"
+                      ? "amber"
+                      : "slate"
+                }
+              >
+                <p
+                  className="text-[10px] uppercase tracking-widest"
+                  style={{
+                    color: "rgba(144,126,108,0.58)",
+                    fontFamily: "'Azeret Mono', monospace",
+                  }}
+                >
                   Risk score
                 </p>
-                <p className="mt-2 text-3xl font-semibold tabular-nums" style={{ color: "var(--text)", fontFamily: "'Azeret Mono', monospace" }}>
-                  {latest.riskScore}<span className="text-sm" style={{ color: "var(--muted)" }}>/1000</span>
+                <p
+                  className="mt-2 text-3xl font-semibold tabular-nums"
+                  style={{
+                    color: "var(--text)",
+                    fontFamily: "'Azeret Mono', monospace",
+                  }}
+                >
+                  {latest.riskScore}
+                  <span className="text-sm" style={{ color: "var(--muted)" }}>
+                    /1000
+                  </span>
                 </p>
                 <div className="mt-3">
                   <RiskBar value={latest.riskScore} label={false} />
                 </div>
               </ConsoleCard>
 
-              <ConsoleCard compact surface="ledger" accent="gold" className="space-y-3">
+              <ConsoleCard
+                compact
+                surface="ledger"
+                accent="gold"
+                className="space-y-3"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+                    <p
+                      className="text-[10px] uppercase tracking-widest"
+                      style={{
+                        color: "rgba(144,126,108,0.58)",
+                        fontFamily: "'Azeret Mono', monospace",
+                      }}
+                    >
                       Latest on-chain commitment
                     </p>
-                    <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+                    <p
+                      className="mt-1 text-sm"
+                      style={{ color: "var(--muted)" }}
+                    >
                       Written {timeAgo(latest.timestamp)} in{" "}
-                      <a href={`${EXPLORER_BLOCK}/${latest.blockNumber}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--clear)" }}>
+                      <a
+                        href={`${EXPLORER_BLOCK}/${latest.blockNumber}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "var(--clear)" }}
+                      >
                         block {latest.blockNumber.toString()}
                       </a>
                     </p>
                   </div>
-                  <HashText value={latest.txHash} href={`${EXPLORER_TX}/${latest.txHash}`} />
+                  <HashText
+                    value={latest.txHash}
+                    href={`${EXPLORER_TX}/${latest.txHash}`}
+                  />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <HashField label="Reason hash" value={latest.reasonHash} />
                   <HashField label="Policy hash" value={latest.policyHash} />
-                  <HashField label="Caller" value={latest.caller} link={`${EXPLORER_ADDR}/${latest.caller}`} />
-                  <HashField label="Tx" value={latest.txHash} link={`${EXPLORER_TX}/${latest.txHash}`} />
+                  <HashField
+                    label="Caller"
+                    value={latest.caller}
+                    link={`${EXPLORER_ADDR}/${latest.caller}`}
+                  />
+                  <HashField
+                    label="Tx"
+                    value={latest.txHash}
+                    link={`${EXPLORER_TX}/${latest.txHash}`}
+                  />
                 </div>
               </ConsoleCard>
             </div>
@@ -175,7 +249,10 @@ export default async function AgentDecisionPage({ params }: Props) {
               <thead>
                 <tr>
                   {["When", "Action", "Risk", "Block", "Tx"].map((h, i) => (
-                    <th key={h} className={i >= 2 && i <= 3 ? "text-right" : "text-left"}>
+                    <th
+                      key={h}
+                      className={i >= 2 && i <= 3 ? "text-right" : "text-left"}
+                    >
                       {h}
                     </th>
                   ))}
@@ -184,18 +261,31 @@ export default async function AgentDecisionPage({ params }: Props) {
               <tbody>
                 {decisions.map((d) => (
                   <tr key={d.txHash}>
-                    <td className="text-xs" style={{ color: "var(--muted)" }}>{timeAgo(d.timestamp)}</td>
-                    <td><StatusPill value={d.action}>{d.action}</StatusPill></td>
+                    <td className="text-xs" style={{ color: "var(--muted)" }}>
+                      {timeAgo(d.timestamp)}
+                    </td>
+                    <td>
+                      <StatusPill value={d.action}>{d.action}</StatusPill>
+                    </td>
                     <td className="text-right">
                       <div className="ml-auto w-28">
                         <RiskBar value={d.riskScore} label />
                       </div>
                     </td>
-                    <td className="text-right text-xs tabular-nums" style={{ color: "var(--muted)", fontFamily: "'Azeret Mono', monospace" }}>
+                    <td
+                      className="text-right text-xs tabular-nums"
+                      style={{
+                        color: "var(--muted)",
+                        fontFamily: "'Azeret Mono', monospace",
+                      }}
+                    >
                       {d.blockNumber.toString()}
                     </td>
                     <td>
-                      <HashText value={d.txHash} href={`${EXPLORER_TX}/${d.txHash}`} />
+                      <HashText
+                        value={d.txHash}
+                        href={`${EXPLORER_TX}/${d.txHash}`}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -205,30 +295,65 @@ export default async function AgentDecisionPage({ params }: Props) {
         </section>
       ) : null}
 
-      <p className="text-[11px] leading-relaxed" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.52)" }}>
-        Decision receipts cover schema neutrino.decision.v2: agent identity, asset metadata, market
-        snapshot, xStocks public-API data when available, source-freshness flags, risk breakdown,
-        policy, AI proposal, policy review, action, score, narration metadata. The reasonHash covers
-        the full loop: AI proposal, policy review, and final on-chain commitment.
+      <p
+        className="text-[11px] leading-relaxed"
+        style={{
+          fontFamily: "'Azeret Mono', monospace",
+          color: "rgba(144,126,108,0.52)",
+        }}
+      >
+        Decision receipts cover schema neutrino.decision.v3: agent identity
+        (canonical ERC-8004), asset metadata, market snapshot, xStocks
+        public-API data when available, source-freshness flags, risk breakdown,
+        policy, AI proposal, policy review, action, score, narration metadata.
+        The reasonHash covers the full loop: AI proposal, policy review, and
+        final on-chain commitment.
       </p>
     </div>
   );
 }
 
-function Stat({ label, value, mono = false, link }: { label: string; value: string; mono?: boolean; link?: string }) {
+function Stat({
+  label,
+  value,
+  mono = false,
+  link,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  link?: string;
+}) {
   const content = (
     <ConsoleCard compact surface="ledger" accent="slate">
-      <p className="text-[10px] uppercase tracking-widest" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.58)" }}>
+      <p
+        className="text-[10px] uppercase tracking-widest"
+        style={{
+          fontFamily: "'Azeret Mono', monospace",
+          color: "rgba(144,126,108,0.58)",
+        }}
+      >
         {label}
       </p>
-      <p className={`mt-1 font-semibold ${mono ? "text-sm" : "text-base"}`} style={{ color: link ? "var(--clear)" : "var(--text)", fontFamily: mono ? "'Azeret Mono', monospace" : undefined }}>
+      <p
+        className={`mt-1 font-semibold ${mono ? "text-sm" : "text-base"}`}
+        style={{
+          color: link ? "var(--clear)" : "var(--text)",
+          fontFamily: mono ? "'Azeret Mono', monospace" : undefined,
+        }}
+      >
         {value}
       </p>
     </ConsoleCard>
   );
   if (link) {
     return (
-      <a href={link} target="_blank" rel="noopener noreferrer" className="block transition-opacity hover:opacity-80">
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block transition-opacity hover:opacity-80"
+      >
         {content}
       </a>
     );
@@ -236,9 +361,22 @@ function Stat({ label, value, mono = false, link }: { label: string; value: stri
   return content;
 }
 
-function HashField({ label, value, link }: { label: string; value: string; link?: string }) {
+function HashField({
+  label,
+  value,
+  link,
+}: {
+  label: string;
+  value: string;
+  link?: string;
+}) {
   const content = link ? (
-    <a href={link} target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80">
+    <a
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="transition-opacity hover:opacity-80"
+    >
       <HashText value={value} chars={10} />
     </a>
   ) : (
@@ -246,9 +384,21 @@ function HashField({ label, value, link }: { label: string; value: string; link?
   );
 
   return (
-    <div className="rounded-md px-3 py-2" style={{ background: "rgba(0,0,0,0.16)", border: "1px solid var(--border)" }}>
+    <div
+      className="rounded-md px-3 py-2"
+      style={{
+        background: "rgba(0,0,0,0.16)",
+        border: "1px solid var(--border)",
+      }}
+    >
       <div className="mb-1 flex items-center justify-between gap-2">
-        <p className="text-[10px] uppercase tracking-widest" style={{ fontFamily: "'Azeret Mono', monospace", color: "rgba(144,126,108,0.56)" }}>
+        <p
+          className="text-[10px] uppercase tracking-widest"
+          style={{
+            fontFamily: "'Azeret Mono', monospace",
+            color: "rgba(144,126,108,0.56)",
+          }}
+        >
           {label}
         </p>
         <CopyButton value={value} label="copy" copiedLabel="copied" />
@@ -261,8 +411,12 @@ function HashField({ label, value, link }: { label: string; value: string; link?
 function Empty({ title, body }: { title: string; body: string }) {
   return (
     <ConsoleCard surface="ledger" accent="amber" compact>
-      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{title}</p>
-      <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>{body}</p>
+      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+        {title}
+      </p>
+      <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+        {body}
+      </p>
     </ConsoleCard>
   );
 }

@@ -23,7 +23,7 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { mantle } from 'viem/chains';
-import type { AssetMetadata, AssetSymbol, Decision, UserPolicy } from './types';
+import type { AssetMetadata, AssetSymbol, Decision, MarketSnapshot, UserPolicy } from './types';
 import { decide, buildAgentReceiptData } from './decision/decide';
 import {
   buildCanonicalDecision,
@@ -37,9 +37,10 @@ import { fetchXStockLive, type XStockLiveData } from './fetchers/xstocks-public-
 import { createTwelveDataClient } from './fetchers/reference-price';
 import { createOnChainLogger } from './onchain/log-decision';
 import { narrateDecision, NARRATION_MODEL } from './llm/narrate';
-import { swapExactInputSingle } from './onchain/fluxion';
+import { swapExactInputSingle, quoteOnChainSpot, type OnChainSpot } from './onchain/fluxion';
 import { supplyToInit, type InitSupplyMode } from './onchain/init-capital';
 import { ERC20_ABI, INIT_CAPITAL, MAINNET_TOKENS } from './onchain/mantle-mainnet';
+import { agentRegistryId } from './onchain/erc8004';
 
 export const DEFAULT_POLICY: UserPolicy = {
   name: 'No after-hours risk',
@@ -58,15 +59,6 @@ export const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
   SPYx:  { symbol: 'SPYx',  kind: 'tokenized_equity', reference: 'SPY',  address: '0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48', market: 'NYSE' },
   USDY:  { symbol: 'USDY',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.USDY.address },
   mETH:  { symbol: 'mETH',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.mETH.address },
-  AAPLx: { symbol: 'AAPLx', kind: 'tokenized_equity', reference: 'AAPL',  address: '0x0', market: 'NASDAQ' },
-  METAx: { symbol: 'METAx', kind: 'tokenized_equity', reference: 'META',  address: '0x0', market: 'NASDAQ' },
-  GOOGLx: { symbol: 'GOOGLx', kind: 'tokenized_equity', reference: 'GOOGL', address: '0x0', market: 'NASDAQ' },
-  MSTRx: { symbol: 'MSTRx', kind: 'tokenized_equity', reference: 'MSTR',  address: '0x0', market: 'NASDAQ' },
-  HOODx: { symbol: 'HOODx', kind: 'tokenized_equity', reference: 'HOOD',  address: '0x0', market: 'NASDAQ' },
-  QQQx:  { symbol: 'QQQx',  kind: 'tokenized_equity', reference: 'QQQ',   address: '0x0', market: 'NASDAQ' },
-  CRCLx: { symbol: 'CRCLx', kind: 'tokenized_equity', reference: 'CRCL',  address: '0x0', market: 'NYSE' },
-  USDe:  { symbol: 'USDe',  kind: 'yield_bearing', address: '0x0' },
-  sUSDe: { symbol: 'sUSDe', kind: 'yield_bearing', address: '0x0' },
   USDC:  { symbol: 'USDC',  kind: 'stable',         address: MAINNET_TOKENS.USDC.address },
   USDT0: { symbol: 'USDT0', kind: 'stable',         address: MAINNET_TOKENS.USDT0.address },
 };
@@ -187,6 +179,12 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     privateKey: cfg.privateKey,
     loggerAddress: cfg.loggerAddress,
   });
+  // Read-only client for live on-chain reads (Fluxion QuoterV2). Mainnet only —
+  // Fluxion addresses are mainnet; testnet keeps the modelled microstructure.
+  const readClient =
+    cfg.network === 'mantle'
+      ? createPublicClient({ chain: mantle, transport: http(cfg.rpcUrl) })
+      : null;
 
   const scenario = cfg.scenario ?? 'default';
   const monitored = SCENARIO_ASSETS[scenario];
@@ -224,7 +222,7 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
       if (xstockLive.priceLive) anyXStockPriceLive = true;
       if (xstockLive.statusLive) anyXStockStatusLive = true;
     }
-    const snapshot =
+    const baseSnapshot =
       xstockLive && xstockLive.priceLive
         ? {
             ...modelled,
@@ -239,6 +237,31 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
               atomicTradingHalted: xstockLive.atomicTradingHalted ?? undefined,
             }
           : modelled;
+
+    // LIVE on-chain price + sell-side price impact from Fluxion (read-only
+    // QuoterV2, no swap). Only assets with a real Fluxion pool on mainnet —
+    // currently mETH/USDC. Best-effort: any failure leaves the modelled inputs
+    // untouched and the source flagged 'stub', so a run never breaks.
+    let fluxionSpot: OnChainSpot | null = null;
+    if (readClient && symbol === 'mETH') {
+      fluxionSpot = await quoteOnChainSpot(readClient, {
+        tokenIn: MAINNET_TOKENS.mETH.address,
+        tokenOut: MAINNET_TOKENS.USDC.address,
+        decimalsIn: MAINNET_TOKENS.mETH.decimals,
+        decimalsOut: MAINNET_TOKENS.USDC.decimals,
+        smallAmountIn: 5n * 10n ** 16n, // 0.05 mETH ≈ mid price
+        largeAmountIn: 20n * 10n ** 18n, // 20 mETH notional → real pool depth
+      });
+    }
+    const snapshot: MarketSnapshot = fluxionSpot
+      ? {
+          ...baseSnapshot,
+          onChainPrice: fluxionSpot.price,
+          ...(fluxionSpot.impactBps !== null
+            ? { priceImpactBps: fluxionSpot.impactBps }
+            : {}),
+        }
+      : baseSnapshot;
 
     // Deterministic plan first, LLM narration on top, then re-decide so the
     // canonical reason matches what the LLM produced.
@@ -261,6 +284,9 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
     const sources: DecisionSources = {
       marketHours: 'live',
       referencePrice: !meta.reference ? 'n/a' : referenceFetched ? 'live' : 'stub',
+      // onChainPrice = LIVE Fluxion QuoterV2 read (spot + price impact). Only
+      // attempted for assets with a real Fluxion pool on mainnet (mETH).
+      onChainPrice: fluxionSpot ? 'live' : symbol === 'mETH' && readClient ? 'stub' : 'n/a',
       // xStockPrice = the issuer's indicative quote (xStocks public API).
       // Order-book microstructure stays modelled — not claimed as live.
       xStockPrice: !isEquity ? 'n/a' : xstockLive?.priceLive ? 'live' : 'stub',
@@ -282,6 +308,7 @@ export async function runAgentOnce(cfg: RunConfig): Promise<RunResult> {
 
     const canonical = buildCanonicalDecision({
       agentId: cfg.agentId,
+      agentRegistry: agentRegistryId(cfg.network),
       meta,
       snapshot,
       breakdown: plan.breakdown,

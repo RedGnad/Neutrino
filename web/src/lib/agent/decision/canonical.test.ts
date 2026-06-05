@@ -4,6 +4,7 @@ import type { CanonicalBuildInput } from './canonical';
 
 const BASE_EQUITY_INPUT: CanonicalBuildInput = {
   agentId: 1n,
+  agentRegistry: 'eip155:5000:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432',
   meta: {
     symbol: 'TSLAx',
     kind: 'tokenized_equity',
@@ -53,6 +54,7 @@ const BASE_EQUITY_INPUT: CanonicalBuildInput = {
   sources: {
     marketHours: 'live',
     referencePrice: 'live',
+    onChainPrice: 'n/a',
     xStockPrice: 'live',
     xStockStatus: 'live',
     onChainWrite: 'live',
@@ -69,9 +71,16 @@ const BASE_EQUITY_INPUT: CanonicalBuildInput = {
 };
 
 describe('buildCanonicalDecision', () => {
-  it('sets schema to neutrino.decision.v2', () => {
+  it('sets schema to neutrino.decision.v3', () => {
     const { decision } = buildCanonicalDecision(BASE_EQUITY_INPUT);
-    expect(decision.schema).toBe('neutrino.decision.v2');
+    expect(decision.schema).toBe('neutrino.decision.v3');
+  });
+
+  it('binds the canonical ERC-8004 agentRegistry into the payload', () => {
+    const { decision, json } = buildCanonicalDecision(BASE_EQUITY_INPUT);
+    expect(decision.agentRegistry).toBe('eip155:5000:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432');
+    // The registry identifier is part of the hashed JSON, not metadata bolted on after.
+    expect(json).toContain('eip155:5000:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432');
   });
 
   it('hash is stable across two builds with identical input', () => {

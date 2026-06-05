@@ -4,12 +4,18 @@ pragma solidity ^0.8.27;
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title RWAAgent — ERC-8004 agent identity NFT for Neutrino.
-/// @notice Each agent is represented by an ERC-721 NFT pointing to an off-chain agent card
-///         (JSON with name, capabilities, endpoints, payment address). A lightweight
-///         feedback layer records reputation against the agent identity.
-/// @dev Draft ERC-8004 has no canonical implementation. This is a minimal-but-honest
-///      shape: ERC-721 + per-token card URI + on-chain feedback events.
+/// @title RWAAgent — LEGACY bespoke agent-identity NFT for Neutrino.
+/// @notice Each agent is an ERC-721 NFT pointing to an off-chain agent card
+///         (JSON with name, capabilities, endpoints, payment address), with a
+///         lightweight feedback layer for reputation.
+/// @dev    NOT the ERC-8004 standard. This was a pre-canonical, hand-rolled
+///         shape (ERC-721 + per-token card URI + feedback events) built before a
+///         canonical IdentityRegistry was available on Mantle. Neutrino now
+///         registers its agent on the canonical ERC-8004 IdentityRegistry
+///         (0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) and authorizes decision
+///         logging through RWADecisionLoggerV2. This contract is retained only so
+///         decision receipts logged by the V1 RWADecisionLogger remain readable;
+///         it is not part of the current ERC-8004 identity path.
 contract RWAAgent is ERC721, Ownable {
     uint256 private _nextId = 1;
 

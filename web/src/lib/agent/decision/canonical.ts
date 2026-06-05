@@ -28,6 +28,8 @@ export type SourceState = 'live' | 'stub' | 'simulated' | 'n/a';
 export interface DecisionSources {
   marketHours: SourceState;
   referencePrice: SourceState;
+  /** LIVE Fluxion QuoterV2 spot/price-impact read (on-chain assets like mETH). */
+  onChainPrice: SourceState;
   xStockPrice: SourceState;
   /** Official xStocks trading-status feed (live / stub / n/a). */
   xStockStatus: SourceState;
@@ -53,8 +55,14 @@ export interface CanonicalXStocks {
 export type { AiProposalData as AiProposal, PolicyReviewData as PolicyReview };
 
 export interface CanonicalDecision {
-  schema: 'neutrino.decision.v2';
+  schema: 'neutrino.decision.v3';
   agentId: string;
+  /**
+   * Canonical ERC-8004 agent identifier `{namespace}:{chainId}:{identityRegistry}`
+   * (e.g. eip155:5000:0x8004A169...). Binds this decision to the agent's REAL
+   * on-chain ERC-8004 identity — the reasonHash now cryptographically covers it.
+   */
+  agentRegistry: string;
   asset: {
     symbol: string;
     address: `0x${string}`;
@@ -68,6 +76,8 @@ export interface CanonicalDecision {
     onChainPrice: number;
     referencePrice: number | null;
     spreadBps: number;
+    /** LIVE Fluxion on-chain price impact (bps); null when not measured. */
+    priceImpactBps: number | null;
     volume24hUsd: number;
     apy: number | null;
     volatility24h: number;
@@ -110,6 +120,8 @@ export interface CanonicalDecision {
 
 export interface CanonicalBuildInput {
   agentId: bigint;
+  /** Canonical ERC-8004 agent identifier (eip155:{chainId}:{identityRegistry}). */
+  agentRegistry: string;
   meta: AssetMetadata;
   snapshot: MarketSnapshot;
   breakdown: RiskBreakdown;
@@ -135,8 +147,9 @@ export function buildCanonicalDecision(input: CanonicalBuildInput): {
   policyHash: Hex;
 } {
   const decision: CanonicalDecision = {
-    schema: 'neutrino.decision.v2',
+    schema: 'neutrino.decision.v3',
     agentId: input.agentId.toString(),
+    agentRegistry: input.agentRegistry,
     asset: {
       symbol: input.meta.symbol,
       address: input.meta.address,
@@ -148,6 +161,7 @@ export function buildCanonicalDecision(input: CanonicalBuildInput): {
     sources: {
       marketHours: input.sources.marketHours,
       referencePrice: input.sources.referencePrice,
+      onChainPrice: input.sources.onChainPrice,
       xStockPrice: input.sources.xStockPrice,
       xStockStatus: input.sources.xStockStatus,
       onChainWrite: input.sources.onChainWrite,
@@ -156,6 +170,7 @@ export function buildCanonicalDecision(input: CanonicalBuildInput): {
       onChainPrice: input.snapshot.onChainPrice,
       referencePrice: input.snapshot.referencePrice ?? null,
       spreadBps: input.snapshot.spreadBps,
+      priceImpactBps: input.snapshot.priceImpactBps ?? null,
       volume24hUsd: input.snapshot.volume24hUsd,
       apy: input.snapshot.apy ?? null,
       volatility24h: input.snapshot.volatility24h,
