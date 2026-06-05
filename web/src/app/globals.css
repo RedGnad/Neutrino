@@ -496,7 +496,14 @@ summary:focus-visible {
   overflow: hidden;
   position: relative;
   width: 100vw;
-  background: var(--surface);
+  background:
+    linear-gradient(180deg, transparent 78%, var(--surface) 100%),
+    linear-gradient(135deg,
+      var(--surface) 0%,
+      color-mix(in srgb, var(--clear) 7%, var(--surface)) 40%,
+      color-mix(in srgb, var(--hero-accent) 6%, var(--surface)) 70%,
+      var(--surface) 100%
+    );
   border-bottom: none;
 }
 
@@ -995,41 +1002,6 @@ summary:focus-visible {
   margin:     16px 0;
 }
 
-/* ── Hero ambient glow — Stripe-style animated orbs ── */
-@keyframes hero-glow-drift {
-  0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.7; }
-  33%       { transform: translate(5%, -6%) scale(1.08); opacity: 0.88; }
-  66%       { transform: translate(-3%, 4%) scale(0.95); opacity: 0.72; }
-}
-
-.hero-glow-orb {
-  border-radius: 50%;
-  pointer-events: none;
-  position: absolute;
-  z-index: 0;
-}
-
-.hero-glow-orb-1 {
-  animation: hero-glow-drift 11s ease-in-out infinite;
-  background: radial-gradient(ellipse, rgba(47,234,131,0.17) 0%, transparent 70%);
-  filter: blur(90px);
-  height: 620px;
-  left: -8%;
-  top: -30%;
-  width: 720px;
-}
-
-.hero-glow-orb-2 {
-  animation: hero-glow-drift 15s ease-in-out infinite;
-  animation-delay: -6s;
-  background: radial-gradient(ellipse, rgba(210,189,118,0.11) 0%, transparent 70%);
-  filter: blur(120px);
-  height: 400px;
-  right: 4%;
-  top: 10%;
-  width: 500px;
-}
-
 /* ── Hero proof tokens — inline trust strip ── */
 .hero-proof-strip {
   align-items: center;
@@ -1125,6 +1097,4 @@ summary:focus-visible {
   .judge-flow-track::before {
     content: none;
   }
-  .hero-glow-orb-1 { left: -30%; width: 400px; }
-  .hero-glow-orb-2 { display: none; }
 }

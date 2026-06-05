@@ -51,8 +51,6 @@ async function Hero() {
 
   return (
     <section className="hero-console -mt-10 px-4 py-20 sm:px-6 sm:py-32">
-      <div className="hero-glow-orb hero-glow-orb-1" aria-hidden="true" />
-      <div className="hero-glow-orb hero-glow-orb-2" aria-hidden="true" />
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
         <div className="space-y-8">
           <div className="space-y-5">
