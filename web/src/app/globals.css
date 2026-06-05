@@ -496,23 +496,7 @@ summary:focus-visible {
   overflow: hidden;
   position: relative;
   width: 100vw;
-  background:
-    linear-gradient(180deg,
-      transparent 72%,
-      var(--surface) 100%
-    ),
-    linear-gradient(90deg,
-      var(--surface) 0%,
-      color-mix(in srgb, var(--hero-accent) 10%, var(--surface)) 10%,
-      color-mix(in srgb, var(--clear) 10%, var(--surface)) 55%,
-      color-mix(in srgb, var(--surface) 92%, transparent) 88%,
-      var(--surface) 100%
-    ),
-    linear-gradient(180deg,
-      color-mix(in srgb, var(--clear) 9%, transparent) 0%,
-      transparent 58%
-    ),
-    var(--surface);
+  background: var(--surface);
   border-bottom: none;
 }
 
@@ -530,22 +514,7 @@ summary:focus-visible {
 }
 
 .hero-console::after {
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(240,232,216,0.018) 0,
-      rgba(240,232,216,0.018) 1px,
-      transparent 1px,
-      transparent 56px
-    );
-  bottom: 0;
-  content: '';
-  left: 0;
-  opacity: 0.28;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
+  content: none;
 }
 
 .hero-console > * {
@@ -1024,4 +993,138 @@ summary:focus-visible {
   height:     1px;
   background: linear-gradient(90deg, var(--border-hi) 0%, transparent 100%);
   margin:     16px 0;
+}
+
+/* ── Hero ambient glow — Stripe-style animated orbs ── */
+@keyframes hero-glow-drift {
+  0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.7; }
+  33%       { transform: translate(5%, -6%) scale(1.08); opacity: 0.88; }
+  66%       { transform: translate(-3%, 4%) scale(0.95); opacity: 0.72; }
+}
+
+.hero-glow-orb {
+  border-radius: 50%;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.hero-glow-orb-1 {
+  animation: hero-glow-drift 11s ease-in-out infinite;
+  background: radial-gradient(ellipse, rgba(47,234,131,0.17) 0%, transparent 70%);
+  filter: blur(90px);
+  height: 620px;
+  left: -8%;
+  top: -30%;
+  width: 720px;
+}
+
+.hero-glow-orb-2 {
+  animation: hero-glow-drift 15s ease-in-out infinite;
+  animation-delay: -6s;
+  background: radial-gradient(ellipse, rgba(210,189,118,0.11) 0%, transparent 70%);
+  filter: blur(120px);
+  height: 400px;
+  right: 4%;
+  top: 10%;
+  width: 500px;
+}
+
+/* ── Hero proof tokens — inline trust strip ── */
+.hero-proof-strip {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.hero-proof-token {
+  align-items: center;
+  color: rgba(192, 180, 159, 0.72);
+  display: flex;
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-size: 13px;
+  gap: 7px;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.hero-proof-token::before {
+  background: var(--clear);
+  border-radius: 50%;
+  content: '';
+  display: block;
+  flex-shrink: 0;
+  height: 5px;
+  opacity: 0.85;
+  width: 5px;
+}
+
+.hero-proof-token.amber::before { background: var(--seal); }
+.hero-proof-token.blue::before  { background: var(--review); }
+
+/* ── Judge flow — horizontal step timeline ── */
+.judge-flow-track {
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(5, 1fr);
+  position: relative;
+}
+
+.judge-flow-track::before {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--border-hi) 8%,
+    var(--border-hi) 92%,
+    transparent 100%
+  );
+  content: '';
+  height: 1px;
+  left: 0;
+  opacity: 0.3;
+  position: absolute;
+  right: 0;
+  top: 14px;
+}
+
+.judge-flow-step {
+  padding: 0 12px 0 0;
+  position: relative;
+}
+
+.judge-flow-num {
+  align-items: center;
+  background: var(--surface-raised);
+  border: 1px solid rgba(237, 231, 218, 0.22);
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  font-family: 'Azeret Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  height: 28px;
+  justify-content: center;
+  margin-bottom: 14px;
+  position: relative;
+  width: 28px;
+  z-index: 1;
+}
+
+.judge-flow-step:first-child .judge-flow-num,
+.judge-flow-step:last-child .judge-flow-num {
+  background: color-mix(in srgb, var(--clear) 12%, var(--surface-raised));
+  border-color: color-mix(in srgb, var(--clear) 52%, transparent);
+  color: var(--clear);
+}
+
+@media (max-width: 640px) {
+  .judge-flow-track {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .judge-flow-track::before {
+    content: none;
+  }
+  .hero-glow-orb-1 { left: -30%; width: 400px; }
+  .hero-glow-orb-2 { display: none; }
 }

@@ -50,10 +50,12 @@ async function Hero() {
     .slice(0, 5);
 
   return (
-    <section className="hero-console -mt-10 px-4 py-20 sm:px-6 sm:py-28">
-      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
-        <div className="space-y-7">
-          <div className="space-y-4">
+    <section className="hero-console -mt-10 px-4 py-20 sm:px-6 sm:py-32">
+      <div className="hero-glow-orb hero-glow-orb-1" aria-hidden="true" />
+      <div className="hero-glow-orb hero-glow-orb-2" aria-hidden="true" />
+      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+        <div className="space-y-8">
+          <div className="space-y-5">
             <span className="section-label flex items-center gap-2 animate-stagger-1">
               <span
                 className="h-1.5 w-1.5 rounded-full animate-live"
@@ -67,19 +69,16 @@ async function Hero() {
               <span className="hero-title-accent">The token didn&rsquo;t.</span>
             </h1>
             <p
-              className="max-w-xl text-lg leading-relaxed sm:text-xl animate-stagger-3"
-              style={{ color: "var(--muted)" }}
+              className="text-lg leading-relaxed sm:text-xl animate-stagger-3"
+              style={{ color: "var(--muted)", maxWidth: "44ch" }}
             >
-              A policy layer between market signals and capital movement.
+              Tokenized stocks trade 24/7. Their underlying markets don&rsquo;t.
+              Every autonomous decision scored, validated against policy, and
+              committed to Mantle before capital moves.
             </p>
-            <div className="hero-rule animate-stagger-4">
-              <span>Market signal</span>
-              <span>Policy gate</span>
-              <span>Mantle receipt</span>
-            </div>
           </div>
 
-          <div className="flex flex-wrap gap-3 animate-stagger-5">
+          <div className="flex flex-wrap gap-3 animate-stagger-4">
             <Link
               href="#scenarios"
               className="console-action inline-flex h-12 items-center rounded-md px-8 text-[15px] font-semibold"
@@ -111,69 +110,22 @@ async function Hero() {
             </Link>
           </div>
 
-          <ConsoleCard
-            compact
-            surface="evidence"
-            accent="green"
-            className="max-w-3xl"
-          >
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <EvidenceItem
-                label="xStocks status"
-                value="feed checked"
-                tone="green"
-              />
-              <EvidenceItem
-                label="Price quality"
-                value="quote tagged"
-                tone="amber"
-              />
-              <EvidenceItem
-                label="Mantle receipts"
-                value="on-chain"
-                tone="green"
-              />
-              <EvidenceItem
-                label="xStocks execution"
-                value="RFQ gated"
-                tone="violet"
-              />
-            </div>
-          </ConsoleCard>
+          <div className="hero-proof-strip animate-stagger-5">
+            <span className="hero-proof-token">Live on Mantle mainnet</span>
+            <span className="hero-proof-token amber">ERC-8004 verified</span>
+            <span className="hero-proof-token blue">reasonHash on-chain</span>
+            <span className="hero-proof-token">Fluxion V3 execution</span>
+          </div>
         </div>
 
-        <LatestStateCard decisions={decisions} />
+        <div style={{ filter: "drop-shadow(0 24px 56px rgba(0,0,0,0.6))" }}>
+          <LatestStateCard decisions={decisions} />
+        </div>
       </div>
     </section>
   );
 }
 
-function EvidenceItem({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: "green" | "amber" | "violet";
-}) {
-  return (
-    <div className="space-y-1">
-      <p
-        className="text-[10px] uppercase tracking-widest"
-        style={{
-          color: "rgba(144,126,108,0.58)",
-          fontFamily: "'Azeret Mono', monospace",
-        }}
-      >
-        {label}
-      </p>
-      <StatusPill value={value} tone={tone}>
-        {value}
-      </StatusPill>
-    </div>
-  );
-}
 
 function LatestStateCard({
   decisions,
@@ -458,65 +410,58 @@ function ScenarioCard({
 
 function JudgeModeGuide() {
   const steps = [
-    ["Signals", "Label input quality."],
-    ["AI proposal", "Suggest action."],
-    ["Policy review", "Approve or override."],
-    ["Receipt", "Commit reasonHash."],
-    ["Execution", "Verified rails only."],
+    {
+      title: "Signals",
+      body: "Market hours, xStocks price and halt status, and execution availability — all labeled live, stub, or n/a.",
+    },
+    {
+      title: "AI proposal",
+      body: "LLM suggests an action and rationale. Confidence attached. The LLM never owns the final decision.",
+    },
+    {
+      title: "Policy review",
+      body: "Deterministic rules validate or override the AI proposal. Override reason is explicit and on-record.",
+    },
+    {
+      title: "Receipt",
+      body: "keccak256(canonicalJson) committed to Mantle as reasonHash. Immutable, re-hashable by anyone.",
+    },
+    {
+      title: "Execution",
+      body: "Capital moves only on verified rails — Fluxion V3 for mETH, INIT Capital for stable yield.",
+    },
   ] as const;
 
   return (
-    <section className="section-ruled space-y-5">
+    <section className="section-ruled space-y-8">
       <SectionHeader
-        eyebrow="Judge flow"
-        title="Signals are not decisions."
-        body="Signals enter. Policy reviews. Mantle verifies."
+        eyebrow="How it works"
+        title="Five stages. One immutable receipt."
+        body="Every run produces a canonical decision JSON, a reasonHash committed to Mantle, and a verifiable proof trail — from raw signals to on-chain action."
       >
         <TextLink href="/proof">Open registry</TextLink>
       </SectionHeader>
-      <div className="grid gap-3 md:grid-cols-5">
-        {steps.map(([title, body], index) => (
-          <ConsoleCard
-            key={title}
-            compact
-            surface="evidence"
-            interactive
-            accent="slate"
-          >
-            <p
-              className="text-[10px] uppercase tracking-widest"
-              style={{
-                color: "rgba(144,126,108,0.52)",
-                fontFamily: "'Azeret Mono', monospace",
-              }}
-            >
-              {String(index + 1).padStart(2, "0")}
-            </p>
-            <p
-              className="mt-2 text-base font-semibold"
-              style={{ color: "var(--text)" }}
-            >
+      <div className="judge-flow-track">
+        {steps.map(({ title, body }, index) => (
+          <div key={title} className="judge-flow-step">
+            <div className="judge-flow-num">{index + 1}</div>
+            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
               {title}
             </p>
-            <p
-              className="mt-1.5 text-sm leading-relaxed"
-              style={{ color: "var(--muted)" }}
-            >
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
               {body}
             </p>
-          </ConsoleCard>
+          </div>
         ))}
       </div>
       <p
         className="text-[11px] leading-relaxed"
         style={{
           fontFamily: "'Azeret Mono', monospace",
-          color: "rgba(144,126,108,0.58)",
+          color: "rgba(144,126,108,0.52)",
         }}
       >
-        Every step is committed on Mantle: the canonical decision JSON re-hashes
-        to the on-chain reasonHash, bound to the agent&rsquo;s canonical
-        ERC-8004 identity.
+        Canonical decision JSON is byte-stable · reasonHash = keccak256(json) · ERC-8004 agentRegistry bound in every hash
       </p>
     </section>
   );
