@@ -20,7 +20,7 @@
   --status-live:      #2FEA83;
   --status-stub:      #FFC857;
   --status-gated:     #C094FF;
-  --hero-ink:         #F4E6CF;
+  --hero-ink:         #F9F5EC;
   --hero-accent:      #F0B84E;
 
   --bg:           var(--surface);
@@ -273,10 +273,10 @@ summary:focus-visible {
 
 /* ── Section architecture ──────────────────────── */
 
-/* Ruled: thin top rule, content below — like a brief section heading */
+/* Ruled: thin top rule, content below — space > contrast (Refactoring UI) */
 .section-ruled {
   border-top: 1px solid var(--border);
-  padding-top: 52px;
+  padding-top: 72px;
   position: relative;
 }
 
@@ -302,24 +302,17 @@ summary:focus-visible {
 .console-surface::before {
   background: var(--panel-accent, var(--border-hi));
   content: '';
-  height: 2px;
+  height: 1px;
   left: 0;
-  opacity: 0.92;
+  opacity: 0.42;
   position: absolute;
   right: auto;
   top: 0;
-  width: min(88px, 45%);
+  width: min(40px, 20%);
 }
 
 .console-surface::after {
-  background: var(--panel-accent, var(--border-hi));
-  bottom: 0;
-  content: '';
-  left: 0;
-  opacity: 0.38;
-  position: absolute;
-  top: 0;
-  width: 1px;
+  content: none;
 }
 
 .surface-ledger {
@@ -361,9 +354,10 @@ summary:focus-visible {
 
 .scenario-card-index {
   color: var(--text-tertiary);
-  font-family: 'Azeret Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   line-height: 1;
   text-transform: uppercase;
 }
@@ -595,11 +589,11 @@ summary:focus-visible {
 .console-table thead th {
   background: rgba(0,0,0,0.28);
   border-bottom: 1px solid var(--border);
-  color: rgba(170,161,148,0.72);
-  font-family: 'Azeret Mono', monospace;
-  font-size: 10px;
+  color: rgba(170,161,148,0.64);
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   padding: 12px 14px;
   position: sticky;
   text-transform: uppercase;
@@ -637,11 +631,11 @@ summary:focus-visible {
 .asset-ledger-head {
   background: rgba(0,0,0,0.28);
   border-bottom: 1px solid var(--border);
-  color: rgba(170,161,148,0.72);
-  font-family: 'Azeret Mono', monospace;
-  font-size: 10px;
+  color: rgba(170,161,148,0.64);
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   padding: 12px 14px;
   text-transform: uppercase;
 }
@@ -778,14 +772,14 @@ summary:focus-visible {
 .section-proof.clear  { border-left-color: var(--clear); }
 .section-proof.seal   { border-left-color: var(--seal); }
 
-/* Section label — tiny mono uppercase, always above the heading */
+/* Section label — Instrument Sans, not mono (Refactoring UI: mono = code only) */
 .section-label {
-  font-family:    'Azeret Mono', monospace;
-  font-size:      10px;
-  font-weight:    500;
-  letter-spacing: 0.14em;
+  font-family:    'Instrument Sans', system-ui, sans-serif;
+  font-size:      11px;
+  font-weight:    600;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color:          rgba(170,161,148,0.64);
+  color:          rgba(170,161,148,0.60);
   margin-bottom:  10px;
   display:        block;
 }
@@ -854,9 +848,11 @@ summary:focus-visible {
 
 .telemetry-label {
   color:          var(--muted);
-  letter-spacing: 0.06em;
+  font-family:    'Instrument Sans', system-ui, sans-serif;
+  font-size:      11px;
+  font-weight:    600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  font-size:      10px;
 }
 .telemetry-value {
   color:       var(--text);
@@ -918,8 +914,7 @@ summary:focus-visible {
 }
 .nav-link:hover {
   color:      var(--text);
-  background: color-mix(in srgb, var(--clear) 9%, transparent);
-  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--clear) 42%, transparent);
+  background: rgba(255,255,255,0.06);
   transform: translateY(-1px);
 }
 
@@ -1022,18 +1017,14 @@ summary:focus-visible {
 }
 
 .hero-proof-token::before {
-  background: var(--clear);
+  background: rgba(192,180,159,0.45);
   border-radius: 50%;
   content: '';
   display: block;
   flex-shrink: 0;
-  height: 5px;
-  opacity: 0.85;
-  width: 5px;
+  height: 4px;
+  width: 4px;
 }
-
-.hero-proof-token.amber::before { background: var(--seal); }
-.hero-proof-token.blue::before  { background: var(--review); }
 
 /* ── Judge flow — horizontal step timeline ── */
 .judge-flow-track {

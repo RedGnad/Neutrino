@@ -99,24 +99,17 @@ export default function RootLayout({
           style={{ borderTop: "1px solid var(--border)" }}
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span
-              style={{
-                fontFamily: "'Azeret Mono', monospace",
-                fontSize: "10px",
-                color: "var(--muted)",
-              }}
-            >
+            <span style={{ fontSize: "12px", color: "var(--muted)" }}>
               Neutrino — Mantle Turing Test 2026 — AI × RWA
             </span>
             <span
               style={{
                 fontFamily: "'Azeret Mono', monospace",
                 fontSize: "10px",
-                color: "rgba(144,126,108,0.45)",
+                color: "rgba(144,126,108,0.38)",
               }}
             >
-              schema: neutrino.decision.v3 · engine: deterministic · narration:
-              claude-haiku-4-5
+              schema: neutrino.decision.v3 · engine: deterministic · narration: claude-haiku-4-5
             </span>
           </div>
         </footer>

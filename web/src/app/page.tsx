@@ -50,7 +50,7 @@ async function Hero() {
     .slice(0, 5);
 
   return (
-    <section className="hero-console -mt-10 px-4 py-20 sm:px-6 sm:py-32">
+    <section className="hero-console -mt-10 px-4 pt-12 pb-24 sm:px-6 sm:pt-14 sm:pb-28">
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
         <div className="space-y-8">
           <div className="space-y-5">
@@ -160,10 +160,7 @@ function LatestStateCard({
       {decisions.length === 0 ? (
         <p
           className="text-sm"
-          style={{
-            color: "var(--muted)",
-            fontFamily: "'Azeret Mono', monospace",
-          }}
+          style={{ color: "var(--muted)" }}
         >
           No decisions on-chain yet. Run a scenario below.
         </p>
@@ -189,13 +186,7 @@ function LatestStateCard({
                 </Link>
                 <div className="min-w-0">
                   <StatusPill value={d.action}>{d.action}</StatusPill>
-                  <p
-                    className="mt-1 text-[10px]"
-                    style={{
-                      color: "rgba(144,126,108,0.56)",
-                      fontFamily: "'Azeret Mono', monospace",
-                    }}
-                  >
+                  <p className="mt-1 text-[10px]" style={{ color: "rgba(144,126,108,0.52)" }}>
                     {timeAgo(d.timestamp)}
                   </p>
                 </div>
@@ -328,13 +319,7 @@ function ScenarioSection() {
         />
       </div>
 
-      <p
-        className="text-[11px] leading-relaxed"
-        style={{
-          fontFamily: "'Azeret Mono', monospace",
-          color: "rgba(144,126,108,0.58)",
-        }}
-      >
+      <p className="text-xs leading-relaxed" style={{ color: "rgba(144,126,108,0.54)" }}>
         Transactions are signed by a controlled agent wallet. No user wallet
         connection is required; this demonstrates autonomous agent execution,
         not a user custody flow.
@@ -452,13 +437,7 @@ function JudgeModeGuide() {
           </div>
         ))}
       </div>
-      <p
-        className="text-[11px] leading-relaxed"
-        style={{
-          fontFamily: "'Azeret Mono', monospace",
-          color: "rgba(144,126,108,0.52)",
-        }}
-      >
+      <p className="text-xs leading-relaxed" style={{ color: "rgba(144,126,108,0.48)" }}>
         Canonical decision JSON is byte-stable · reasonHash = keccak256(json) · ERC-8004 agentRegistry bound in every hash
       </p>
     </section>

@@ -161,12 +161,13 @@ export function StatusPill({
   const t = TONES[tone ?? toneForStatus(value)];
   return (
     <span
-      className={`status-chip inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${className}`}
+      className={`status-chip inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${className}`}
       style={{
         background: t.bg,
         border: `1px solid ${t.border}`,
         color: t.fg,
-        fontFamily: "'Azeret Mono', monospace",
+        fontFamily: "'Instrument Sans', system-ui, sans-serif",
+        letterSpacing: "0.06em",
       }}
     >
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.fg }} />
@@ -192,7 +193,7 @@ export function RiskBar({
     <div className="min-w-[92px]">
       {label ? (
         <div className="mb-1 flex items-baseline justify-between gap-2">
-          <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+          <span className="text-[11px] uppercase" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Instrument Sans', system-ui, sans-serif", fontWeight: 600, letterSpacing: "0.06em" }}>
             Risk
           </span>
           <span className="text-[10px] tabular-nums" style={{ color: "var(--text)", fontFamily: "'Azeret Mono', monospace" }}>
@@ -227,7 +228,7 @@ export function MetricStrip({
               borderColor: t?.border ?? "var(--border)",
             }}
           >
-            <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Azeret Mono', monospace" }}>
+            <p className="text-[11px] uppercase tracking-wide" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Instrument Sans', system-ui, sans-serif", fontWeight: 600, letterSpacing: "0.06em" }}>
               {item.label}
             </p>
             <div className="mt-1 text-[15px] font-semibold leading-snug" style={{ color: t?.fg ?? "var(--text)" }}>
