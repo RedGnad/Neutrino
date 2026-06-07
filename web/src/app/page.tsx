@@ -4,12 +4,16 @@ import { PolicyTemplates } from "@/components/PolicyTemplates";
 import {
   ConsoleCard,
   HashText,
+  RiskBar,
   SectionHeader,
   StatusPill,
   TextLink,
 } from "@/components/Console";
 import {
+  AGENT_ADDRESS,
+  EXPLORER_ADDR,
   EXPLORER_TX,
+  LOGGER_ADDRESS,
   fetchRecentDecisions,
   resolveAsset,
   timeAgo,
@@ -125,7 +129,7 @@ function LatestStateCard({
 }: {
   decisions: Awaited<ReturnType<typeof fetchRecentDecisions>>;
 }) {
-  const shown = decisions.slice(0, 3);
+  const shown = decisions.slice(0, 4);
   return (
     <ConsoleCard surface="evidence" accent="gold">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -140,47 +144,82 @@ function LatestStateCard({
           No decisions yet. Run a scenario below.
         </p>
       ) : (
-        <div className="space-y-2">
-          {shown.map((d) => {
-            const sym = resolveAsset(d.assetAddress).symbol;
-            const riskColor =
-              d.riskScore >= 500 ? "var(--refuse)" :
-              d.riskScore >= 250 ? "var(--pause)" :
-              "var(--clear)";
-            return (
-              <Link
-                key={d.txHash}
-                href={`/agent-decision/${sym}`}
-                className="grid items-center gap-3 rounded px-4 py-3 transition-colors"
-                style={{
-                  background: "rgba(255,255,255,0.018)",
-                  border: "1px solid var(--border)",
-                  gridTemplateColumns: "56px 1fr auto auto",
-                }}
-              >
-                <span
-                  className="font-mono text-[15px] font-bold"
-                  style={{ color: "var(--text)" }}
+        <>
+          <div className="space-y-1.5">
+            {shown.map((d) => {
+              const sym = resolveAsset(d.assetAddress).symbol;
+              const riskColor =
+                d.riskScore >= 500 ? "var(--refuse)" :
+                d.riskScore >= 250 ? "var(--pause)" :
+                "var(--clear)";
+              return (
+                <Link
+                  key={d.txHash}
+                  href={`/agent-decision/${sym}`}
+                  className="grid items-center gap-3 rounded px-3 py-2.5 transition-colors hover:brightness-110"
+                  style={{
+                    background: "rgba(255,255,255,0.018)",
+                    border: "1px solid var(--border)",
+                    gridTemplateColumns: "52px auto 1fr auto auto",
+                  }}
                 >
-                  {sym}
-                </span>
-                <StatusPill value={d.action} />
-                <span
-                  className="font-mono text-[13px] font-semibold"
-                  style={{ color: riskColor, fontVariantNumeric: "tabular-nums" }}
-                >
-                  {d.riskScore}
-                  <span style={{ color: "rgba(144,126,108,0.35)", fontWeight: 400 }}>/1k</span>
-                </span>
-                <span className="text-[12px]" style={{ color: "var(--muted)" }}>
-                  {timeAgo(d.timestamp)}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+                  <span
+                    className="font-mono text-[14px] font-bold"
+                    style={{ color: "var(--text)" }}
+                  >
+                    {sym}
+                  </span>
+                  <StatusPill value={d.action} />
+                  <RiskBar value={d.riskScore} label={false} />
+                  <span
+                    className="font-mono text-[12px] font-semibold"
+                    style={{ color: riskColor, fontVariantNumeric: "tabular-nums" }}
+                  >
+                    {d.riskScore}
+                  </span>
+                  <span className="text-[11px] w-10 text-right" style={{ color: "var(--muted)" }}>
+                    {timeAgo(d.timestamp)}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {(LOGGER_ADDRESS || AGENT_ADDRESS) && (
+            <div
+              className="mt-4 space-y-1 border-t pt-3"
+              style={{ borderColor: "var(--border)" }}
+            >
+              {LOGGER_ADDRESS ? (
+                <ContractRow label="Logger" address={LOGGER_ADDRESS} />
+              ) : null}
+              {AGENT_ADDRESS ? (
+                <ContractRow label="Agent" address={AGENT_ADDRESS} />
+              ) : null}
+            </div>
+          )}
+        </>
       )}
     </ConsoleCard>
+  );
+}
+
+function ContractRow({ label, address }: { label: string; address: string }) {
+  return (
+    <a
+      href={`${EXPLORER_ADDR}/${address}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center justify-between transition-opacity hover:opacity-70"
+    >
+      <span
+        className="text-[10px] font-semibold uppercase tracking-wider"
+        style={{ color: "rgba(144,126,108,0.42)" }}
+      >
+        {label}
+      </span>
+      <HashText value={address} chars={8} />
+    </a>
   );
 }
 

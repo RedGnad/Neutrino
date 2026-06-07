@@ -292,7 +292,7 @@ summary:focus-visible {
 
 .console-surface {
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 6px;
   min-width: 0;
   padding: 26px;
   position: relative;
@@ -410,7 +410,7 @@ summary:focus-visible {
   align-self: start;
   background: color-mix(in srgb, var(--gated) 10%, rgba(255,255,255,0.03));
   border: 1px solid color-mix(in srgb, var(--gated) 36%, transparent);
-  border-radius: 3px;
+  border-radius: 5px;
   color: color-mix(in srgb, var(--gated) 88%, var(--text));
   font-family: 'Instrument Sans', system-ui, sans-serif;
   font-size: 13px;
@@ -573,7 +573,7 @@ summary:focus-visible {
 .console-code {
   background: #060605;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
   color: rgba(229,221,207,0.78);
   font-family: 'Azeret Mono', monospace;
   font-size: 11px;
@@ -586,7 +586,7 @@ summary:focus-visible {
 .console-table-wrap {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 6px;
   overflow-x: auto;
 }
 
@@ -629,7 +629,7 @@ summary:focus-visible {
 .asset-ledger {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 6px;
 }
 
 .asset-ledger-head,
@@ -684,17 +684,11 @@ summary:focus-visible {
   white-space: normal;
 }
 
-/* Tiered radius — 2px only for data/code elements (set explicitly there) */
-.rounded    { border-radius: 4px !important; }
-.rounded-md { border-radius: 6px !important; }
-.rounded-lg { border-radius: 8px !important; }
-.rounded-xl { border-radius: 10px !important; }
-.rounded-2xl { border-radius: 12px !important; }
 
 .quiet-details {
   background: rgba(229,221,207,0.012);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .quiet-details > summary {
@@ -774,7 +768,7 @@ summary:focus-visible {
   border-right:  1px solid var(--border);
   border-bottom: 1px solid var(--border);
   border-left:   3px solid var(--seal);
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 6px 6px 0;
   padding:       28px;
   position:      relative;
   overflow:      hidden;
@@ -802,7 +796,7 @@ summary:focus-visible {
   border-right:  1px solid var(--border);
   border-bottom: 1px solid var(--border);
   border-left:   3px solid var(--border-hi);
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 6px 6px 0;
   position:      relative;
   overflow:      hidden;
 }
@@ -816,7 +810,7 @@ summary:focus-visible {
   background:    var(--panel);
   border:        1px solid var(--border-hi);
   border-left:   3px solid var(--border-hi);
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 6px 6px 0;
   overflow:      hidden;
   position:      relative;
 }
@@ -909,7 +903,7 @@ summary:focus-visible {
   font-size:     11px;
   background:    rgba(0,0,0,0.28);
   border:        1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
   padding:       10px 12px;
   word-break:    break-all;
   color:         var(--muted);
@@ -1095,7 +1089,7 @@ summary:focus-visible {
 /* ── Decision feed ───────────────────────────────── */
 .decision-feed {
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
