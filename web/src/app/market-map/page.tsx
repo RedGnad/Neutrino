@@ -33,8 +33,8 @@ export default async function MarketMapPage() {
           title="Latest policy outcome per asset."
           body={
             <>
-              A compact dashboard of tracked assets, read from RWADecisionLogger on {NETWORK_LABEL}.
-              Click any asset to inspect the full receipt history.
+              Latest policy outcome for each tracked asset, read live from {NETWORK_LABEL}.
+              Click any asset to inspect its full decision history.
             </>
           }
         />
@@ -69,8 +69,8 @@ export default async function MarketMapPage() {
             const category = asset.kind === "tokenized_equity" ? "Tokenized equity" : "Yield-bearing";
             const sourceQuality =
               asset.kind === "tokenized_equity"
-                ? "live / stub / modelled flags"
-                : "on-chain RWA signals";
+                ? "Live market data"
+                : "On-chain signals";
 
             return (
               <div key={asset.symbol} className="asset-ledger-row">

@@ -37,12 +37,12 @@ export function PolicyTemplates({ compact = false }: { compact?: boolean }) {
   return (
     <section className="section-ruled space-y-5">
       <SectionHeader
-        eyebrow="Policy templates"
-        title="Outputs are policy outcomes, not fixed asset labels."
+        eyebrow="Risk profiles"
+        title="Three profiles. One policy engine."
         compact={compact}
         body={
           <>
-            Hosted runtime uses Conservative RWA today. Other profiles show builder template direction.
+            The hosted runtime runs Conservative RWA. Switch profiles to change how risk, freshness, and execution gates are weighted.
           </>
         }
       />

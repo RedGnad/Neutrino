@@ -295,20 +295,6 @@ export default async function AgentDecisionPage({ params }: Props) {
         </section>
       ) : null}
 
-      <p
-        className="text-[11px] leading-relaxed"
-        style={{
-          fontFamily: "'Azeret Mono', monospace",
-          color: "rgba(144,126,108,0.52)",
-        }}
-      >
-        Decision receipts cover schema neutrino.decision.v3: agent identity
-        (canonical ERC-8004), asset metadata, market snapshot, xStocks
-        public-API data when available, source-freshness flags, risk breakdown,
-        policy, AI proposal, policy review, action, score, narration metadata.
-        The reasonHash covers the full loop: AI proposal, policy review, and
-        final on-chain commitment.
-      </p>
     </div>
   );
 }

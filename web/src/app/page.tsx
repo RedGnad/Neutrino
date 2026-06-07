@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { RunAgentButton } from "@/components/RunAgentButton";
-import { LatestExecution } from "@/components/LatestExecution";
 import { PolicyTemplates } from "@/components/PolicyTemplates";
 import {
   ConsoleCard,
@@ -15,6 +14,7 @@ import {
   LOGGER_ADDRESS,
   AGENT_ADDRESS,
   EXPLORER_ADDR,
+  EXPLORER_TX,
   fetchRecentDecisions,
   resolveAsset,
   timeAgo,
@@ -28,11 +28,9 @@ export default function Home() {
       <Hero />
       <ScenarioSection />
       <JudgeModeGuide />
+      <RecentDecisions />
       <BuilderIntegrationSection />
       <PolicyTemplates compact />
-      <LatestExecution />
-      <DataHonestySection />
-      <AttackSurfaceSection />
     </div>
   );
 }
@@ -59,7 +57,7 @@ async function Hero() {
                 className="h-1.5 w-1.5 rounded-full animate-live"
                 style={{ background: "var(--clear)" }}
               />
-              Neutrino · AI x RWA · {NETWORK_LABEL}
+              Live on Mantle Mainnet
             </span>
             <h1 className="hero-title animate-stagger-2">
               The market closed at 4pm.
@@ -110,8 +108,8 @@ async function Hero() {
 
           <div className="hero-proof-strip animate-stagger-5">
             <span className="hero-proof-token">Live on Mantle mainnet</span>
-            <span className="hero-proof-token amber">ERC-8004 verified</span>
-            <span className="hero-proof-token blue">reasonHash on-chain</span>
+            <span className="hero-proof-token">ERC-8004 verified</span>
+            <span className="hero-proof-token">Verifiable on-chain receipts</span>
             <span className="hero-proof-token">Fluxion V3 execution</span>
           </div>
         </div>
@@ -123,7 +121,6 @@ async function Hero() {
     </section>
   );
 }
-
 
 function LatestStateCard({
   decisions,
@@ -141,16 +138,10 @@ function LatestStateCard({
           <span className="section-label" style={{ color: "var(--seal)" }}>
             Latest state
           </span>
-          <h2
-            className="text-lg font-semibold"
-            style={{ color: "var(--text)" }}
-          >
+          <h2 className="text-lg font-semibold" style={{ color: "var(--text)" }}>
             Current policy outcomes
           </h2>
-          <p
-            className="mt-1 text-xs leading-relaxed"
-            style={{ color: "var(--muted)" }}
-          >
+          <p className="mt-1 text-[13px] leading-relaxed" style={{ color: "var(--muted)" }}>
             Latest decision per asset.
           </p>
         </div>
@@ -158,10 +149,7 @@ function LatestStateCard({
       </div>
 
       {decisions.length === 0 ? (
-        <p
-          className="text-sm"
-          style={{ color: "var(--muted)" }}
-        >
+        <p className="text-sm" style={{ color: "var(--muted)" }}>
           No decisions on-chain yet. Run a scenario below.
         </p>
       ) : (
@@ -221,10 +209,7 @@ function ContractLink({ label, address }: { label: string; address: string }) {
       target="_blank"
       rel="noopener noreferrer"
       className="flex items-center justify-between gap-3 text-[10px] transition-opacity hover:opacity-80"
-      style={{
-        color: "rgba(144,126,108,0.62)",
-        fontFamily: "'Azeret Mono', monospace",
-      }}
+      style={{ color: "rgba(144,126,108,0.62)", fontFamily: "'Azeret Mono', monospace" }}
     >
       <span>{label}</span>
       <HashText value={address} chars={8} />
@@ -236,13 +221,12 @@ function ScenarioSection() {
   return (
     <section id="scenarios" className="section-ruled scroll-mt-24 space-y-6">
       <SectionHeader
-        eyebrow="Agent scenarios"
+        eyebrow="Try it live"
         title="Run the full policy loop."
         body={
           <>
-            Current signals become an AI proposal, policy review, final action,
-            and Mantle receipt. Outputs are policy outcomes, not fixed asset
-            labels.
+            Current signals become an AI proposal, policy review, and a Mantle
+            receipt. Every output is a policy decision, not a fixed asset label.
           </>
         }
       />
@@ -250,18 +234,12 @@ function ScenarioSection() {
       <ConsoleCard compact surface="evidence" accent="violet">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <span className="flex items-center gap-2">
-            <StatusPill value="AI proposal" tone="blue">
-              AI proposal
-            </StatusPill>
+            <StatusPill value="AI proposal" tone="blue">AI proposal</StatusPill>
             <span style={{ color: "var(--muted)" }}>scores signals</span>
           </span>
           <span className="flex items-center gap-2">
-            <StatusPill value="Policy review" tone="violet">
-              Policy review
-            </StatusPill>
-            <span style={{ color: "var(--muted)" }}>
-              validates before receipt
-            </span>
+            <StatusPill value="Policy review" tone="violet">Policy review</StatusPill>
+            <span style={{ color: "var(--muted)" }}>validates before receipt</span>
           </span>
         </div>
       </ConsoleCard>
@@ -303,10 +281,10 @@ function ScenarioSection() {
           index="03"
           tone="gold"
           title="Verified Mantle execution"
-          subtitle="Opt-in mainnet round trip"
+          subtitle="Live Mantle execution"
           assets={["USDC", "mETH"]}
           description="Real Fluxion V3 USDC to mETH to USDC round trip. Two swaps, two tx hashes."
-          note="xStocks execution waits for verified RFQ rails. Neutrino can record a PAUSE receipt instead of forcing an unsafe trade."
+          note="xStocks execution waits for verified RFQ rails. Neutrino records a PAUSE receipt instead of forcing an unsafe trade."
           button={
             <RunAgentButton
               scenario="safe-yield"
@@ -319,9 +297,9 @@ function ScenarioSection() {
         />
       </div>
 
-      <p className="text-xs leading-relaxed" style={{ color: "rgba(144,126,108,0.54)" }}>
+      <p className="text-[13px] leading-relaxed" style={{ color: "rgba(144,126,108,0.54)" }}>
         Transactions are signed by a controlled agent wallet. No user wallet
-        connection is required; this demonstrates autonomous agent execution,
+        connection is required — this demonstrates autonomous agent execution,
         not a user custody flow.
       </p>
     </section>
@@ -365,24 +343,16 @@ function ScenarioCard({
         </StatusPill>
       </div>
       <div className="scenario-card-body">
-        <h3
-          className="text-xl font-semibold leading-snug"
-          style={{ color: "var(--text)" }}
-        >
+        <h3 className="text-xl font-semibold leading-snug" style={{ color: "var(--text)" }}>
           {title}
         </h3>
-        <p
-          className="mt-3 text-base leading-relaxed"
-          style={{ color: "var(--muted)" }}
-        >
+        <p className="mt-3 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
           {description}
         </p>
       </div>
       <div className="scenario-card-tags flex flex-wrap gap-1.5">
         {assets.map((asset) => (
-          <span key={asset} className="scenario-chip">
-            {asset}
-          </span>
+          <span key={asset} className="scenario-chip">{asset}</span>
         ))}
       </div>
       {note ? <p className="scenario-card-note">{note}</p> : null}
@@ -437,27 +407,77 @@ function JudgeModeGuide() {
           </div>
         ))}
       </div>
-      <p className="text-xs leading-relaxed" style={{ color: "rgba(144,126,108,0.48)" }}>
-        Canonical decision JSON is byte-stable · reasonHash = keccak256(json) · ERC-8004 agentRegistry bound in every hash
-      </p>
+    </section>
+  );
+}
+
+async function RecentDecisions() {
+  const decisions = await fetchRecentDecisions(6).catch(() => []);
+  if (decisions.length === 0) return null;
+
+  return (
+    <section className="section-ruled space-y-6">
+      <SectionHeader
+        eyebrow="Live activity"
+        title="Recent decisions."
+        body="Every action scored, reviewed, and committed on-chain. Verifiable by anyone."
+      >
+        <TextLink href="/proof">Full registry</TextLink>
+      </SectionHeader>
+
+      <div style={{ border: "1px solid var(--border)", borderRadius: "2px" }}>
+        {decisions.map((d, i) => {
+          const { symbol } = resolveAsset(d.assetAddress);
+          return (
+            <div
+              key={d.txHash}
+              className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3"
+              style={{
+                borderBottom: i < decisions.length - 1 ? "1px solid var(--border)" : "none",
+              }}
+            >
+              <Link
+                href={`/agent-decision/${symbol}`}
+                className="w-14 font-mono text-sm font-semibold transition-opacity hover:opacity-80"
+                style={{ color: "var(--text)" }}
+              >
+                {symbol}
+              </Link>
+              <StatusPill value={d.action} />
+              <div className="hidden min-w-[96px] sm:block">
+                <RiskBar value={d.riskScore} />
+              </div>
+              <span
+                className="text-[13px]"
+                style={{ color: "var(--muted)" }}
+              >
+                {timeAgo(d.timestamp)}
+              </span>
+              <span className="ml-auto">
+                <HashText value={d.txHash} href={`${EXPLORER_TX}/${d.txHash}`} chars={8} />
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }
 
 function BuilderIntegrationSection() {
   const uses = [
-    ["RWA agents", "Policy before execution.", "guardrail"],
-    ["Treasuries", "Allocation rationale.", "proof"],
-    ["xStocks apps", "Market + rail checks.", "gate"],
-    ["Mantle protocols", "Public decision receipts.", "receipt"],
+    ["RWA agents", "Policy guardrails before every execution.", "guardrail"],
+    ["Treasuries", "Auditable allocation rationale.", "proof"],
+    ["xStocks apps", "Market and execution checks before capital moves.", "gate"],
+    ["Mantle protocols", "Public decision receipts for autonomous workflows.", "receipt"],
   ] as const;
 
   return (
     <section className="section-ruled space-y-5">
       <SectionHeader
-        eyebrow="Use Neutrino in your agent"
+        eyebrow="Integrate"
         title="A policy check before capital moves."
-        body="Send intent in. Get proposal, review, final action, reasonHash, receipt."
+        body="Send intent in. Get proposal, review, final action, reasonHash, and receipt."
       >
         <TextLink href="/integrate">Integration guide</TextLink>
       </SectionHeader>
@@ -471,278 +491,12 @@ function BuilderIntegrationSection() {
             interactive
             className="landing-brief-card"
           >
-            <StatusPill value={label} tone="slate">
-              {label}
-            </StatusPill>
+            <StatusPill value={label} tone="slate">{label}</StatusPill>
             <p className="landing-card-title">{title}</p>
             <p className="landing-card-copy">{body}</p>
           </ConsoleCard>
         ))}
       </div>
-    </section>
-  );
-}
-
-function DataHonestySection() {
-  return (
-    <section className="section-ruled">
-      <details className="quiet-details">
-        <summary>
-          <div className="pr-8">
-            <span className="section-label">Data transparency</span>
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: "var(--text)" }}
-            >
-              Live, modelled, gated.
-            </h2>
-            <p
-              className="mt-2 max-w-2xl text-sm leading-relaxed"
-              style={{ color: "var(--muted)" }}
-            >
-              Every receipt labels input quality.
-            </p>
-          </div>
-        </summary>
-
-        <div
-          className="space-y-6 border-t p-5"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <div className="grid gap-4 lg:grid-cols-3">
-            <SourcePanel
-              state="LIVE"
-              tone="green"
-              items={[
-                ["Price", "Only if public quote is non-null."],
-                ["Halt", "Live when endpoint responds."],
-                ["Receipt", "Mantle event + tx hash."],
-                ["Hours", "Checked at run time."],
-              ]}
-            />
-            <SourcePanel
-              state="MODELLED"
-              tone="amber"
-              items={[
-                ["Spread", "Modelled and flagged."],
-                ["Depth", "Modelled and flagged."],
-                ["Volume", "Modelled when unavailable."],
-              ]}
-              note="Price is never called live when the quote is null."
-            />
-            <SourcePanel
-              state="GATED"
-              tone="violet"
-              items={[
-                ["xStocks", "No execution without verified RFQ rails."],
-                ["Outcome", "PAUSE can be committed before movement."],
-              ]}
-              note="Market context and execution readiness stay separate."
-            />
-          </div>
-
-          <div>
-            <p className="section-label mb-3">
-              Verified xStock token metadata · Mantle mainnet · 2026-05-21
-            </p>
-            <div className="console-table-wrap">
-              <table className="console-table">
-                <thead>
-                  <tr>
-                    {[
-                      "Symbol",
-                      "Underlying",
-                      "Decimals",
-                      "Mantle address",
-                      "Source",
-                    ].map((h) => (
-                      <th key={h} className="text-left">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {TOKEN_METADATA.map((t) => (
-                    <tr key={t.symbol}>
-                      <td
-                        className="font-mono font-semibold"
-                        style={{ color: "var(--text)" }}
-                      >
-                        {t.symbol}
-                      </td>
-                      <td style={{ color: "var(--muted)" }}>{t.underlying}</td>
-                      <td style={{ color: "var(--muted)" }}>{t.decimals}</td>
-                      <td>
-                        <HashText
-                          value={t.address}
-                          href={`https://mantlescan.xyz/address/${t.address}`}
-                        />
-                      </td>
-                      <td style={{ color: "rgba(144,126,108,0.66)" }}>
-                        {t.source}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </details>
-    </section>
-  );
-}
-
-function SourcePanel({
-  state,
-  tone,
-  items,
-  note,
-}: {
-  state: string;
-  tone: "green" | "amber" | "violet";
-  items: ReadonlyArray<readonly [string, string]>;
-  note?: string;
-}) {
-  return (
-    <ConsoleCard compact surface="ledger" accent={tone} className="claim-card">
-      <StatusPill value={state} tone={tone}>
-        {state}
-      </StatusPill>
-      <div className="landing-fact-list">
-        {items.map(([label, value]) => (
-          <div key={label} className="landing-fact-row">
-            <span className="landing-fact-key">{label}</span>
-            <span className="landing-fact-value">{value}</span>
-          </div>
-        ))}
-      </div>
-      {note ? (
-        <p
-          className="mt-4 rounded-md px-3 py-2 text-[11px] leading-relaxed"
-          style={{
-            background: "rgba(0,0,0,0.18)",
-            color: "rgba(242,232,213,0.62)",
-            fontFamily: "'Azeret Mono', monospace",
-          }}
-        >
-          {note}
-        </p>
-      ) : null}
-    </ConsoleCard>
-  );
-}
-
-const TOKEN_METADATA = [
-  {
-    symbol: "NVDAx",
-    underlying: "NVDA · NASDAQ",
-    decimals: 18,
-    address: "0xc845b2894dBddd03858fd2D643B4eF725fE0849d",
-    source: "xStocks API + on-chain",
-  },
-  {
-    symbol: "TSLAx",
-    underlying: "TSLA · NASDAQ",
-    decimals: 18,
-    address: "0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0",
-    source: "xStocks API + on-chain",
-  },
-  {
-    symbol: "SPYx",
-    underlying: "SPY · NYSE",
-    decimals: 18,
-    address: "0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48",
-    source: "xStocks API + on-chain",
-  },
-  {
-    symbol: "USDY",
-    underlying: "Ondo T-bills",
-    decimals: 18,
-    address: "0x5bE26527e817998A7206475496fDE1E68957c5A6",
-    source: "Mantle ERC-20",
-  },
-  {
-    symbol: "mETH",
-    underlying: "Mantle LST",
-    decimals: 18,
-    address: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0",
-    source: "Mantle ERC-20",
-  },
-] as const;
-
-function AttackSurfaceSection() {
-  const qa = [
-    {
-      q: "AI decides?",
-      a: "No. AI proposes; policy owns the final action.",
-      verdict: "No",
-      tone: "green" as const,
-    },
-    {
-      q: "xStock price?",
-      a: "Live only when the public quote is non-null.",
-      verdict: "Flagged",
-      tone: "amber" as const,
-    },
-    {
-      q: "Why PAUSE?",
-      a: "Execution rail unavailable; capital does not move.",
-      verdict: "Safety gate",
-      tone: "violet" as const,
-    },
-    {
-      q: "Hash proof?",
-      a: "keccak256(canonicalJson) matches Mantle reasonHash.",
-      verdict: "Yes",
-      tone: "gold" as const,
-    },
-  ] as const;
-
-  return (
-    <section className="section-ruled">
-      <details className="quiet-details">
-        <summary>
-          <div className="pr-8">
-            <span className="section-label">Judge attack surface</span>
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: "var(--text)" }}
-            >
-              Skeptical checks.
-            </h2>
-            <p
-              className="mt-2 max-w-2xl text-sm leading-relaxed"
-              style={{ color: "var(--muted)" }}
-            >
-              Short answers for the claims judges test.
-            </p>
-          </div>
-        </summary>
-        <div
-          className="grid gap-4 border-t p-5 md:grid-cols-2"
-          style={{ borderColor: "var(--border)" }}
-        >
-          {qa.map(({ q, a, verdict, tone }) => (
-            <ConsoleCard
-              key={q}
-              compact
-              surface="ledger"
-              accent={tone}
-              className="claim-card"
-            >
-              <div className="claim-card-head">
-                <p className="landing-card-title">{q}</p>
-                <StatusPill value={verdict} tone={tone}>
-                  {verdict}
-                </StatusPill>
-              </div>
-              <p className="landing-card-copy">{a}</p>
-            </ConsoleCard>
-          ))}
-        </div>
-      </details>
     </section>
   );
 }

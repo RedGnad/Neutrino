@@ -123,8 +123,8 @@ export default function IntegratePage() {
               <ContractLink label="RWADecisionLogger" address={LOGGER_ADDRESS} />
               <ContractLink label="RWAAgent" address={AGENT_ADDRESS} />
             </div>
-            <p className="text-[11px] leading-relaxed" style={{ color: "rgba(144,126,108,0.64)", fontFamily: "'Azeret Mono', monospace" }}>
-              AI inference is off-chain. Mantle stores the final receipt commitment.
+            <p className="text-[12px] leading-relaxed" style={{ color: "rgba(144,126,108,0.64)" }}>
+              AI inference runs off-chain. Mantle stores the final receipt commitment.
             </p>
           </ConsoleCard>
         </div>

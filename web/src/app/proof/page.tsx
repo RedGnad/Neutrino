@@ -35,8 +35,8 @@ export default async function ProofPage() {
           title="Verifiable decision receipts on Mantle."
           body={
             <>
-              Every decision is logged through RWADecisionLogger on {NETWORK_LABEL}. Rows below
-              are read live from the chain and link back to the receipt verifier.
+              Every decision is logged on-chain and verifiable by anyone. Rows below
+              are read live from {NETWORK_LABEL} and link directly to the receipt verifier.
             </>
           }
         />
@@ -156,7 +156,7 @@ export default async function ProofPage() {
 
       <section className="section-ruled space-y-5">
         <SectionHeader
-          eyebrow="What a judge can verify"
+          eyebrow="Verification"
           title="Chain event, canonical JSON, and hash binding."
         />
         <div className="grid gap-4 sm:grid-cols-3">
