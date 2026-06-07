@@ -400,7 +400,7 @@ summary:focus-visible {
   border-radius: 4px;
   color: rgba(242,232,213,0.88);
   font-family: 'Azeret Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
   padding: 5px 9px;
@@ -446,7 +446,7 @@ summary:focus-visible {
 
 .landing-card-copy {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   max-width: 34ch;
 }
@@ -479,7 +479,7 @@ summary:focus-visible {
 
 .landing-fact-value {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
@@ -786,9 +786,9 @@ summary:focus-visible {
 /* Section label — Instrument Sans, not mono (Refactoring UI: mono = code only) */
 .section-label {
   font-family:    'Instrument Sans', system-ui, sans-serif;
-  font-size:      11px;
+  font-size:      12px;
   font-weight:    700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color:          rgba(170,161,148,0.72);
   margin-bottom:  10px;
