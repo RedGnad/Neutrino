@@ -669,6 +669,8 @@ summary:focus-visible {
   border: 1px solid var(--border);
   border-bottom: 0;
   border-right: 0;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .metric-cell {
