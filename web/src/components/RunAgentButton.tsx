@@ -174,7 +174,7 @@ export function RunAgentButton({
         </p>
       ) : null}
       {hint ? (
-        <p className="text-[11px] leading-relaxed" style={{ fontFamily: "'Azeret Mono', monospace", color: "var(--text-tertiary)" }}>
+        <p className="text-[12px] leading-relaxed" style={{ fontFamily: "'Instrument Sans', system-ui, sans-serif", color: "var(--text-tertiary)" }}>
           {hint}
         </p>
       ) : null}
@@ -189,7 +189,7 @@ export function RunAgentButton({
       ) : null}
 
       {state.kind === "done" ? (
-        <ResultPanel result={state.result} scenario={scenario} />
+        <ResultDrawer result={state.result} scenario={scenario} />
       ) : null}
     </div>
   );
@@ -206,6 +206,47 @@ function cacheCanonicalJsons(result: RunResult) {
       );
     } catch { /* localStorage full */ }
   }
+}
+
+function ResultDrawer({ result, scenario }: { result: RunResult; scenario?: Scenario }) {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-[12px] font-semibold transition-opacity hover:opacity-80"
+        style={{ color: "var(--clear)", fontFamily: "'Instrument Sans', system-ui, sans-serif" }}
+      >
+        View results →
+      </button>
+
+      <div
+        className={`result-drawer-backdrop${open ? " open" : ""}`}
+        onClick={() => setOpen(false)}
+      />
+      <div className={`result-drawer${open ? " open" : ""}`} role="dialog" aria-modal="true">
+        <div className="result-drawer-header">
+          <span className="text-[13px] font-semibold" style={{ color: "var(--text)" }}>
+            Run results
+          </span>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="flex h-7 w-7 items-center justify-center rounded transition-opacity hover:opacity-70"
+            style={{ color: "var(--muted)", background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)" }}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="result-drawer-body">
+          <ResultPanel result={result} scenario={scenario} />
+        </div>
+      </div>
+    </>
+  );
 }
 
 function ResultPanel({ result, scenario }: { result: RunResult; scenario?: Scenario }) {
@@ -419,8 +460,7 @@ function PipelineFlags({ inputs }: { inputs: RunResult["inputs"] }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {flags.map((f) => (
-        <span key={f.label} className={`inline-flex items-center gap-1.5 rounded px-2.5 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wider ${sourceBadgeClass(f.state)}`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${sourceDotClass(f.state)}`} />
+        <span key={f.label} className={`inline-flex items-center rounded px-2.5 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wider ${sourceBadgeClass(f.state)}`}>
           {f.label}: {f.state}
         </span>
       ))}
@@ -459,14 +499,6 @@ function sourceBadgeClass(s: SourceState | FlagState): string {
   }
 }
 
-function sourceDotClass(s: SourceState | FlagState): string {
-  switch (s) {
-    case "live":      return "bg-[var(--clear)]";
-    case "stub":      return "bg-[var(--seal)]";
-    case "simulated": return "bg-[var(--gated)]";
-    default:          return "bg-[var(--muted)]";
-  }
-}
 
 function RfqReadinessBlock({ results }: { results: PerAssetResult[] }) {
   const atomicHalted = results.some((r) => {

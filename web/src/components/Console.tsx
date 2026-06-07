@@ -161,7 +161,7 @@ export function StatusPill({
   const t = TONES[tone ?? toneForStatus(value)];
   return (
     <span
-      className={`status-chip inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${className}`}
+      className={`status-chip inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${className}`}
       style={{
         background: t.bg,
         border: `1px solid ${t.border}`,
@@ -170,7 +170,6 @@ export function StatusPill({
         letterSpacing: "0.06em",
       }}
     >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.fg }} />
       {children ?? value}
     </span>
   );

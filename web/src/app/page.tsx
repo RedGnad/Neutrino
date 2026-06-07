@@ -186,7 +186,7 @@ function LatestStateCard({
                 </Link>
                 <div className="min-w-0">
                   <StatusPill value={d.action}>{d.action}</StatusPill>
-                  <p className="mt-1 text-[10px]" style={{ color: "rgba(144,126,108,0.52)" }}>
+                  <p className="mt-1 text-[11px]" style={{ color: "rgba(144,126,108,0.58)" }}>
                     {timeAgo(d.timestamp)}
                   </p>
                 </div>
@@ -428,10 +428,10 @@ function JudgeModeGuide() {
         {steps.map(({ title, body }, index) => (
           <div key={title} className="judge-flow-step">
             <div className="judge-flow-num">{index + 1}</div>
-            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+            <p className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
               {title}
             </p>
-            <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p className="mt-2 text-[13px] leading-relaxed" style={{ color: "var(--muted)" }}>
               {body}
             </p>
           </div>

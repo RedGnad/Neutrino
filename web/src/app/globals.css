@@ -402,10 +402,10 @@ summary:focus-visible {
   border: 1px solid color-mix(in srgb, var(--gated) 36%, transparent);
   border-radius: 3px;
   color: color-mix(in srgb, var(--gated) 88%, var(--text));
-  font-family: 'Azeret Mono', monospace;
-  font-size: 11px;
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-size: 13px;
   grid-row: 4;
-  line-height: 1.7;
+  line-height: 1.65;
   padding: 12px 13px;
 }
 
@@ -436,8 +436,8 @@ summary:focus-visible {
 
 .landing-card-copy {
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.6;
   max-width: 34ch;
 }
 
@@ -460,16 +460,17 @@ summary:focus-visible {
 
 .landing-fact-key {
   color: var(--text-tertiary);
-  font-family: 'Azeret Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .landing-fact-value {
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .claim-card {
@@ -1016,15 +1017,6 @@ summary:focus-visible {
   white-space: nowrap;
 }
 
-.hero-proof-token::before {
-  background: rgba(192,180,159,0.45);
-  border-radius: 50%;
-  content: '';
-  display: block;
-  flex-shrink: 0;
-  height: 4px;
-  width: 4px;
-}
 
 /* ── Judge flow — horizontal step timeline ── */
 .judge-flow-track {
@@ -1088,4 +1080,53 @@ summary:focus-visible {
   .judge-flow-track::before {
     content: none;
   }
+}
+
+/* ── Result drawer ───────────────────────────────── */
+.result-drawer-backdrop {
+  background: rgba(0,0,0,0);
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transition: background 240ms ease;
+  z-index: 80;
+}
+.result-drawer-backdrop.open {
+  background: rgba(0,0,0,0.54);
+  pointer-events: all;
+}
+.result-drawer {
+  background: var(--surface-command);
+  border-left: 1px solid var(--border-strong);
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transform: translateX(100%);
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  width: min(640px, 94vw);
+  z-index: 81;
+}
+.result-drawer.open {
+  transform: translateX(0);
+}
+.result-drawer-header {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-shrink: 0;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 16px 20px;
+}
+.result-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
