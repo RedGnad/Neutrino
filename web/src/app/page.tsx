@@ -108,8 +108,11 @@ async function Hero() {
 
           <div className="hero-proof-strip animate-stagger-5">
             <span className="hero-proof-token">Live on Mantle mainnet</span>
+            <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
             <span className="hero-proof-token">ERC-8004 verified</span>
+            <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
             <span className="hero-proof-token">Verifiable on-chain receipts</span>
+            <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
             <span className="hero-proof-token">Fluxion V3 execution</span>
           </div>
         </div>
@@ -265,7 +268,7 @@ function ScenarioSection() {
           index="02"
           tone="green"
           title="Safe on-chain RWA yield"
-          subtitle="Policy outcome under current conditions"
+          subtitle="Current conditions"
           assets={["USDY", "mETH"]}
           description="USDY and mETH can be allocated when freshness and risk checks pass. xStock signals are n/a."
           button={
@@ -386,7 +389,7 @@ function JudgeModeGuide() {
   ] as const;
 
   return (
-    <section className="section-ruled space-y-8">
+    <section className="section-tinted section-ruled space-y-8">
       <SectionHeader
         eyebrow="How it works"
         title="Five stages. One immutable receipt."
@@ -422,40 +425,45 @@ async function RecentDecisions() {
         title="Recent decisions."
         body="Every action scored, reviewed, and committed on-chain. Verifiable by anyone."
       >
-        <TextLink href="/proof">Full registry</TextLink>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-2 text-[12px]" style={{ color: "var(--clear)" }}>
+            <span className="live-dot" />
+            Live
+          </span>
+          <TextLink href="/proof">Full registry</TextLink>
+        </div>
       </SectionHeader>
 
-      <div style={{ border: "1px solid var(--border)", borderRadius: "2px" }}>
-        {decisions.map((d, i) => {
+      <div className="decision-feed">
+        {decisions.map((d) => {
           const { symbol } = resolveAsset(d.assetAddress);
+          const riskColor =
+            d.riskScore >= 500 ? "var(--refuse)" :
+            d.riskScore >= 250 ? "var(--pause)" :
+            "var(--clear)";
           return (
-            <div
-              key={d.txHash}
-              className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3"
-              style={{
-                borderBottom: i < decisions.length - 1 ? "1px solid var(--border)" : "none",
-              }}
-            >
+            <div key={d.txHash} className="decision-feed-row">
               <Link
                 href={`/agent-decision/${symbol}`}
-                className="w-14 font-mono text-sm font-semibold transition-opacity hover:opacity-80"
+                className="font-mono text-sm font-semibold transition-opacity hover:opacity-80"
                 style={{ color: "var(--text)" }}
               >
                 {symbol}
               </Link>
               <StatusPill value={d.action} />
-              <div className="hidden min-w-[96px] sm:block">
-                <RiskBar value={d.riskScore} />
-              </div>
               <span
-                className="text-[13px]"
-                style={{ color: "var(--muted)" }}
+                className="decision-risk-score"
+                style={{ color: riskColor }}
               >
-                {timeAgo(d.timestamp)}
+                {d.riskScore}
+                <span style={{ color: "rgba(144,126,108,0.38)", fontWeight: 400 }}>/1000</span>
               </span>
-              <span className="ml-auto">
-                <HashText value={d.txHash} href={`${EXPLORER_TX}/${d.txHash}`} chars={8} />
-              </span>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[12px]" style={{ color: "var(--muted)" }}>
+                  {timeAgo(d.timestamp)}
+                </span>
+                <HashText value={d.txHash} href={`${EXPLORER_TX}/${d.txHash}`} chars={7} />
+              </div>
             </div>
           );
         })}
@@ -473,7 +481,7 @@ function BuilderIntegrationSection() {
   ] as const;
 
   return (
-    <section className="section-ruled space-y-5">
+    <section className="section-tinted section-ruled space-y-5">
       <SectionHeader
         eyebrow="Integrate"
         title="A policy check before capital moves."

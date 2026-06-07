@@ -276,8 +276,18 @@ summary:focus-visible {
 /* Ruled: thin top rule, content below — space > contrast (Refactoring UI) */
 .section-ruled {
   border-top: 1px solid var(--border);
-  padding-top: 72px;
+  padding-top: 56px;
   position: relative;
+}
+
+/* Section tint — subtle background shift for visual rhythm */
+.section-tinted {
+  background: #080C08;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding-left: max(1rem, calc(50vw - 42rem));
+  padding-right: max(1rem, calc(50vw - 42rem));
+  width: 100vw;
 }
 
 .console-surface {
@@ -777,10 +787,10 @@ summary:focus-visible {
 .section-label {
   font-family:    'Instrument Sans', system-ui, sans-serif;
   font-size:      11px;
-  font-weight:    600;
-  letter-spacing: 0.07em;
+  font-weight:    700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color:          rgba(170,161,148,0.60);
+  color:          rgba(170,161,148,0.72);
   margin-bottom:  10px;
   display:        block;
 }
@@ -1036,10 +1046,10 @@ summary:focus-visible {
   content: '';
   height: 1px;
   left: 0;
-  opacity: 0.3;
+  opacity: 0.5;
   position: absolute;
   right: 0;
-  top: 14px;
+  top: 17px;
 }
 
 .judge-flow-step {
@@ -1050,18 +1060,18 @@ summary:focus-visible {
 .judge-flow-num {
   align-items: center;
   background: var(--surface-raised);
-  border: 1px solid rgba(237, 231, 218, 0.22);
+  border: 1px solid rgba(237, 231, 218, 0.28);
   border-radius: 50%;
   color: var(--text-tertiary);
   display: inline-flex;
-  font-family: 'Azeret Mono', monospace;
-  font-size: 10px;
-  font-weight: 600;
-  height: 28px;
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  height: 34px;
   justify-content: center;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   position: relative;
-  width: 28px;
+  width: 34px;
   z-index: 1;
 }
 
@@ -1079,6 +1089,59 @@ summary:focus-visible {
   }
   .judge-flow-track::before {
     content: none;
+  }
+}
+
+/* ── Decision feed ───────────────────────────────── */
+.decision-feed {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.decision-feed-row {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 72px auto 1fr 96px;
+  padding: 13px 20px;
+  transition: background 120ms ease;
+}
+
+.decision-feed-row:last-child {
+  border-bottom: none;
+}
+
+.decision-feed-row:hover {
+  background: rgba(229,221,207,0.022);
+}
+
+.decision-risk-score {
+  font-family: 'Azeret Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  tabular-nums: 1;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(47,234,131,0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(47,234,131,0); }
+}
+
+.live-dot {
+  animation: live-pulse 2.8s ease-in-out infinite;
+  background: var(--clear);
+  border-radius: 50%;
+  display: inline-block;
+  height: 6px;
+  width: 6px;
+}
+
+@media (max-width: 640px) {
+  .decision-feed-row {
+    grid-template-columns: 56px auto 1fr;
+    padding: 12px 16px;
   }
 }
 
