@@ -139,14 +139,11 @@ function LatestStateCard({
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
           <span className="section-label" style={{ color: "var(--seal)" }}>
-            Latest state
+            Live decisions
           </span>
           <h2 className="text-lg font-semibold" style={{ color: "var(--text)" }}>
-            Current policy outcomes
+            Latest per asset
           </h2>
-          <p className="mt-1 text-[13px] leading-relaxed" style={{ color: "var(--muted)" }}>
-            Latest decision per asset.
-          </p>
         </div>
         <TextLink href="/proof">All proofs</TextLink>
       </div>
@@ -397,7 +394,6 @@ async function RecentDecisions() {
       <SectionHeader
         eyebrow="Live activity"
         title="Recent decisions."
-        body="Every action scored, reviewed, and committed on-chain. Verifiable by anyone."
       >
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-2 text-[12px]" style={{ color: "var(--clear)" }}>

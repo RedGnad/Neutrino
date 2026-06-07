@@ -40,11 +40,6 @@ export function PolicyTemplates({ compact = false }: { compact?: boolean }) {
         eyebrow="Risk profiles"
         title="Three profiles. One policy engine."
         compact={compact}
-        body={
-          <>
-            The hosted runtime runs Conservative RWA. Switch profiles to change how risk, freshness, and execution gates are weighted.
-          </>
-        }
       />
 
       <div className="landing-brief-grid grid gap-4 lg:grid-cols-3">

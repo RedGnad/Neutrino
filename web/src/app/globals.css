@@ -1121,7 +1121,7 @@ summary:focus-visible {
   font-family: 'Azeret Mono', monospace;
   font-size: 12px;
   font-weight: 600;
-  tabular-nums: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 @keyframes live-pulse {

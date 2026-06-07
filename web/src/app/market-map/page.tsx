@@ -115,7 +115,7 @@ export default async function MarketMapPage() {
                 </div>
                 <div className="asset-ledger-cell">
                   <span className="asset-ledger-label">Updated</span>
-                  <span className="whitespace-nowrap text-xs" style={{ color: "var(--muted)", fontFamily: "'Azeret Mono', monospace" }}>
+                  <span className="whitespace-nowrap text-xs" style={{ color: "var(--muted)" }}>
                     {latest ? timeAgo(latest.timestamp) : "no decision yet"}
                   </span>
                 </div>

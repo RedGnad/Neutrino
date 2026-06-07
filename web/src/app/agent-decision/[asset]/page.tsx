@@ -45,12 +45,9 @@ export default async function AgentDecisionPage({ params }: Props) {
         <Link
           href="/market-map"
           className="text-xs font-semibold transition-opacity hover:opacity-80"
-          style={{
-            color: "var(--muted)",
-            fontFamily: "'Azeret Mono', monospace",
-          }}
+          style={{ color: "var(--muted)" }}
         >
-          Back to market map
+          ← Market map
         </Link>
 
         <ConsoleCard
@@ -131,11 +128,8 @@ export default async function AgentDecisionPage({ params }: Props) {
                 }
               >
                 <p
-                  className="text-[10px] uppercase tracking-widest"
-                  style={{
-                    color: "rgba(144,126,108,0.58)",
-                    fontFamily: "'Azeret Mono', monospace",
-                  }}
+                  className="section-label text-[10px]"
+                  style={{ color: "rgba(144,126,108,0.58)" }}
                 >
                   Risk score
                 </p>
@@ -165,11 +159,8 @@ export default async function AgentDecisionPage({ params }: Props) {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p
-                      className="text-[10px] uppercase tracking-widest"
-                      style={{
-                        color: "rgba(144,126,108,0.58)",
-                        fontFamily: "'Azeret Mono', monospace",
-                      }}
+                      className="section-label text-[10px]"
+                      style={{ color: "rgba(144,126,108,0.58)" }}
                     >
                       Latest on-chain commitment
                     </p>
@@ -313,11 +304,8 @@ function Stat({
   const content = (
     <ConsoleCard compact surface="ledger" accent="slate">
       <p
-        className="text-[10px] uppercase tracking-widest"
-        style={{
-          fontFamily: "'Azeret Mono', monospace",
-          color: "rgba(144,126,108,0.58)",
-        }}
+        className="section-label text-[10px]"
+        style={{ color: "rgba(144,126,108,0.58)" }}
       >
         {label}
       </p>
@@ -379,11 +367,8 @@ function HashField({
     >
       <div className="mb-1 flex items-center justify-between gap-2">
         <p
-          className="text-[10px] uppercase tracking-widest"
-          style={{
-            fontFamily: "'Azeret Mono', monospace",
-            color: "rgba(144,126,108,0.56)",
-          }}
+          className="section-label text-[10px]"
+          style={{ color: "rgba(144,126,108,0.56)" }}
         >
           {label}
         </p>
