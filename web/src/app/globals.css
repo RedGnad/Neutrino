@@ -293,6 +293,7 @@ summary:focus-visible {
 .console-surface {
   border: 1px solid var(--border);
   border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
   min-width: 0;
   padding: 26px;
   position: relative;
@@ -309,38 +310,23 @@ summary:focus-visible {
   cursor: default;
 }
 
-.console-surface::before {
-  background: var(--panel-accent, var(--border-hi));
-  content: '';
-  height: 1px;
-  left: 0;
-  opacity: 0.42;
-  position: absolute;
-  right: auto;
-  top: 0;
-  width: min(40px, 20%);
-}
-
-.console-surface::after {
-  content: none;
-}
 
 .surface-ledger {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--panel-accent) 4%, transparent), transparent 68px),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-accent) 7%, transparent), transparent 80px),
     var(--surface-raised);
 }
 
 .surface-command {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--panel-accent) 9%, transparent), transparent 110px),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-accent) 13%, transparent), transparent 120px),
     var(--surface-command);
   border-color: var(--border-strong);
 }
 
 .surface-evidence {
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--panel-accent) 7%, transparent), transparent 42%),
+    linear-gradient(135deg, color-mix(in srgb, var(--panel-accent) 11%, transparent), transparent 52%),
     var(--surface-evidence);
 }
 
@@ -766,11 +752,9 @@ summary:focus-visible {
 /* Proof: premium card — use sparingly, 2-3 times max per page */
 .section-proof {
   background:    var(--panel);
-  border-top:    1px solid var(--border);
-  border-right:  1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border:        1px solid var(--border);
   border-left:   3px solid var(--seal);
-  border-radius: 0 6px 6px 0;
+  border-radius: 6px;
   padding:       28px;
   position:      relative;
   overflow:      hidden;
@@ -794,11 +778,9 @@ summary:focus-visible {
 /* ── Ruling card (legacy + updated) ───────────── */
 .ruling-card {
   background:    var(--panel);
-  border-top:    1px solid var(--border);
-  border-right:  1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border:        1px solid var(--border);
   border-left:   3px solid var(--border-hi);
-  border-radius: 0 6px 6px 0;
+  border-radius: 6px;
   position:      relative;
   overflow:      hidden;
 }
@@ -812,7 +794,7 @@ summary:focus-visible {
   background:    var(--panel);
   border:        1px solid var(--border-hi);
   border-left:   3px solid var(--border-hi);
-  border-radius: 0 6px 6px 0;
+  border-radius: 6px;
   overflow:      hidden;
   position:      relative;
 }
@@ -836,7 +818,7 @@ summary:focus-visible {
   background:    var(--panel);
   border:        1px solid var(--border);
   border-left:   3px solid var(--border-hi);
-  border-radius: 0 8px 8px 0;
+  border-radius: 6px;
   padding:       24px;
 }
 
