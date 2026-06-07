@@ -900,11 +900,16 @@ summary:focus-visible {
 .nav-link {
   color:       var(--muted);
   font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
 }
 .nav-link:hover {
   color:      var(--text);
-  background: rgba(255,255,255,0.06);
-  transform: translateY(-1px);
+  background: rgba(255,255,255,0.05);
+}
+.nav-link-active {
+  color:       var(--text) !important;
+  background:  rgba(255,255,255,0.07) !important;
+  font-weight: 600;
 }
 
 /* ── Timeline connector ────────────────────────── */
