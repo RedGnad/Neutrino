@@ -221,12 +221,7 @@ export function MetricStrip({
       {items.map((item) => {
         const t = item.tone ? TONES[item.tone] : null;
         const content = (
-          <div
-            className="metric-cell px-4 py-3"
-            style={{
-              borderColor: t?.border ?? "var(--border)",
-            }}
-          >
+          <div className="metric-cell px-4 py-3">
             <p className="text-[11px] uppercase tracking-wide" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Instrument Sans', system-ui, sans-serif", fontWeight: 600, letterSpacing: "0.06em" }}>
               {item.label}
             </p>
