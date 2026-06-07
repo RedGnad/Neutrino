@@ -49,7 +49,7 @@ async function Hero() {
 
   return (
     <section className="hero-console -mt-10 px-4 pt-12 pb-24 sm:px-6 sm:pt-14 sm:pb-28">
-      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-center">
         <div className="space-y-8">
           <div className="space-y-5">
             <span className="section-label flex items-center gap-2 animate-stagger-1">
@@ -226,26 +226,7 @@ function ScenarioSection() {
       <SectionHeader
         eyebrow="Try it live"
         title="Run the full policy loop."
-        body={
-          <>
-            Current signals become an AI proposal, policy review, and a Mantle
-            receipt. Every output is a policy decision, not a fixed asset label.
-          </>
-        }
       />
-
-      <ConsoleCard compact surface="evidence" accent="violet">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-          <span className="flex items-center gap-2">
-            <StatusPill value="AI proposal" tone="blue">AI proposal</StatusPill>
-            <span style={{ color: "var(--muted)" }}>scores signals</span>
-          </span>
-          <span className="flex items-center gap-2">
-            <StatusPill value="Policy review" tone="violet">Policy review</StatusPill>
-            <span style={{ color: "var(--muted)" }}>validates before receipt</span>
-          </span>
-        </div>
-      </ConsoleCard>
 
       <div className="scenario-grid grid gap-5 lg:grid-cols-3">
         <ScenarioCard
@@ -254,13 +235,13 @@ function ScenarioSection() {
           title="After-hours xStock exposure"
           subtitle="Current policy outcome"
           assets={["NVDAx", "TSLAx", "SPYx"]}
-          description="Checks halt status and quote availability. PAUSE can come from market context, stale quote, or unavailable execution rail."
+          description="Checks halt status and quote availability."
           button={
             <RunAgentButton
               scenario="risky-xstocks"
               label="Run risk check"
               variant="primary"
-              hint="Risk evaluation only · ~30-60s · 3 on-chain receipts"
+              hint="~30-60s · 3 on-chain receipts"
             />
           }
         />
@@ -270,13 +251,13 @@ function ScenarioSection() {
           title="Safe on-chain RWA yield"
           subtitle="Current conditions"
           assets={["USDY", "mETH"]}
-          description="USDY and mETH can be allocated when freshness and risk checks pass. xStock signals are n/a."
+          description="Allocated when freshness and risk checks pass."
           button={
             <RunAgentButton
               scenario="safe-yield"
               label="Run safe-yield scenario"
               variant="primary"
-              hint="Risk evaluation · ~20-40s · 2 on-chain receipts"
+              hint="~20-40s · 2 on-chain receipts"
             />
           }
         />
@@ -286,25 +267,19 @@ function ScenarioSection() {
           title="Verified Mantle execution"
           subtitle="Live Mantle execution"
           assets={["USDC", "mETH"]}
-          description="Real Fluxion V3 USDC to mETH to USDC round trip. Two swaps, two tx hashes."
-          note="xStocks execution waits for verified RFQ rails. Neutrino records a PAUSE receipt instead of forcing an unsafe trade."
+          description="Real Fluxion V3 round trip. Two swaps, two tx hashes."
+          note="xStocks execution waits for verified RFQ rails. Neutrino records a PAUSE receipt instead."
           button={
             <RunAgentButton
               scenario="safe-yield"
               executeOnChain
               label="Execute via Fluxion"
               variant="execute"
-              hint="Decisions + real Fluxion round-trip · ~1% fees + gas"
+              hint="~1% fees + gas"
             />
           }
         />
       </div>
-
-      <p className="text-[13px] leading-relaxed" style={{ color: "rgba(144,126,108,0.54)" }}>
-        Transactions are signed by a controlled agent wallet. No user wallet
-        connection is required — this demonstrates autonomous agent execution,
-        not a user custody flow.
-      </p>
     </section>
   );
 }
@@ -368,23 +343,23 @@ function JudgeModeGuide() {
   const steps = [
     {
       title: "Signals",
-      body: "Market hours, xStocks price and halt status, and execution availability — all labeled live, stub, or n/a.",
+      body: "Market hours, prices, execution availability — each labeled.",
     },
     {
       title: "AI proposal",
-      body: "LLM suggests an action and rationale. Confidence attached. The LLM never owns the final decision.",
+      body: "LLM proposes with rationale. Never owns the decision.",
     },
     {
       title: "Policy review",
-      body: "Deterministic rules validate or override the AI proposal. Override reason is explicit and on-record.",
+      body: "Deterministic rules validate or override. Reason on-record.",
     },
     {
       title: "Receipt",
-      body: "keccak256(canonicalJson) committed to Mantle as reasonHash. Immutable, re-hashable by anyone.",
+      body: "keccak256(json) committed to Mantle. Immutable.",
     },
     {
       title: "Execution",
-      body: "Capital moves only on verified rails — Fluxion V3 for mETH, INIT Capital for stable yield.",
+      body: "Capital moves only on verified rails.",
     },
   ] as const;
 
@@ -393,7 +368,6 @@ function JudgeModeGuide() {
       <SectionHeader
         eyebrow="How it works"
         title="Five stages. One immutable receipt."
-        body="Every run produces a canonical decision JSON, a reasonHash committed to Mantle, and a verifiable proof trail — from raw signals to on-chain action."
       >
         <TextLink href="/proof">Open registry</TextLink>
       </SectionHeader>
@@ -458,12 +432,10 @@ async function RecentDecisions() {
                 {d.riskScore}
                 <span style={{ color: "rgba(144,126,108,0.38)", fontWeight: 400 }}>/1000</span>
               </span>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[12px]" style={{ color: "var(--muted)" }}>
-                  {timeAgo(d.timestamp)}
-                </span>
-                <HashText value={d.txHash} href={`${EXPLORER_TX}/${d.txHash}`} chars={7} />
-              </div>
+              <span className="text-[12px]" style={{ color: "var(--muted)" }}>
+                {timeAgo(d.timestamp)}
+              </span>
+              <HashText value={d.txHash} href={`${EXPLORER_TX}/${d.txHash}`} chars={7} />
             </div>
           );
         })}
