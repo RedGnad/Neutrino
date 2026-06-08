@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { parseXStocksDecision, XStocksDecisionBreakdown } from "./XStocksDecisionBreakdown";
 
@@ -100,7 +100,6 @@ export function RunAgentButton({
   variant = "primary",
   hint,
 }: RunAgentButtonProps) {
-  const router = useRouter();
   const [state, setState] = useState<
     | { kind: "idle" }
     | { kind: "running" }
@@ -150,7 +149,6 @@ export function RunAgentButton({
       const result = json as RunResult;
       cacheCanonicalJsons(result);
       setState({ kind: "done", result });
-      router.refresh();
     } catch (e) {
       setState({ kind: "error", message: (e as Error).message });
     } finally {
@@ -229,21 +227,24 @@ function cacheCanonicalJsons(result: RunResult) {
 
 function ResultDrawer({ result, scenario }: { result: RunResult; scenario?: Scenario }) {
   const [open, setOpen] = useState(true);
+  const [portalTarget, setPortalTarget] = useState<Element | null>(null);
   const written = result.results.filter((r) => r.txHash).length;
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="text-[12px] font-semibold transition-opacity hover:opacity-80"
-        style={{ color: "var(--clear)" }}
-      >
-        View receipt →
-      </button>
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
 
-      <div className={`result-drawer-backdrop${open ? " open" : ""}`} onClick={() => setOpen(false)} />
-      <div className={`result-drawer${open ? " open" : ""}`} role="dialog" aria-modal="true">
+  const drawerPortal = portalTarget ? createPortal(
+    <>
+      <div
+        className={`result-drawer-backdrop${open ? " open" : ""}`}
+        onClick={() => setOpen(false)}
+      />
+      <div
+        className={`result-drawer${open ? " open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+      >
         <div className="result-drawer-header">
           <div>
             <span className="text-[13px] font-semibold" style={{ color: "var(--text)" }}>
@@ -267,6 +268,21 @@ function ResultDrawer({ result, scenario }: { result: RunResult; scenario?: Scen
           <ResultPanel result={result} scenario={scenario} />
         </div>
       </div>
+    </>,
+    portalTarget,
+  ) : null;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-[12px] font-semibold transition-opacity hover:opacity-80"
+        style={{ color: "var(--clear)" }}
+      >
+        View receipt →
+      </button>
+      {drawerPortal}
     </>
   );
 }
