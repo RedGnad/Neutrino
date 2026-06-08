@@ -95,17 +95,42 @@ export default function RootLayout({
         </main>
 
         <footer
-          className="mx-auto max-w-6xl px-4 py-6 sm:px-6"
+          className="mx-auto max-w-6xl px-4 py-8 sm:px-6"
           style={{ borderTop: "1px solid var(--border)" }}
         >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span style={{ fontSize: "12px", color: "var(--muted)" }}>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <span style={{ fontSize: "12px", color: "var(--muted)", fontFamily: "'Instrument Sans', system-ui, sans-serif" }}>
               Neutrino — AI risk layer for Mantle RWA agents
             </span>
-            <span style={{ fontSize: "12px", color: "rgba(144,126,108,0.38)" }}>
-              Mantle Mainnet · deterministic policy engine
-            </span>
+            <nav className="flex flex-wrap items-center gap-5">
+              {[
+                { href: "/proof", label: "Proofs" },
+                { href: "/market-map", label: "Market map" },
+                { href: "/integrate", label: "Integrate" },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="transition-opacity hover:opacity-80"
+                  style={{ fontSize: "12px", color: "var(--muted)" }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <a
+                href="https://github.com/RedGnad/Neutrino"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-80"
+                style={{ fontSize: "12px", color: "var(--muted)" }}
+              >
+                GitHub
+              </a>
+            </nav>
           </div>
+          <p className="mt-4" style={{ fontSize: "11px", color: "rgba(144,126,108,0.38)" }}>
+            Mantle Mainnet · ERC-8004 · deterministic policy engine
+          </p>
         </footer>
       </body>
     </html>

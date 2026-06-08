@@ -106,13 +106,13 @@ async function Hero() {
           </div>
 
           <div className="hero-proof-strip animate-stagger-5">
-            <span className="hero-proof-token">Live on Mantle mainnet</span>
-            <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
             <span className="hero-proof-token">ERC-8004 verified</span>
             <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
             <span className="hero-proof-token">Verifiable on-chain receipts</span>
             <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
             <span className="hero-proof-token">Fluxion V3 execution</span>
+            <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
+            <span className="hero-proof-token">Deterministic policy engine</span>
           </div>
         </div>
 
@@ -140,9 +140,27 @@ function LatestStateCard({
       </div>
 
       {shown.length === 0 ? (
-        <p className="text-sm" style={{ color: "var(--muted)" }}>
-          No decisions yet. Run a scenario below.
-        </p>
+        <div className="flex flex-col items-center gap-4 py-8 text-center">
+          <div
+            className="flex h-10 w-10 items-center justify-center rounded-full"
+            style={{
+              background: "color-mix(in srgb, var(--clear) 8%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--clear) 20%, transparent)",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="5.5" stroke="var(--clear)" strokeWidth="1.25" />
+              <path d="M8 5v3.5l2 1.5" stroke="var(--clear)" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>No decisions on-chain yet</p>
+            <p className="mt-1 text-[12px]" style={{ color: "var(--muted)" }}>Run a scenario to write the first receipt to Mantle.</p>
+          </div>
+          <a href="#scenarios" className="text-[12px] font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
+            Run first scenario →
+          </a>
+        </div>
       ) : (
         <>
           <div className="space-y-1.5">
@@ -460,7 +478,7 @@ function BuilderIntegrationSection() {
       <SectionHeader
         eyebrow="Integrate"
         title="A policy check before capital moves."
-        body="Send intent in. Get proposal, review, final action, reasonHash, and receipt."
+        body="One call. One verified receipt on Mantle."
       >
         <TextLink href="/integrate">Integration guide</TextLink>
       </SectionHeader>

@@ -140,7 +140,7 @@ export default async function ProofPage() {
                         <a
                           href={`/agent-decision/${asset.symbol}`}
                           className="text-xs font-semibold transition-opacity hover:opacity-80"
-                          style={{ color: "var(--clear)", fontFamily: "'Azeret Mono', monospace" }}
+                          style={{ color: "var(--clear)" }}
                         >
                           Receipt
                         </a>
@@ -195,7 +195,7 @@ function ContractCard({ label, address }: { label: string; address: string }) {
   return (
     <a href={`${EXPLORER_ADDR}/${address}`} target="_blank" rel="noopener noreferrer" className="block transition-opacity hover:opacity-80">
       <ConsoleCard surface="evidence" accent="gold" compact>
-        <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(144,126,108,0.58)", fontFamily: "'Azeret Mono', monospace" }}>
+        <p className="section-label">
           {label}
         </p>
         <p className="mt-1 font-mono text-sm" style={{ color: "var(--text)" }}>
