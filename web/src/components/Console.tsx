@@ -225,7 +225,7 @@ export function MetricStrip({
             <p className="text-[11px] uppercase tracking-wide" style={{ color: "rgba(144,126,108,0.56)", fontFamily: "'Instrument Sans', system-ui, sans-serif", fontWeight: 600, letterSpacing: "0.06em" }}>
               {item.label}
             </p>
-            <div className="mt-1 text-[15px] font-semibold leading-snug" style={{ color: t?.fg ?? "var(--text)" }}>
+            <div className="mt-1 text-[15px] font-bold leading-snug" style={{ color: t?.fg ?? "var(--text)" }}>
               {item.value}
             </div>
           </div>

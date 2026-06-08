@@ -190,7 +190,7 @@ function LatestStateCard({
                   <StatusPill value={d.action} />
                   <RiskBar value={d.riskScore} label={false} />
                   <span
-                    className="font-mono text-[12px] font-semibold"
+                    className="font-mono text-[12px] font-bold"
                     style={{ color: riskColor, fontVariantNumeric: "tabular-nums" }}
                   >
                     {d.riskScore}
@@ -447,7 +447,7 @@ async function RecentDecisions() {
               </Link>
               <StatusPill value={d.action} />
               <span
-                className="decision-risk-score"
+                className="decision-risk-score font-bold"
                 style={{ color: riskColor }}
               >
                 {d.riskScore}
