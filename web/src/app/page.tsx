@@ -174,11 +174,11 @@ function LatestStateCard({
                 <Link
                   key={d.txHash}
                   href={`/agent-decision/${sym}`}
-                  className="grid items-center gap-2 rounded px-3 py-2.5 transition-colors hover:brightness-110"
+                  className="grid items-center gap-3 rounded px-3 py-2.5 transition-colors hover:brightness-110"
                   style={{
                     background: "rgba(255,255,255,0.018)",
                     border: "1px solid var(--border)",
-                    gridTemplateColumns: "56px 88px 1fr 36px 48px",
+                    gridTemplateColumns: "52px 88px 1fr 44px 52px",
                   }}
                 >
                   <span
@@ -188,7 +188,10 @@ function LatestStateCard({
                     {sym}
                   </span>
                   <StatusPill value={d.action} className="w-full justify-center" />
-                  <RiskBar value={d.riskScore} label={false} />
+                  {/* inline bar — no min-width, always shows track */}
+                  <div className="h-[3px] w-full overflow-hidden rounded-full" style={{ background: "rgba(231,223,208,0.1)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${Math.max(2, (d.riskScore / 1000) * 100)}%`, background: riskColor }} />
+                  </div>
                   <span
                     className="font-mono text-[12px] font-bold text-right tabular-nums"
                     style={{ color: riskColor }}
