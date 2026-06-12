@@ -154,7 +154,7 @@ Hosted receipt storage is not IPFS, not decentralized archival storage, and not 
 ```bash
 git clone https://github.com/RedGnad/Neutrino && cd Neutrino
 
-# 1. Smart contracts (8/8 tests pass on Foundry, Solidity 0.8.27, EVM cancun)
+# 1. Smart contracts (12/12 tests pass on Foundry, Solidity 0.8.27, EVM cancun)
 cd contracts
 forge build
 forge test

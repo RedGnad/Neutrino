@@ -30,7 +30,7 @@ async function queueRun<T>(task: () => Promise<T>): Promise<T> {
 }
 
 function resolveNetwork(): { network: 'mantle' | 'mantle_sepolia'; rpcUrl: string | undefined } {
-  const declared = (process.env.NEUTRINO_NETWORK ?? 'mantle_sepolia') as 'mantle' | 'mantle_sepolia';
+  const declared = (process.env.NEUTRINO_NETWORK ?? 'mantle') as 'mantle' | 'mantle_sepolia';
   const network = declared === 'mantle' ? 'mantle' : 'mantle_sepolia';
   const explicit = process.env.MANTLE_RPC;
   const rpcUrl =
