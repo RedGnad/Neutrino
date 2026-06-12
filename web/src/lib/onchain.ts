@@ -119,35 +119,41 @@ export interface OnChainDecision {
   caller: Address;
 }
 
-// RWADecisionLogger deployed on Mantle mainnet at block 94_987_226.
-const DEPLOYMENT_BLOCK = 94_900_000n;
-// First batch of real decisions landed within 100k blocks of deployment.
-const INITIAL_BATCH_WINDOW = 100_000n;
+// First 5 decisions confirmed at blocks 94_987_254–94_987_269 via direct RPC test.
+// Window anchored with safe margin; range = 9k (under the 10k RPC hard limit).
+const INITIAL_WINDOW_FROM = 94_980_000n;
+const INITIAL_WINDOW_TO   = 94_989_000n;
+
+// Mantle public RPC enforces a strict 10,000-block max for eth_getLogs.
+// Using 8k keeps us comfortably below that ceiling even if the chain
+// advances a few blocks between when we read `latest` and when the request
+// arrives. We pass `toBlock: latest` (explicit number, not the string
+// "latest") so the range is locked at query time.
+const MAX_RANGE = 8_000n;
 
 /**
  * Pull the most recent N DecisionLogged events from RWADecisionLogger.
  *
- * Two-window strategy to avoid exceeding RPC block-range limits (~500k):
- *  1. Recent: latest-500k → latest  (catches all fresh decisions)
- *  2. Initial: DEPLOYMENT_BLOCK → DEPLOYMENT_BLOCK+100k  (catches the
- *     first decisions written during initial testing at block ~94_987_254)
- *     — only queried when it doesn't overlap with the recent window.
+ * Two-window strategy:
+ *  1. Recent: latest-8k → latest   (catches fresh decisions from any run today)
+ *  2. Initial: 94_980_000 → 94_989_000  (covers the first 5 decisions logged
+ *     at block ~94_987_254 during initial deployment testing on Mantle mainnet)
+ *     — only queried when it does not overlap the recent window.
  */
 export async function fetchRecentDecisions(limit = 50): Promise<OnChainDecision[]> {
   if (!LOGGER_ADDRESS) return [];
 
-  const MAX_RANGE = 500_000n;
   const latest = await publicClient.getBlockNumber();
   const recentFrom = latest > MAX_RANGE ? latest - MAX_RANGE : 0n;
-  const initialTo = DEPLOYMENT_BLOCK + INITIAL_BATCH_WINDOW;
 
   const logParams = { address: LOGGER_ADDRESS, event: DECISION_LOGGED_EVENT } as const;
 
   const [recentLogs, initialLogs] = await Promise.all([
-    publicClient.getLogs({ ...logParams, fromBlock: recentFrom, toBlock: 'latest' }).catch(() => []),
-    // Only run the initial-batch query when it doesn't overlap the recent window.
-    recentFrom > initialTo
-      ? publicClient.getLogs({ ...logParams, fromBlock: DEPLOYMENT_BLOCK, toBlock: initialTo }).catch(() => [])
+    // Explicit toBlock so the window is exactly MAX_RANGE regardless of chain tip drift.
+    publicClient.getLogs({ ...logParams, fromBlock: recentFrom, toBlock: latest }).catch(() => []),
+    // Initial batch only when it doesn't overlap the recent window.
+    recentFrom > INITIAL_WINDOW_TO
+      ? publicClient.getLogs({ ...logParams, fromBlock: INITIAL_WINDOW_FROM, toBlock: INITIAL_WINDOW_TO }).catch(() => [])
       : Promise.resolve([]),
   ]);
 
