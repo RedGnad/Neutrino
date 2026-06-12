@@ -195,7 +195,7 @@ function LatestStateCard({
                   >
                     {d.riskScore}
                   </span>
-                  <span className="text-[11px] w-10 text-right" style={{ color: "var(--muted)" }}>
+                  <span className="text-[11px] whitespace-nowrap text-right" style={{ color: "var(--muted)" }}>
                     {timeAgo(d.timestamp)}
                   </span>
                 </Link>
@@ -453,7 +453,7 @@ async function RecentDecisions() {
                 {d.riskScore}
                 <span style={{ color: "rgba(144,126,108,0.38)", fontWeight: 400 }}>/1000</span>
               </span>
-              <span className="text-[12px]" style={{ color: "var(--muted)" }}>
+              <span className="text-[12px] whitespace-nowrap" style={{ color: "var(--muted)" }}>
                 {timeAgo(d.timestamp)}
               </span>
               <HashText value={d.txHash} href={`${EXPLORER_TX}/${d.txHash}`} chars={7} />
