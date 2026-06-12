@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { parseXStocksDecision, XStocksDecisionBreakdown } from "./XStocksDecisionBreakdown";
@@ -100,6 +101,7 @@ export function RunAgentButton({
   variant = "primary",
   hint,
 }: RunAgentButtonProps) {
+  const router = useRouter();
   const [state, setState] = useState<
     | { kind: "idle" }
     | { kind: "running" }
@@ -149,6 +151,9 @@ export function RunAgentButton({
       const result = json as RunResult;
       cacheCanonicalJsons(result);
       setState({ kind: "done", result });
+      // Refresh server components so hero card and recent decisions show the new data.
+      // Safe now that the drawer is portal-mounted outside transformed ancestors.
+      router.refresh();
     } catch (e) {
       setState({ kind: "error", message: (e as Error).message });
     } finally {

@@ -27,6 +27,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 | **RWADecisionLogger** (verified) | [`0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2`](https://mantlescan.xyz/address/0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2#code) — Source Code Verified on Mantlescan |
 | **Example `logDecision` tx** | [`0xa09b1576…`](https://mantlescan.xyz/tx/0xa09b1576df102dbf2a062b72ca6097907a37b2c362e954de5bca4dd0e7ef51d8) — NVDAx · PAUSE · riskScore 560/1000 |
 | **Proof registry (live)** | https://neutrino-fawn.vercel.app/proof |
+| **ERC-8004 agent card** | https://neutrino-fawn.vercel.app/agent-card.json |
 
 ## DoraHacks Deployment Award evidence
 

@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "1.0",
+  "name": "Neutrino",
+  "description": "Risk judgment layer for autonomous agents trading RWA and xStocks on Mantle. AI proposes, deterministic policy validates or overrides, and Mantle verifies the final decision with a keccak256 receipt.",
+  "version": "2.0",
+  "url": "https://neutrino-fawn.vercel.app",
+  "provider": {
+    "organization": "Neutrino",
+    "url": "https://neutrino-fawn.vercel.app"
+  },
+  "identity": {
+    "standard": "ERC-8004",
+    "chainId": 5000,
+    "contractAddress": "0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96",
+    "loggerAddress": "0xeA72FEdBfe91C03664B15cb1d735A7fceaa68Ef2",
+    "agentId": "1",
+    "explorerUrl": "https://mantlescan.xyz/address/0x6eF0D0b946187B066DC7D670603FDE9928Ad4C96"
+  },
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "authentication": {
+    "schemes": ["none"]
+  },
+  "supportedTrust": ["reputation"],
+  "defaultInputModes": ["application/json"],
+  "defaultOutputModes": ["application/json"],
+  "services": [
+    {
+      "type": "web",
+      "url": "https://neutrino-fawn.vercel.app"
+    },
+    {
+      "type": "api",
+      "url": "https://neutrino-fawn.vercel.app/api/run-agent",
+      "method": "POST",
+      "contentType": "application/json",
+      "description": "Run a full policy loop for xStock and RWA scenarios. Returns AI proposal, policy review, final action, reasonHash, and a Mantle mainnet receipt."
+    }
+  ],
+  "skills": [
+    {
+      "id": "rwa-risk-evaluation",
+      "name": "RWA Risk Evaluation",
+      "description": "Scores tokenized equities (NVDAx, TSLAx, SPYx) and yield-bearing RWAs (USDY, mETH) on market hours, spread, liquidity, basis, and volatility. Returns a deterministic risk score 0–1000 and a policy decision (ALLOCATE / PAUSE / REDUCE / MOVE_TO_STABLE_YIELD).",
+      "tags": ["risk", "rwa", "xstocks", "mantle", "policy"],
+      "inputModes": ["application/json"],
+      "outputModes": ["application/json"],
+      "examples": [
+        {
+          "name": "After-hours xStock",
+          "input": { "scenario": "risky-xstocks", "execute": false },
+          "output": { "action": "PAUSE", "riskScore": 560, "policyOverride": true }
+        },
+        {
+          "name": "Safe yield allocation",
+          "input": { "scenario": "safe-yield", "execute": false },
+          "output": { "action": "ALLOCATE", "riskScore": 120 }
+        }
+      ]
+    },
+    {
+      "id": "on-chain-decision-logging",
+      "name": "On-Chain Decision Logging",
+      "description": "Commits every policy decision to Mantle mainnet via RWADecisionLogger.logDecision(). Each receipt includes action, riskScore, reasonHash = keccak256(canonicalJson), and policyHash. Immutable and verifiable on Mantlescan.",
+      "tags": ["on-chain", "mantle", "audit", "receipt", "erc-8004"],
+      "inputModes": ["application/json"],
+      "outputModes": ["application/json"]
+    },
+    {
+      "id": "fluxion-execution",
+      "name": "Fluxion V3 Execution",
+      "description": "On ALLOCATE decisions, routes real USDC ↔ mETH swaps through Fluxion V3 SwapRouter (0x5628a59d…) on Mantle mainnet. Only executes on verified rails; capital never moves on an unconfirmed path.",
+      "tags": ["execution", "fluxion", "defi", "mantle", "swap"],
+      "inputModes": ["application/json"],
+      "outputModes": ["application/json"]
+    }
+  ]
+}
