@@ -57,10 +57,9 @@ export const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
   NVDAx: { symbol: 'NVDAx', kind: 'tokenized_equity', reference: 'NVDA', address: '0xc845b2894dBddd03858fd2D643B4eF725fE0849d', market: 'NASDAQ' },
   TSLAx: { symbol: 'TSLAx', kind: 'tokenized_equity', reference: 'TSLA', address: '0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0', market: 'NASDAQ' },
   SPYx:  { symbol: 'SPYx',  kind: 'tokenized_equity', reference: 'SPY',  address: '0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48', market: 'NYSE' },
-  // SPCXx: SpaceX xStock on Mantle mainnet. Address from xStocks public API
-  // (deployments[network=Mantle].address). Private company — market:'none'
-  // so the engine treats it as permanently closed regardless of wall-clock time.
-  SPCXx: { symbol: 'SPCXx', kind: 'tokenized_equity', reference: 'SPCX', address: '0x68fa48B1C2FE52b3D776E1953e0E782b5044Ce28', market: 'none' },
+  // SPCXx: SpaceX xStock on Mantle mainnet. SPCX IPO'd June 12 2026 on NASDAQ.
+  // Address from xStocks public API (deployments[network=Mantle].address).
+  SPCXx: { symbol: 'SPCXx', kind: 'tokenized_equity', reference: 'SPCX', address: '0x68fa48B1C2FE52b3D776E1953e0E782b5044Ce28', market: 'NASDAQ' },
   USDY:  { symbol: 'USDY',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.USDY.address },
   mETH:  { symbol: 'mETH',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.mETH.address },
   USDC:  { symbol: 'USDC',  kind: 'stable',         address: MAINNET_TOKENS.USDC.address },

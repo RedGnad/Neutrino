@@ -307,10 +307,10 @@ function ScenarioSection() {
         <ScenarioCard
           index="04"
           tone="amber"
-          title="SpaceX — private equity"
-          subtitle="Always-high-risk · no public exchange"
+          title="SpaceX xStock — IPO day"
+          subtitle="NASDAQ listed June 12 · token trades 24/7"
           assets={["SPCXx"]}
-          description="SpaceX trades 24/7 on Mantle. The underlying never does. No market hours, spread 180 bps, volume $12k/day — Neutrino PAUSEs regardless of time."
+          description="SPCX IPO'd June 12 2026 (+19% day 1). The token runs 24/7 on Mantle. First-day volatility and thin on-chain liquidity push risk above any allocation threshold."
           button={
             <RunAgentButton
               scenario="spacex"

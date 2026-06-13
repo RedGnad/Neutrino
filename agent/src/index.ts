@@ -25,7 +25,7 @@ const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
   NVDAx:  { symbol: 'NVDAx',  kind: 'tokenized_equity', reference: 'NVDA',  address: '0x0000000000000000000000000000000000000001', market: 'NASDAQ' },
   TSLAx:  { symbol: 'TSLAx',  kind: 'tokenized_equity', reference: 'TSLA',  address: '0x0000000000000000000000000000000000000002', market: 'NASDAQ' },
   SPYx:   { symbol: 'SPYx',   kind: 'tokenized_equity', reference: 'SPY',   address: '0x0000000000000000000000000000000000000003', market: 'NYSE' },
-  SPCXx:  { symbol: 'SPCXx',  kind: 'tokenized_equity', reference: 'SPCX',  address: '0x68fa48B1C2FE52b3D776E1953e0E782b5044Ce28', market: 'none' },
+  SPCXx:  { symbol: 'SPCXx',  kind: 'tokenized_equity', reference: 'SPCX',  address: '0x68fa48B1C2FE52b3D776E1953e0E782b5044Ce28', market: 'NASDAQ' },
   USDY:   { symbol: 'USDY',   kind: 'yield_bearing',                          address: '0x0000000000000000000000000000000000000004' },
   mETH:   { symbol: 'mETH',   kind: 'yield_bearing',                          address: '0x0000000000000000000000000000000000000005' },
   AAPLx:  { symbol: 'AAPLx',  kind: 'tokenized_equity', reference: 'AAPL',  address: '0x0', market: 'NASDAQ' },

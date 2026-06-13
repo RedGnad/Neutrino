@@ -55,10 +55,9 @@ const MOCK_BASE: Record<AssetSymbol, MockBase> = {
   SPYx:   { fallbackPrice: 555,  basisDriftPct: 0.001, spreadOpen: 8,   spreadClosed: 40,  volume24hUsd: 480_000,   volatility: 0.18 },
   QQQx:   { fallbackPrice: 480,  basisDriftPct: 0.002, spreadOpen: 9,   spreadClosed: 45,  volume24hUsd: 380_000,   volatility: 0.22 },
   CRCLx:  { fallbackPrice: 31,   basisDriftPct: 0.005, spreadOpen: 22,  spreadClosed: 130, volume24hUsd: 60_000,    volatility: 0.50 },
-  // SpaceX: private company, no public exchange. Spread/volume/vol reflect
-  // near-illiquid secondary market. xStocks API returns quote:null — no
-  // live price feed. Engine PAUSEs regardless of wall-clock time.
-  SPCXx:  { fallbackPrice: 235,  basisDriftPct: 0.012, spreadOpen: 180, spreadClosed: 180, volume24hUsd: 12_000,    volatility: 1.35 },
+  // SPCXx: SpaceX IPO'd June 12 2026 on NASDAQ (SPCX, $135→$161, +19% day 1).
+  // xStock trades 24/7 on Mantle; underlying only during NASDAQ hours.
+  SPCXx:  { fallbackPrice: 155,  basisDriftPct: 0.008, spreadOpen: 120, spreadClosed: 220, volume24hUsd: 30_000,    volatility: 1.50 },
   USDY:   { fallbackPrice: 1.06, basisDriftPct: 0,     spreadOpen: 5,   spreadClosed: 5,   volume24hUsd: 2_500_000, volatility: 0.02, apy: 0.046 },
   mETH:   { fallbackPrice: 3300, basisDriftPct: 0,     spreadOpen: 8,   spreadClosed: 8,   volume24hUsd: 1_200_000, volatility: 0.55, apy: 0.038 },
   USDe:   { fallbackPrice: 1.0,  basisDriftPct: 0,     spreadOpen: 4,   spreadClosed: 4,   volume24hUsd: 4_000_000, volatility: 0.01, apy: 0.075 },

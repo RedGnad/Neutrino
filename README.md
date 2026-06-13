@@ -2,11 +2,13 @@
 
 > Risk judgment layer for autonomous agents on Mantle xStocks / RWA.
 
-**Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade — including SpaceX, which has no public exchange at all.**
+**Neutrino deploys capital into on-chain yield when conditions are right — and stops the agent dead when they're not.**
 
 *The RWA agent you can actually let run.*
 
-Neutrino gives autonomous agents a safety loop: the AI scores live RWA and xStocks signals and proposes an action, policy validates or overrides it, and the final decision is committed to Mantle with a canonical receipt (`reasonHash = keccak256(audit JSON)`). When policy allows, execution routes through Fluxion V3. AI proposes, policy validates or overrides, Mantle verifies the final receipt.
+Neutrino gives autonomous agents a policy loop: AI scores live RWA and xStocks signals and proposes an action, a deterministic policy validates or overrides it, and the final decision is committed to Mantle with a canonical receipt (`reasonHash = keccak256(audit JSON)`). On ALLOCATE, execution routes through Fluxion V3. On everything else, the agent stops without touching capital. AI proposes, policy validates or overrides, Mantle verifies the receipt.
+
+Tokenized stocks trade 24/7 on Mantle. Their underlying markets don't — NYSE/NASDAQ hours apply, or in the case of a freshly-listed stock like SPCXx (SpaceX IPO'd June 12 2026 on NASDAQ as SPCX), first-day volatility and thin on-chain liquidity push risk scores above any sane allocation threshold. The engine knows the difference.
 
 
 - **Live:** decision receipts on Mantle mainnet; the Fluxion V3 execution path; xStock **trading-halt status** and **indicative price when the public API returns a quote**. If the quote is null or unavailable, the receipt marks xStock price as `stub` and uses the modelled fallback.
@@ -30,7 +32,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 | **Example `logDecision` tx** | [`0xa09b1576…`](https://mantlescan.xyz/tx/0xa09b1576df102dbf2a062b72ca6097907a37b2c362e954de5bca4dd0e7ef51d8) — NVDAx · PAUSE · riskScore 560/1000 |
 | **Proof registry (live)** | https://neutrino-fawn.vercel.app/proof |
 | **ERC-8004 agent card** | https://neutrino-fawn.vercel.app/agent-card.json |
-| **SPCXx receipt** (SpaceX · PAUSE · 860/1000) | [`0x1fe412c8…b5bb04`](https://mantlescan.xyz/tx/0x1fe412c8d96ef7125bffe6797aa8fa80c2093466257bf5096254c2cab4b5bb04) — block 96614360 · private equity, no market hours → permanent high-risk |
+| **SPCXx receipt** (SpaceX · PAUSE · 860/1000) | [`0x1fe412c8…b5bb04`](https://mantlescan.xyz/tx/0x1fe412c8d96ef7125bffe6797aa8fa80c2093466257bf5096254c2cab4b5bb04) — block 96614360 · SpaceX IPO'd June 12 2026 (NASDAQ: SPCX); xStock trades 24/7 on Mantle — first-day vol + thin on-chain liquidity → PAUSE |
 
 ## DoraHacks Deployment Award evidence
 
@@ -78,14 +80,17 @@ Real `ALLOCATE` end-to-end on Fluxion V3 (Mantle mainnet):
 
 ## What ships today
 
-- **Real on-chain decisions** on Mantle mainnet. Every run writes one `DecisionLogged` event per asset with a `reasonHash` that covers the full canonical audit JSON (schema `neutrino.decision.v2`).
-- **xStocks public-API integration.** For every tokenized equity the agent queries the issuer's **indicative price** (`/public/assets/{symbol}/price-data`) and the official **trading-halt status** (`/public/system/status/{symbol}`). Trading status is live when the endpoint responds; price is live only when the API returns a non-null quote. Otherwise the receipt marks xStock price as `stub` and uses the modelled fallback. An `isMarketTradingHalted` / `isAtomicTradingHalted` flag produces a policy PAUSE outcome.
+- **Real capital deployment on Mantle mainnet.** When risk checks pass, Neutrino allocates: real USDC → mETH swaps through Fluxion V3, two on-chain legs, two Mantlescan receipts. The execution path is live and verified (see tx hashes above).
+- **Real on-chain decisions** for every run. Every asset evaluated writes one `DecisionLogged` event to Mantle with a `reasonHash` covering the full canonical audit JSON (schema `neutrino.decision.v2`). ALLOCATE and PAUSE both produce receipts — capital either moves or is demonstrably stopped.
+- **xStocks public-API integration.** For every tokenized equity the agent queries the issuer's **indicative price** (`/public/assets/{symbol}/price-data`) and the official **trading-halt status** (`/public/system/status/{symbol}`). Trading status is live when the endpoint responds; price is live only when the API returns a non-null quote. Otherwise the receipt marks xStock price as `stub` and uses the modelled fallback.
 - **Verifiable receipts** — after a run, the `/agent-decision/[asset]` page reads the on-chain reason hash and lets you re-compute `keccak256` on the audit JSON. Canonical receipts are cached locally for fast verification and, when KV/Upstash is configured, persisted in hosted durable receipt storage keyed by `reasonHash`. If KV is unavailable, Neutrino falls back to in-memory demo storage.
 - **Live freshness flags** in every result panel: market hours, reference prices (Twelve Data), xStock price (xStocks API), xStock trading status (xStocks API), LLM reasoning (Claude Haiku 4.5), on-chain write, on-chain execution. `live` / `stub` / `n/a` is shown per signal, never hidden.
-- **Two judge-ready scenarios** on the home page:
-  - *Risky xStocks* (NVDAx / TSLAx / SPYx) — policy can pause when execution conditions are unsafe.
-  - *Safe yield* (USDY / mETH) — policy can allocate when freshness and risk checks pass.
-- **Optional real Fluxion execution** behind an opt-in button: the execution demo performs a real USDC → mETH allocation on Fluxion V3. Receipt-only runs remain the default for safe judging.
+- **Four scenarios** on the home page, covering the full decision space:
+  - *Safe yield* (USDY / mETH) — policy allocates when freshness and risk checks pass.
+  - *Risky xStocks* (NVDAx / TSLAx / SPYx) — policy pauses when execution conditions are unsafe.
+  - *Fluxion execution* — real USDC → mETH swap on Fluxion V3, live on mainnet.
+  - *SpaceX xStock* (SPCXx) — freshly-listed NASDAQ stock (June 12 2026), token trades 24/7 on Mantle — first-day vol and thin on-chain liquidity score 860/1000.
+- **Optional real Fluxion execution** behind an opt-in button. Receipt-only runs remain the default for safe judging.
 
 > **Demo safety mode:** the execution demo runs a USDC → mETH → USDC round-trip so the shared demo wallet stays solvent across judge clicks. Both legs are real Fluxion V3 swaps on Mantle mainnet. Set `EXECUTE_ROUNDTRIP=false` in `web/.env.local` to hold the mETH position instead.
 
