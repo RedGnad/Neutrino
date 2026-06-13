@@ -2,7 +2,7 @@
 
 > Risk judgment layer for autonomous agents on Mantle xStocks / RWA.
 
-**Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade.**
+**Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade — the first autonomous RWA agent safe enough to actually let run.**
 
 Neutrino gives autonomous agents a safety loop: the AI scores live RWA and xStocks signals and proposes an action, policy validates or overrides it, and the final decision is committed to Mantle with a canonical receipt (`reasonHash = keccak256(audit JSON)`). When policy allows, execution routes through Fluxion V3. AI proposes, policy validates or overrides, Mantle verifies the final receipt.
 
