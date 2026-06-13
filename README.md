@@ -2,7 +2,7 @@
 
 > Risk judgment layer for autonomous agents on Mantle xStocks / RWA.
 
-**Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade.**
+**Tokenized stocks trade 24/7. Their underlying markets don't. Neutrino is the agent that knows when not to trade — including SpaceX, which has no public exchange at all.**
 
 *The RWA agent you can actually let run.*
 
@@ -30,6 +30,7 @@ Built for the [Mantle Turing Test 2026](https://dorahacks.io/hackathon/mantletur
 | **Example `logDecision` tx** | [`0xa09b1576…`](https://mantlescan.xyz/tx/0xa09b1576df102dbf2a062b72ca6097907a37b2c362e954de5bca4dd0e7ef51d8) — NVDAx · PAUSE · riskScore 560/1000 |
 | **Proof registry (live)** | https://neutrino-fawn.vercel.app/proof |
 | **ERC-8004 agent card** | https://neutrino-fawn.vercel.app/agent-card.json |
+| **SPCXx receipt** (SpaceX · PAUSE · 860/1000) | [`0x1fe412c8…b5bb04`](https://mantlescan.xyz/tx/0x1fe412c8d96ef7125bffe6797aa8fa80c2093466257bf5096254c2cab4b5bb04) — block 96614360 · private equity, no market hours → permanent high-risk |
 
 ## DoraHacks Deployment Award evidence
 
