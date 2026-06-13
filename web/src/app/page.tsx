@@ -253,20 +253,20 @@ function ScenarioSection() {
         title="Run the full policy loop."
       />
 
-      <div className="scenario-grid grid gap-5 lg:grid-cols-3">
+      <div className="scenario-grid grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
         <ScenarioCard
           index="01"
           tone="amber"
-          title="SpaceX — private company, 24/7 token"
-          subtitle="Permanent market-hours penalty"
-          assets={["SPCXx"]}
-          description="SpaceX has no public exchange. The token trades 24/7 on Mantle. The underlying never does. Neutrino flags it high-risk regardless of time of day."
+          title="After-hours xStock exposure"
+          subtitle="Current policy outcome"
+          assets={["NVDAx", "TSLAx", "SPYx"]}
+          description="Checks halt status and quote availability. Market-hours penalty fires outside NYSE/NASDAQ hours."
           button={
             <RunAgentButton
-              scenario="spacex"
-              label="Run SpaceX risk check"
+              scenario="risky-xstocks"
+              label="Run risk check"
               variant="primary"
-              hint="~20-40s · 1 on-chain receipt"
+              hint="~30-60s · 3 receipts"
             />
           }
         />
@@ -282,7 +282,7 @@ function ScenarioSection() {
               scenario="safe-yield"
               label="Run safe-yield scenario"
               variant="primary"
-              hint="~20-40s · 2 on-chain receipts"
+              hint="~20-40s · 2 receipts"
             />
           }
         />
@@ -290,9 +290,9 @@ function ScenarioSection() {
           index="03"
           tone="gold"
           title="Verified Mantle execution"
-          subtitle="Live Mantle execution"
+          subtitle="Live Fluxion V3"
           assets={["USDC", "mETH"]}
-          description="Real Fluxion V3 round trip. Two swaps, two tx hashes."
+          description="Real round-trip swap. Two tx hashes on Mantlescan."
           note="xStocks execution waits for verified RFQ rails. Neutrino records a PAUSE receipt instead."
           button={
             <RunAgentButton
@@ -301,6 +301,22 @@ function ScenarioSection() {
               label="Execute via Fluxion"
               variant="execute"
               hint="~1% fees + gas"
+            />
+          }
+        />
+        <ScenarioCard
+          index="04"
+          tone="amber"
+          title="SpaceX — private equity"
+          subtitle="Always-high-risk · no public exchange"
+          assets={["SPCXx"]}
+          description="SpaceX trades 24/7 on Mantle. The underlying never does. No market hours, spread 180 bps, volume $12k/day — Neutrino PAUSEs regardless of time."
+          button={
+            <RunAgentButton
+              scenario="spacex"
+              label="Run SpaceX check"
+              variant="primary"
+              hint="~20-40s · 1 receipt"
             />
           }
         />

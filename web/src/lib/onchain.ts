@@ -219,7 +219,7 @@ export const TRACKED_ASSETS = [
   { symbol: 'NVDAx', reference: 'NVDA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0xc845b2894dBddd03858fd2D643B4eF725fE0849d' as Address },
   { symbol: 'TSLAx', reference: 'TSLA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0' as Address },
   { symbol: 'SPYx',  reference: 'SPY',  kind: 'tokenized_equity' as const, market: 'NYSE' as const,   address: '0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48' as Address },
-  { symbol: 'SPCXx', reference: 'SPCX', kind: 'tokenized_equity' as const, market: 'none' as const,   address: '0x68Fa48b1C2fE52b3d776E1953e0E782B5044CE28' as Address },
+  { symbol: 'SPCXx', reference: 'SPCX', kind: 'tokenized_equity' as const, market: 'none' as const,   address: '0x68fa48B1C2FE52b3D776E1953e0E782b5044Ce28' as Address },
   { symbol: 'USDY',  kind: 'yield_bearing' as const, address: '0x5bE26527e817998A7206475496fDE1E68957c5A6' as Address },
   { symbol: 'mETH',  kind: 'yield_bearing' as const, address: '0xcDA86A272531e8640cD7F1a92c01839911B90bb0' as Address },
 ] as const;

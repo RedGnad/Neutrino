@@ -60,7 +60,7 @@ export const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
   // SPCXx: SpaceX xStock on Mantle mainnet. Address from xStocks public API
   // (deployments[network=Mantle].address). Private company — market:'none'
   // so the engine treats it as permanently closed regardless of wall-clock time.
-  SPCXx: { symbol: 'SPCXx', kind: 'tokenized_equity', reference: 'SPCX', address: '0x68Fa48b1C2fE52b3d776E1953e0E782B5044CE28', market: 'none' },
+  SPCXx: { symbol: 'SPCXx', kind: 'tokenized_equity', reference: 'SPCX', address: '0x68fa48B1C2FE52b3D776E1953e0E782b5044Ce28', market: 'none' },
   USDY:  { symbol: 'USDY',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.USDY.address },
   mETH:  { symbol: 'mETH',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.mETH.address },
   USDC:  { symbol: 'USDC',  kind: 'stable',         address: MAINNET_TOKENS.USDC.address },
