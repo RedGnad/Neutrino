@@ -151,9 +151,11 @@ export function RunAgentButton({
       const result = json as RunResult;
       cacheCanonicalJsons(result);
       setState({ kind: "done", result });
-      // Refresh server components so hero card and recent decisions show the new data.
-      // Safe now that the drawer is portal-mounted outside transformed ancestors.
+      // First refresh: fires as soon as the receipt is confirmed.
+      // Second refresh (5 s later): catches cases where the RPC node hasn't
+      // propagated the new block yet at the time of the first refresh.
       router.refresh();
+      setTimeout(() => router.refresh(), 5000);
     } catch (e) {
       setState({ kind: "error", message: (e as Error).message });
     } finally {

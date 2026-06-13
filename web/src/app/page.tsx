@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AutoRefresh } from "@/components/AutoRefresh";
 import { RunAgentButton } from "@/components/RunAgentButton";
 import { PolicyTemplates } from "@/components/PolicyTemplates";
 import {
@@ -24,6 +25,7 @@ export const revalidate = 30;
 export default function Home() {
   return (
     <div className="space-y-20 md:space-y-24">
+      <AutoRefresh intervalMs={30_000} />
       <Hero />
       <ScenarioSection />
       <JudgeModeGuide />
