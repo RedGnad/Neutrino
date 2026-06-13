@@ -9,6 +9,7 @@ export type AssetSymbol =
   | 'NVDAx'
   | 'TSLAx'
   | 'SPYx'
+  | 'SPCXx'
   | 'USDY'
   | 'mETH'
   | 'USDC'

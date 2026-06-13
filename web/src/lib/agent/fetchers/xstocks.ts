@@ -43,11 +43,15 @@ interface MockBase {
 }
 
 const MOCK_BASE: Record<AssetSymbol, MockBase> = {
-  NVDAx: { fallbackPrice: 950, basisDriftPct: 0.003, spreadOpen: 15, spreadClosed: 90, volume24hUsd: 320_000, volatility: 0.55 },
-  TSLAx: { fallbackPrice: 245, basisDriftPct: 0.004, spreadOpen: 18, spreadClosed: 110, volume24hUsd: 180_000, volatility: 0.7 },
-  SPYx: { fallbackPrice: 555, basisDriftPct: 0.001, spreadOpen: 8, spreadClosed: 40, volume24hUsd: 480_000, volatility: 0.18 },
-  USDY:  { fallbackPrice: 1.06, basisDriftPct: 0,     spreadOpen: 5, spreadClosed: 5,  volume24hUsd: 2_500_000, volatility: 0.02, apy: 0.046 },
-  mETH:  { fallbackPrice: 3300, basisDriftPct: 0,     spreadOpen: 8, spreadClosed: 8,  volume24hUsd: 1_200_000, volatility: 0.55, apy: 0.038 },
-  USDC:  { fallbackPrice: 1.0,  basisDriftPct: 0,     spreadOpen: 2, spreadClosed: 2,  volume24hUsd: 8_000_000, volatility: 0.0 },
-  USDT0: { fallbackPrice: 1.0,  basisDriftPct: 0,     spreadOpen: 3, spreadClosed: 3,  volume24hUsd: 5_000_000, volatility: 0.0 },
+  NVDAx: { fallbackPrice: 950,  basisDriftPct: 0.003, spreadOpen: 15,  spreadClosed: 90,  volume24hUsd: 320_000,   volatility: 0.55 },
+  TSLAx: { fallbackPrice: 245,  basisDriftPct: 0.004, spreadOpen: 18,  spreadClosed: 110, volume24hUsd: 180_000,   volatility: 0.70 },
+  SPYx:  { fallbackPrice: 555,  basisDriftPct: 0.001, spreadOpen: 8,   spreadClosed: 40,  volume24hUsd: 480_000,   volatility: 0.18 },
+  // SpaceX is a private company — no public exchange, no continuous secondary market.
+  // spread/volume/volatility reflect a nearly-illiquid token; no reference price available
+  // (xStocks API returns quote:null). The risk engine will PAUSE regardless of time of day.
+  SPCXx: { fallbackPrice: 235,  basisDriftPct: 0.012, spreadOpen: 180, spreadClosed: 180, volume24hUsd: 12_000,    volatility: 1.35 },
+  USDY:  { fallbackPrice: 1.06, basisDriftPct: 0,     spreadOpen: 5,   spreadClosed: 5,   volume24hUsd: 2_500_000, volatility: 0.02, apy: 0.046 },
+  mETH:  { fallbackPrice: 3300, basisDriftPct: 0,     spreadOpen: 8,   spreadClosed: 8,   volume24hUsd: 1_200_000, volatility: 0.55, apy: 0.038 },
+  USDC:  { fallbackPrice: 1.0,  basisDriftPct: 0,     spreadOpen: 2,   spreadClosed: 2,   volume24hUsd: 8_000_000, volatility: 0.00 },
+  USDT0: { fallbackPrice: 1.0,  basisDriftPct: 0,     spreadOpen: 3,   spreadClosed: 3,   volume24hUsd: 5_000_000, volatility: 0.00 },
 };

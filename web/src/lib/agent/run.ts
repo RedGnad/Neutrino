@@ -57,6 +57,10 @@ export const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
   NVDAx: { symbol: 'NVDAx', kind: 'tokenized_equity', reference: 'NVDA', address: '0xc845b2894dBddd03858fd2D643B4eF725fE0849d', market: 'NASDAQ' },
   TSLAx: { symbol: 'TSLAx', kind: 'tokenized_equity', reference: 'TSLA', address: '0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0', market: 'NASDAQ' },
   SPYx:  { symbol: 'SPYx',  kind: 'tokenized_equity', reference: 'SPY',  address: '0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48', market: 'NYSE' },
+  // SPCXx: SpaceX xStock on Mantle mainnet. Address from xStocks public API
+  // (deployments[network=Mantle].address). Private company — market:'none'
+  // so the engine treats it as permanently closed regardless of wall-clock time.
+  SPCXx: { symbol: 'SPCXx', kind: 'tokenized_equity', reference: 'SPCX', address: '0x68Fa48b1C2fE52b3d776E1953e0E782B5044CE28', market: 'none' },
   USDY:  { symbol: 'USDY',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.USDY.address },
   mETH:  { symbol: 'mETH',  kind: 'yield_bearing',                          address: MAINNET_TOKENS.mETH.address },
   USDC:  { symbol: 'USDC',  kind: 'stable',         address: MAINNET_TOKENS.USDC.address },
@@ -69,12 +73,13 @@ export const ASSET_REGISTRY: Record<AssetSymbol, AssetMetadata> = {
  *  - `safe-yield`: only the on-chain yield/stable assets, where the agent is comfortable.
  *  - `default`: the full mixed set (5 assets) — what the dashboard reads.
  */
-export type Scenario = 'default' | 'risky-xstocks' | 'safe-yield';
+export type Scenario = 'default' | 'risky-xstocks' | 'safe-yield' | 'spacex';
 
 const SCENARIO_ASSETS: Record<Scenario, AssetSymbol[]> = {
   default: ['NVDAx', 'TSLAx', 'SPYx', 'USDY', 'mETH'],
   'risky-xstocks': ['NVDAx', 'TSLAx', 'SPYx'],
   'safe-yield': ['USDY', 'mETH'],
+  spacex: ['SPCXx'],
 };
 
 export const MONITORED_ASSETS: AssetSymbol[] = SCENARIO_ASSETS.default;

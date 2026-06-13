@@ -9,6 +9,7 @@ export type AssetSymbol =
   | 'SPYx'
   | 'QQQx'
   | 'CRCLx'
+  | 'SPCXx'
   | 'USDY'
   | 'mETH'
   | 'USDe'

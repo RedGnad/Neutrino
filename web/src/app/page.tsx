@@ -257,16 +257,16 @@ function ScenarioSection() {
         <ScenarioCard
           index="01"
           tone="amber"
-          title="After-hours xStock exposure"
-          subtitle="Current policy outcome"
-          assets={["NVDAx", "TSLAx", "SPYx"]}
-          description="Checks halt status and quote availability."
+          title="SpaceX — private company, 24/7 token"
+          subtitle="Permanent market-hours penalty"
+          assets={["SPCXx"]}
+          description="SpaceX has no public exchange. The token trades 24/7 on Mantle. The underlying never does. Neutrino flags it high-risk regardless of time of day."
           button={
             <RunAgentButton
-              scenario="risky-xstocks"
-              label="Run risk check"
+              scenario="spacex"
+              label="Run SpaceX risk check"
               variant="primary"
-              hint="~30-60s · 3 on-chain receipts"
+              hint="~20-40s · 1 on-chain receipt"
             />
           }
         />

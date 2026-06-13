@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { parseXStocksDecision, XStocksDecisionBreakdown } from "./XStocksDecisionBreakdown";
 
-type Scenario = "default" | "risky-xstocks" | "safe-yield";
+type Scenario = "default" | "risky-xstocks" | "safe-yield" | "spacex";
 type SourceState = "live" | "stub" | "simulated" | "n/a";
 type FlagState = "live" | "stub" | "n/a";
 

@@ -40,6 +40,8 @@ export function computeRiskScore({ meta, snapshot, basisStats }: ScoreInput): Ri
 
 function computeMarketHoursPenalty(meta: AssetMetadata, snap: MarketSnapshot): number {
   if (meta.kind !== 'tokenized_equity') return 0;
+  // Private equities (market: 'none') have no public exchange — always treat as closed.
+  if (meta.market === 'none') return 250;
   return snap.marketOpen ? 0 : 250;
 }
 

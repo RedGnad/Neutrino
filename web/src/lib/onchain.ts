@@ -71,7 +71,8 @@ const ASSET_BY_ADDRESS: Record<string, { symbol: string; reference?: string }> =
   //     deployments[network=Mantle], verified on-chain 2026-05-21) ---
   '0xc845b2894dbddd03858fd2d643b4ef725fe0849d': { symbol: 'NVDAx', reference: 'NVDA' },
   '0x8ad3c73f833d3f9a523ab01476625f269aeb7cf0': { symbol: 'TSLAx', reference: 'TSLA' },
-  '0x90a2a4c76b5d8c0bc892a69ea28aa775a8f2dd48': { symbol: 'SPYx', reference: 'SPY' },
+  '0x90a2a4c76b5d8c0bc892a69ea28aa775a8f2dd48': { symbol: 'SPYx',  reference: 'SPY'  },
+  '0x68fa48b1c2fe52b3d776e1953e0e782b5044ce28': { symbol: 'SPCXx', reference: 'SPCX' },
   // --- Legacy placeholder addresses kept so pre-2026-05-21 demo receipts
   //     (logged before the real xStock addresses were wired) still resolve ---
   '0x0000000000000000000000000000000000000001': { symbol: 'NVDAx', reference: 'NVDA' },
@@ -218,6 +219,7 @@ export const TRACKED_ASSETS = [
   { symbol: 'NVDAx', reference: 'NVDA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0xc845b2894dBddd03858fd2D643B4eF725fE0849d' as Address },
   { symbol: 'TSLAx', reference: 'TSLA', kind: 'tokenized_equity' as const, market: 'NASDAQ' as const, address: '0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0' as Address },
   { symbol: 'SPYx',  reference: 'SPY',  kind: 'tokenized_equity' as const, market: 'NYSE' as const,   address: '0x90A2a4c76b5D8c0bc892A69EA28Aa775a8f2dD48' as Address },
+  { symbol: 'SPCXx', reference: 'SPCX', kind: 'tokenized_equity' as const, market: 'none' as const,   address: '0x68Fa48b1C2fE52b3d776E1953e0E782B5044CE28' as Address },
   { symbol: 'USDY',  kind: 'yield_bearing' as const, address: '0x5bE26527e817998A7206475496fDE1E68957c5A6' as Address },
   { symbol: 'mETH',  kind: 'yield_bearing' as const, address: '0xcDA86A272531e8640cD7F1a92c01839911B90bb0' as Address },
 ] as const;
