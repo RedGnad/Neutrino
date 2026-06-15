@@ -126,48 +126,53 @@ const INITIAL_WINDOW_FROM = 94_980_000n;
 const INITIAL_WINDOW_TO   = 94_989_000n;
 
 // Mantle public RPC enforces a strict 10,000-block max for eth_getLogs.
-// Using 8k keeps us comfortably below that ceiling even if the chain
-// advances a few blocks between when we read `latest` and when the request
-// arrives. We pass `toBlock: latest` (explicit number, not the string
-// "latest") so the range is locked at query time.
-const MAX_RANGE = 8_000n;
+// 9k per window stays safely below the ceiling. 8 windows × 9k = 72k blocks
+// ≈ 40 hours — wide enough to show runs from yesterday without manual refresh.
+const WINDOW_SIZE = 9_000n;
+const NUM_WINDOWS = 8;
 
 /**
  * Pull the most recent N DecisionLogged events from RWADecisionLogger.
  *
- * Two-window strategy:
- *  1. Recent: latest-8k → latest   (catches fresh decisions from any run today)
- *  2. Initial: 94_980_000 → 94_989_000  (covers the first 5 decisions logged
- *     at block ~94_987_254 during initial deployment testing on Mantle mainnet)
- *     — only queried when it does not overlap the recent window.
+ * Multi-window strategy:
+ *  - 8 sliding windows of 9k blocks each, newest first → covers ~40 hours.
+ *    Runs within that window always appear; no stale fallback dominates.
+ *  - Hardcoded initial window (blocks 94_980_000–94_989_000) for the first
+ *    5 decisions written during deployment — only queried when outside the
+ *    sliding range to avoid duplicate requests.
+ *
+ * All getLogs calls are parallel; individual failures are silently skipped.
  */
 export async function fetchRecentDecisions(limit = 50): Promise<OnChainDecision[]> {
   if (!LOGGER_ADDRESS) return [];
 
   const latest = await publicClient.getBlockNumber();
-  const recentFrom = latest > MAX_RANGE ? latest - MAX_RANGE : 0n;
-
   const logParams = { address: LOGGER_ADDRESS, event: DECISION_LOGGED_EVENT } as const;
+  const totalLookback = WINDOW_SIZE * BigInt(NUM_WINDOWS);
+  const oldestCovered = latest > totalLookback ? latest - totalLookback : 0n;
 
-  const [recentLogs, initialLogs] = await Promise.all([
-    // Explicit toBlock so the window is exactly MAX_RANGE regardless of chain tip drift.
-    publicClient.getLogs({ ...logParams, fromBlock: recentFrom, toBlock: latest }).catch(() => []),
-    // Initial batch only when it doesn't overlap the recent window.
-    recentFrom > INITIAL_WINDOW_TO
-      ? publicClient.getLogs({ ...logParams, fromBlock: INITIAL_WINDOW_FROM, toBlock: INITIAL_WINDOW_TO }).catch(() => [])
-      : Promise.resolve([]),
-  ]);
+  const slidingPromises = Array.from({ length: NUM_WINDOWS }, (_, i) => {
+    const to   = latest - BigInt(i) * WINDOW_SIZE;
+    const from = to > WINDOW_SIZE ? to - WINDOW_SIZE : 0n;
+    return publicClient.getLogs({ ...logParams, fromBlock: from, toBlock: to }).catch(() => []);
+  });
 
-  // Deduplicate (initial and recent can overlap as chain grows).
+  const initialPromise = oldestCovered > INITIAL_WINDOW_TO
+    ? publicClient.getLogs({ ...logParams, fromBlock: INITIAL_WINDOW_FROM, toBlock: INITIAL_WINDOW_TO }).catch(() => [])
+    : Promise.resolve([]);
+
+  const allLogs = (await Promise.all([...slidingPromises, initialPromise])).flat();
+
+  // Deduplicate (windows share boundaries; initial can overlap sliding range).
   const seen = new Set<string>();
-  const allLogs = [...recentLogs, ...initialLogs].filter((log) => {
+  const dedupedLogs = allLogs.filter((log) => {
     const key = log.transactionHash ?? '';
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 
-  const decisions: OnChainDecision[] = allLogs.map((log) => {
+  const decisions: OnChainDecision[] = dedupedLogs.map((log) => {
     const args = log.args as {
       agentId?: bigint;
       asset?: Address;
