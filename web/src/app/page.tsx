@@ -5,7 +5,6 @@ import { PolicyTemplates } from "@/components/PolicyTemplates";
 import {
   ConsoleCard,
   HashText,
-  RiskBar,
   SectionHeader,
   StatusPill,
   TextLink,
@@ -110,11 +109,15 @@ async function Hero() {
           <div className="hero-proof-strip animate-stagger-5">
             <span className="hero-proof-token">ERC-8004 verified</span>
             <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
-            <span className="hero-proof-token">Verifiable on-chain receipts</span>
+            <span className="hero-proof-token">
+              Verifiable on-chain receipts
+            </span>
             <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
             <span className="hero-proof-token">Fluxion V3 execution</span>
             <span style={{ color: "rgba(144,126,108,0.28)" }}>·</span>
-            <span className="hero-proof-token">Deterministic policy engine</span>
+            <span className="hero-proof-token">
+              Deterministic policy engine
+            </span>
           </div>
         </div>
 
@@ -147,19 +150,49 @@ function LatestStateCard({
             className="flex h-10 w-10 items-center justify-center rounded-full"
             style={{
               background: "color-mix(in srgb, var(--clear) 8%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--clear) 20%, transparent)",
+              border:
+                "1px solid color-mix(in srgb, var(--clear) 20%, transparent)",
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <circle cx="8" cy="8" r="5.5" stroke="var(--clear)" strokeWidth="1.25" />
-              <path d="M8 5v3.5l2 1.5" stroke="var(--clear)" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="8"
+                cy="8"
+                r="5.5"
+                stroke="var(--clear)"
+                strokeWidth="1.25"
+              />
+              <path
+                d="M8 5v3.5l2 1.5"
+                stroke="var(--clear)"
+                strokeWidth="1.25"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
           <div>
-            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>No decisions on-chain yet</p>
-            <p className="mt-1 text-[12px]" style={{ color: "var(--muted)" }}>Run a scenario to write the first receipt to Mantle.</p>
+            <p
+              className="text-sm font-semibold"
+              style={{ color: "var(--text)" }}
+            >
+              No decisions on-chain yet
+            </p>
+            <p className="mt-1 text-[12px]" style={{ color: "var(--muted)" }}>
+              Run a scenario to write the first receipt to Mantle.
+            </p>
           </div>
-          <a href="#scenarios" className="text-[12px] font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--clear)" }}>
+          <a
+            href="#scenarios"
+            className="text-[12px] font-semibold transition-opacity hover:opacity-80"
+            style={{ color: "var(--clear)" }}
+          >
             Run first scenario →
           </a>
         </div>
@@ -169,9 +202,11 @@ function LatestStateCard({
             {shown.map((d) => {
               const sym = resolveAsset(d.assetAddress).symbol;
               const riskColor =
-                d.riskScore >= 500 ? "var(--refuse)" :
-                d.riskScore >= 250 ? "var(--pause)" :
-                "var(--clear)";
+                d.riskScore >= 500
+                  ? "var(--refuse)"
+                  : d.riskScore >= 250
+                    ? "var(--pause)"
+                    : "var(--clear)";
               return (
                 <Link
                   key={d.txHash}
@@ -189,10 +224,22 @@ function LatestStateCard({
                   >
                     {sym}
                   </span>
-                  <StatusPill value={d.action} className="w-full justify-center" />
+                  <StatusPill
+                    value={d.action}
+                    className="w-full justify-center"
+                  />
                   {/* inline bar — no min-width, always shows track */}
-                  <div className="h-[3px] w-full overflow-hidden rounded-full" style={{ background: "rgba(231,223,208,0.1)" }}>
-                    <div className="h-full rounded-full" style={{ width: `${Math.max(2, (d.riskScore / 1000) * 100)}%`, background: riskColor }} />
+                  <div
+                    className="h-[3px] w-full overflow-hidden rounded-full"
+                    style={{ background: "rgba(231,223,208,0.1)" }}
+                  >
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.max(2, (d.riskScore / 1000) * 100)}%`,
+                        background: riskColor,
+                      }}
+                    />
                   </div>
                   <span
                     className="font-mono text-[12px] font-bold text-right tabular-nums"
@@ -200,7 +247,10 @@ function LatestStateCard({
                   >
                     {d.riskScore}
                   </span>
-                  <span className="text-[11px] whitespace-nowrap text-right" style={{ color: "var(--muted)" }}>
+                  <span
+                    className="text-[11px] whitespace-nowrap text-right"
+                    style={{ color: "var(--muted)" }}
+                  >
                     {timeAgo(d.timestamp)}
                   </span>
                 </Link>
@@ -246,14 +296,10 @@ function ContractRow({ label, address }: { label: string; address: string }) {
   );
 }
 
-
 function ScenarioSection() {
   return (
     <section id="scenarios" className="section-ruled scroll-mt-24 space-y-6">
-      <SectionHeader
-        eyebrow="Try it live"
-        title="Run the full policy loop."
-      />
+      <SectionHeader eyebrow="Try it live" title="Run the full policy loop." />
 
       <div className="scenario-grid grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
         <ScenarioCard
@@ -309,7 +355,7 @@ function ScenarioSection() {
         <ScenarioCard
           index="04"
           tone="amber"
-          title="SpaceX xStock — IPO day"
+          title="SpaceX xStock IPO day"
           subtitle="NASDAQ listed June 12 · token trades 24/7"
           assets={["SPCXx"]}
           description="First-day vol + thin on-chain depth. Risk engine blocks the position."
@@ -364,16 +410,24 @@ function ScenarioCard({
         </StatusPill>
       </div>
       <div className="scenario-card-body">
-        <h3 className="text-xl font-semibold leading-snug" style={{ color: "var(--text)" }}>
+        <h3
+          className="text-xl font-semibold leading-snug"
+          style={{ color: "var(--text)" }}
+        >
           {title}
         </h3>
-        <p className="mt-3 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
+        <p
+          className="mt-3 text-base leading-relaxed"
+          style={{ color: "var(--muted)" }}
+        >
           {description}
         </p>
       </div>
       <div className="scenario-card-tags flex flex-wrap gap-1.5">
         {assets.map((asset) => (
-          <span key={asset} className="scenario-chip">{asset}</span>
+          <span key={asset} className="scenario-chip">
+            {asset}
+          </span>
         ))}
       </div>
       {note ? <p className="scenario-card-note">{note}</p> : null}
@@ -418,10 +472,16 @@ function JudgeModeGuide() {
         {steps.map(({ title, body }, index) => (
           <div key={title} className="judge-flow-step">
             <div className="judge-flow-num">{index + 1}</div>
-            <p className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
+            <p
+              className="text-[15px] font-semibold"
+              style={{ color: "var(--text)" }}
+            >
               {title}
             </p>
-            <p className="mt-2 text-[13px] leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p
+              className="mt-2 text-[13px] leading-relaxed"
+              style={{ color: "var(--muted)" }}
+            >
               {body}
             </p>
           </div>
@@ -437,12 +497,12 @@ async function RecentDecisions() {
 
   return (
     <section className="section-ruled space-y-6">
-      <SectionHeader
-        eyebrow="Live activity"
-        title="Recent decisions."
-      >
+      <SectionHeader eyebrow="Live activity" title="Recent decisions.">
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-2 text-[12px]" style={{ color: "var(--clear)" }}>
+          <span
+            className="flex items-center gap-2 text-[12px]"
+            style={{ color: "var(--clear)" }}
+          >
             <span className="live-dot" />
             Live
           </span>
@@ -454,9 +514,11 @@ async function RecentDecisions() {
         {decisions.map((d) => {
           const { symbol } = resolveAsset(d.assetAddress);
           const riskColor =
-            d.riskScore >= 500 ? "var(--refuse)" :
-            d.riskScore >= 250 ? "var(--pause)" :
-            "var(--clear)";
+            d.riskScore >= 500
+              ? "var(--refuse)"
+              : d.riskScore >= 250
+                ? "var(--pause)"
+                : "var(--clear)";
           return (
             <div key={d.txHash} className="decision-feed-row">
               <Link
@@ -472,12 +534,23 @@ async function RecentDecisions() {
                 style={{ color: riskColor }}
               >
                 {d.riskScore}
-                <span style={{ color: "rgba(144,126,108,0.38)", fontWeight: 400 }}>/1000</span>
+                <span
+                  style={{ color: "rgba(144,126,108,0.38)", fontWeight: 400 }}
+                >
+                  /1000
+                </span>
               </span>
-              <span className="text-[12px] whitespace-nowrap" style={{ color: "var(--muted)" }}>
+              <span
+                className="text-[12px] whitespace-nowrap"
+                style={{ color: "var(--muted)" }}
+              >
                 {timeAgo(d.timestamp)}
               </span>
-              <HashText value={d.txHash} href={`${EXPLORER_TX}/${d.txHash}`} chars={7} />
+              <HashText
+                value={d.txHash}
+                href={`${EXPLORER_TX}/${d.txHash}`}
+                chars={7}
+              />
             </div>
           );
         })}
@@ -490,8 +563,16 @@ function BuilderIntegrationSection() {
   const uses = [
     ["RWA agents", "Policy guardrails before every execution.", "guardrail"],
     ["Treasuries", "Auditable allocation rationale.", "proof"],
-    ["xStocks apps", "Market and execution checks before capital moves.", "gate"],
-    ["Mantle protocols", "Public decision receipts for autonomous workflows.", "receipt"],
+    [
+      "xStocks apps",
+      "Market and execution checks before capital moves.",
+      "gate",
+    ],
+    [
+      "Mantle protocols",
+      "Public decision receipts for autonomous workflows.",
+      "receipt",
+    ],
   ] as const;
 
   return (
@@ -513,7 +594,9 @@ function BuilderIntegrationSection() {
             interactive
             className="landing-brief-card"
           >
-            <StatusPill value={label} tone="slate">{label}</StatusPill>
+            <StatusPill value={label} tone="slate">
+              {label}
+            </StatusPill>
             <p className="landing-card-title">{title}</p>
             <p className="landing-card-copy">{body}</p>
           </ConsoleCard>
