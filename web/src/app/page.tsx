@@ -312,7 +312,7 @@ function ScenarioSection() {
           title="SpaceX xStock — IPO day"
           subtitle="NASDAQ listed June 12 · token trades 24/7"
           assets={["SPCXx"]}
-          description="SPCX IPO'd June 12 2026 (+19% day 1). The token runs 24/7 on Mantle. First-day volatility and thin on-chain liquidity push risk above any allocation threshold."
+          description="First-day vol + thin on-chain depth. Risk engine blocks the position."
           button={
             <RunAgentButton
               scenario="spacex"
